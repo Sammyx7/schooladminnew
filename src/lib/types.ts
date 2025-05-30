@@ -167,7 +167,6 @@ export const StudentApplicationFormSchema = z.object({
     required_error: "Application date is required.",
     invalid_type_error: "That's not a valid date!",
   }),
-  // Optional fields, can be expanded
   parentName: z.string().optional(),
   parentEmail: z.string().email({ message: "Invalid email address."}).optional().or(z.literal('')),
   parentPhone: z.string().optional(),
@@ -178,6 +177,44 @@ export type StudentApplicationFormValues = z.infer<typeof StudentApplicationForm
 export interface StudentApplication extends StudentApplicationFormValues {
   id: string;
   status: ApplicationStatus;
-  // applicationDate is already in StudentApplicationFormValues, ensure it's a string after processing
   applicationDate: string; // Store as ISO string
+}
+
+// Admin Student Attendance Types
+export const attendanceStatuses = ['Present', 'Absent', 'Late', 'Excused'] as const;
+export type AttendanceStatus = typeof attendanceStatuses[number];
+
+export interface StudentAttendanceRecord {
+  id: string;
+  studentId: string;
+  studentName: string;
+  class: string;
+  section: string;
+  date: string; // ISO Date string
+  status: AttendanceStatus;
+}
+
+export const StudentAttendanceFilterSchema = z.object({
+  classFilter: z.string().optional(),
+  sectionFilter: z.string().optional(),
+  dateFilter: z.date().optional(),
+});
+export type StudentAttendanceFilterFormValues = z.infer<typeof StudentAttendanceFilterSchema>;
+
+// Admin Expenses Management Types
+export const expenseCategories = ['Utilities', 'Salaries', 'Supplies', 'Maintenance', 'Events', 'Transport', 'Other'] as const;
+export type ExpenseCategory = typeof expenseCategories[number];
+
+export const ExpenseFormSchema = z.object({
+  date: z.date({ required_error: "Date is required."}),
+  category: z.enum(expenseCategories, { errorMap: () => ({ message: "Please select a category." }) }),
+  description: z.string().min(3, { message: "Description must be at least 3 characters."}),
+  amount: z.coerce.number().positive({ message: "Amount must be a positive number."}),
+  paymentMethod: z.string().optional(),
+});
+export type ExpenseFormValues = z.infer<typeof ExpenseFormSchema>;
+
+export interface ExpenseRecord extends ExpenseFormValues {
+  id: string;
+  date: string; // Stored as ISO string
 }

@@ -1,8 +1,8 @@
 
 'use client';
 
-import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus } from '@/lib/types';
-import { format } from 'date-fns';
+import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, StudentAttendanceRecord, StudentAttendanceFilterFormValues, AttendanceStatus, ExpenseRecord, ExpenseFormValues } from '@/lib/types';
+import { format, parseISO, isEqual, startOfDay } from 'date-fns';
 
 // Mock data for a list of students for the admin view
 const MOCK_STUDENT_LIST: StudentProfile[] = [
@@ -138,6 +138,8 @@ export async function createAdminBulkFeeNotice(data: BulkFeeNoticeFormValues): P
         ...data,
         id: `BFN_${Date.now()}`,
         generatedDate: new Date().toISOString(),
+        // Ensure dueDate is a Date object before it's converted elsewhere if needed
+        dueDate: typeof data.dueDate === 'string' ? parseISO(data.dueDate) : data.dueDate,
       };
       MOCK_ADMIN_BULK_FEE_NOTICES.unshift(newNoticeDefinition);
       resolve(newNoticeDefinition);
@@ -210,6 +212,72 @@ export async function updateAdminStudentApplicationStatus(applicationId: string,
       } else {
         reject(new Error("Application not found."));
       }
+    }, 400);
+  });
+}
+
+// Admin Student Attendance Management
+const today = new Date();
+const yesterday = new Date(today);
+yesterday.setDate(today.getDate() - 1);
+
+const MOCK_STUDENT_ATTENDANCE_RECORDS: StudentAttendanceRecord[] = [
+  { id: 'ATT001', studentId: 'S10234', studentName: 'Aisha Sharma', class: '10', section: 'A', date: today.toISOString(), status: 'Present' },
+  { id: 'ATT002', studentId: 'S10237', studentName: 'Karan Mehta', class: '10', section: 'A', date: today.toISOString(), status: 'Absent' },
+  { id: 'ATT003', studentId: 'S10235', studentName: 'Rohan Verma', class: '9', section: 'B', date: today.toISOString(), status: 'Present' },
+  { id: 'ATT004', studentId: 'S10234', studentName: 'Aisha Sharma', class: '10', section: 'A', date: yesterday.toISOString(), status: 'Late' },
+  { id: 'ATT005', studentId: 'S10237', studentName: 'Karan Mehta', class: '10', section: 'A', date: yesterday.toISOString(), status: 'Excused' },
+  { id: 'ATT006', studentId: 'S10239', studentName: 'Vikram Reddy', class: '9', section: 'C', date: today.toISOString(), status: 'Present' },
+];
+
+export async function getAdminStudentAttendanceRecords(filters?: StudentAttendanceFilterFormValues): Promise<StudentAttendanceRecord[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      let filteredRecords = [...MOCK_STUDENT_ATTENDANCE_RECORDS];
+      if (filters) {
+        if (filters.classFilter) {
+          filteredRecords = filteredRecords.filter(r => r.class.toLowerCase().includes(filters.classFilter!.toLowerCase()));
+        }
+        if (filters.sectionFilter) {
+          filteredRecords = filteredRecords.filter(r => r.section.toLowerCase().includes(filters.sectionFilter!.toLowerCase()));
+        }
+        if (filters.dateFilter) {
+          const filterDate = startOfDay(filters.dateFilter);
+          filteredRecords = filteredRecords.filter(r => isEqual(startOfDay(parseISO(r.date)), filterDate));
+        }
+      }
+      resolve(filteredRecords);
+    }, 600);
+  });
+}
+
+
+// Admin Expenses Management
+const MOCK_EXPENSE_RECORDS: ExpenseRecord[] = [
+  { id: 'EXP001', date: new Date('2024-07-15').toISOString(), category: 'Utilities', description: 'Electricity Bill - June', amount: 12500, paymentMethod: 'Online Transfer' },
+  { id: 'EXP002', date: new Date('2024-07-10').toISOString(), category: 'Supplies', description: 'Stationery Purchase', amount: 3500, paymentMethod: 'Cash' },
+  { id: 'EXP003', date: new Date('2024-07-01').toISOString(), category: 'Salaries', description: 'Teaching Staff Salaries - June', amount: 350000, paymentMethod: 'Bank Transfer' },
+  { id: 'EXP004', date: new Date('2024-06-25').toISOString(), category: 'Maintenance', description: 'Classroom Projector Repair', amount: 8000, paymentMethod: 'Vendor Cheque' },
+];
+
+export async function getAdminExpenseRecords(): Promise<ExpenseRecord[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([...MOCK_EXPENSE_RECORDS]);
+    }, 500);
+  });
+}
+
+export async function createAdminExpenseRecord(data: ExpenseFormValues): Promise<ExpenseRecord> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const newExpense: ExpenseRecord = {
+        ...data,
+        id: `EXP_${Date.now()}`,
+        date: data.date.toISOString(), // Store date as ISO string
+      };
+      MOCK_EXPENSE_RECORDS.unshift(newExpense);
+      resolve(newExpense);
     }, 400);
   });
 }
