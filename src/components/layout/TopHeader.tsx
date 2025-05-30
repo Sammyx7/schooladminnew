@@ -2,6 +2,7 @@
 "use client";
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation'; // Added import
 import { Bell, LogOut, UserCircle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export function TopHeader() {
   const { userRole, logout } = useAuth();
+  const router = useRouter(); // Initialized router
   // Mock user data - in a real app, this would come from auth context or API
   const userName = "Dr. Priya Nair"; 
   const userEmail = "dr.priya.nair@example.com";
@@ -57,7 +59,7 @@ export function TopHeader() {
               {userRole && (
                 <Badge 
                   variant="outline" 
-                  className="capitalize text-xs px-1.5 py-0.5 border-primary/30 bg-accent text-accent-foreground hidden md:inline-flex"
+                  className="capitalize text-xs px-2 py-0.5 border-primary/30 bg-primary text-primary-foreground rounded-full hidden md:inline-flex"
                 >
                   {userRole}
                 </Badge>
@@ -78,7 +80,7 @@ export function TopHeader() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push(`/${userRole}/profile`)}> {/* Assuming profile page exists */}
+            <DropdownMenuItem onClick={() => router.push(getDefaultDashboardPath(userRole))}>
               <UserCircle className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </DropdownMenuItem>
@@ -103,3 +105,4 @@ const getDefaultDashboardPath = (role: string | null) => {
     default: return '/login';
   }
 };
+
