@@ -1,12 +1,12 @@
 
 import { PlaceholderPage } from '@/components/PlaceholderPage';
-import { CalendarGrid } from 'lucide-react';
+import { CalendarDays } from 'lucide-react'; // Changed from CalendarGrid
 
 export default function StaffTimetablePage() {
   return (
     <PlaceholderPage
       title="My Timetable"
-      icon={CalendarGrid}
+      icon={CalendarDays} // Changed from CalendarGrid
       description="View and manage your teaching schedule (for authorized staff)."
       featureName="Timetable Management (Staff/Class Teacher)"
     />

@@ -3,7 +3,7 @@ import type { NavItem } from './types';
 import {
   LayoutDashboard, Users, UserCircle, Receipt, Briefcase, FileText, Sparkles,
   Mail, Calculator, History, CreditCard, UserPlus, FileUp, CheckCircle, QrCode,
-  CalendarDays, BookOpen, TrendingUp, ClipboardEdit, Printer, CalendarGrid,
+  CalendarDays, BookOpen, TrendingUp, ClipboardEdit, Printer, // Removed CalendarGrid
   Megaphone, Send, Bus, Route, BarChart3, PieChart, Download, Settings, DollarSign, FileSearch
 } from 'lucide-react';
 
@@ -37,7 +37,7 @@ export const adminNavItems: NavItem[] = [
     children: [
       { title: 'Marks Entry', href: '/admin/marks', icon: ClipboardEdit },
       { title: 'Report Cards', href: '/admin/reports/report-cards', icon: Printer },
-      { title: 'Timetable', href: '/admin/timetable', icon: CalendarGrid },
+      { title: 'Timetable', href: '/admin/timetable', icon: CalendarDays }, // Changed from CalendarGrid
     ]
   },
   {
@@ -68,7 +68,7 @@ export const studentNavItems: NavItem[] = [
   { title: 'Fee Notices', href: '/student/fee-notices', icon: Receipt },
   { title: 'Payment History', href: '/student/payments', icon: History },
   { title: 'Report Card', href: '/student/report-card', icon: FileSearch },
-  { title: 'Timetable', href: '/student/timetable', icon: CalendarGrid },
+  { title: 'Timetable', href: '/student/timetable', icon: CalendarDays }, // Changed from CalendarGrid
   { title: 'Circulars', href: '/student/circulars', icon: Megaphone },
   // Settings is handled by the common footer in AppSidebar
 ];
@@ -77,7 +77,7 @@ export const staffNavItems: NavItem[] = [
   { title: 'Profile', href: '/staff/profile', icon: Briefcase },
   { title: 'Attendance', href: '/staff/attendance', icon: QrCode },
   { title: 'Marks Entry', href: '/staff/marks', icon: ClipboardEdit }, // Conditional based on role (e.g. teacher)
-  { title: 'Timetable', href: '/staff/timetable', icon: CalendarGrid }, // Conditional based on role
+  { title: 'Timetable', href: '/staff/timetable', icon: CalendarDays }, // Changed from CalendarGrid
   { title: 'Circulars', href: '/staff/circulars', icon: Megaphone },
   // Settings is handled by the common footer in AppSidebar
 ];
