@@ -25,10 +25,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 className="fixed left-0 top-16 bottom-0 z-30 hidden md:block" // Ensure sidebar is fixed and visible
               />
             )}
-            {/* Main content area adjustments for fixed sidebar */}
-            <main className="flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto md:ml-[var(--sidebar-width)]"> 
-              {/* On mobile, sidebar is off-canvas, so no ml needed initially. On desktop, ml by sidebar width */}
-              {/* The sidebar component itself will handle its width via CSS variables */}
+            {/* Main content area - REMOVED md:ml-[var(--sidebar-width)] */}
+            <main className="flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto"> 
               {children}
             </main>
           </div>
