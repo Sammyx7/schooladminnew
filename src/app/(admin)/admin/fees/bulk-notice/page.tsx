@@ -45,7 +45,7 @@ export default function AdminBulkFeeNoticesPage() {
     defaultValues: {
       noticeTitle: '',
       description: '',
-      amount: undefined, // Or a default numeric value like 0
+      amount: '', // Changed from undefined to empty string
       dueDate: undefined,
       targetClasses: '',
       additionalNotes: '',
@@ -309,3 +309,4 @@ export default function AdminBulkFeeNoticesPage() {
     </div>
   );
 }
+
