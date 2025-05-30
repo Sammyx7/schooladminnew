@@ -24,7 +24,8 @@ export default function StudentLayout({ children }: { children: ReactNode }) {
                 className="fixed left-0 top-16 bottom-0 z-30 hidden md:block" // Ensure sidebar is fixed and visible
               />
             )}
-            <main className="flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto md:ml-[var(--sidebar-width)] md:w-[calc(100%_-_var(--sidebar-width))]">
+            {/* Ensure main content area classes match AdminLayout's main content area for consistency */}
+            <main className="flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto md:ml-[var(--sidebar-width)]">
               {children}
             </main>
           </div>
