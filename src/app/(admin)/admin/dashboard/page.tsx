@@ -16,12 +16,14 @@ const recentPaymentsData = [
   { name: "Arjun Sharma", time: "2 hours ago", amount: "₹15,000", amountColor: "text-green-600" },
   { name: "Priya Patel", time: "4 hours ago", amount: "₹12,000", amountColor: "text-green-600" },
   { name: "Rahul Kumar", time: "6 hours ago", amount: "₹8,000", amountColor: "text-green-600" },
+  { name: "Meera Vasudevan", time: "1 day ago", amount: "₹25,000", amountColor: "text-green-600" },
 ];
 
 const pendingNoticesData = [
   { name: "Meera Singh", due: "Due in 3 days", amount: "₹18,000", amountColor: "text-orange-500" },
   { name: "Vikram Joshi", due: "Due in 5 days", amount: "₹22,000", amountColor: "text-orange-500" },
   { name: "Ananya Reddy", due: "Due in 1 week", amount: "₹15,000", amountColor: "text-orange-500" },
+  { name: "Suresh Pillai", due: "OVERDUE", amount: "₹10,000", amountColor: "text-red-600 font-semibold" },
 ];
 
 
@@ -48,7 +50,7 @@ export default function AdminDashboardPage() {
           bgColorClass="bg-[hsl(var(--metric-card-green-bg))]"
           iconBgClass="bg-[hsl(var(--metric-card-green-icon-bg))]"
           iconColorClass="text-[hsl(var(--metric-card-green-icon))]"
-          valueColorClass="text-[hsl(var(--metric-card-green-value))]"
+          valueColorClass="text-foreground" // Changed to text-foreground as per guide
         />
         <MetricCard
           title="Pending Payments"
@@ -58,7 +60,7 @@ export default function AdminDashboardPage() {
           bgColorClass="bg-[hsl(var(--metric-card-blue-bg))]"
           iconBgClass="bg-[hsl(var(--metric-card-blue-icon-bg))]"
           iconColorClass="text-[hsl(var(--metric-card-blue-icon))]"
-          valueColorClass="text-[hsl(var(--metric-card-blue-value))]"
+          valueColorClass="text-foreground" // Changed to text-foreground
         />
         <MetricCard
           title="Overdue Payments"
@@ -68,7 +70,7 @@ export default function AdminDashboardPage() {
           bgColorClass="bg-[hsl(var(--metric-card-red-bg))]"
           iconBgClass="bg-[hsl(var(--metric-card-red-icon-bg))]"
           iconColorClass="text-[hsl(var(--metric-card-red-icon))]"
-          valueColorClass="text-[hsl(var(--metric-card-red-value))]"
+          valueColorClass="text-foreground" // Changed to text-foreground
         />
         <MetricCard
           title="Total Students"
@@ -78,7 +80,7 @@ export default function AdminDashboardPage() {
           bgColorClass="bg-[hsl(var(--metric-card-purple-bg))]"
           iconBgClass="bg-[hsl(var(--metric-card-purple-icon-bg))]"
           iconColorClass="text-[hsl(var(--metric-card-purple-icon))]"
-          valueColorClass="text-[hsl(var(--metric-card-purple-value))]"
+          valueColorClass="text-foreground" // Changed to text-foreground
         />
       </div>
 

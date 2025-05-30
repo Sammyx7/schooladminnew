@@ -2,19 +2,20 @@
 import type { NavItem } from './types';
 import {
   LayoutDashboard, Users, UserCircle, Receipt, Briefcase, FileText, Sparkles,
-  Mail, History, UserPlus, QrCode, CalendarCheck, // Added CalendarCheck
+  Mail, History, UserPlus, QrCode, CalendarCheck,
   CalendarDays, BookOpen, TrendingUp, ClipboardEdit, Printer,
   Megaphone, Send, Bus, Route, BarChart3, Settings, DollarSign, FileSearch
-} from 'lucide-react'; // Removed Calculator, CreditCard, FileUp, CheckCircle, PieChart, Download
+} from 'lucide-react';
 
 // Admin Nav Items based on the new image
 export const adminNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-  { title: 'Students', href: '/admin/students', icon: Users }, // Assuming /admin/students is the main view students page
-  { title: 'Attendance', href: '/admin/attendance/student', icon: CalendarCheck }, // Points to student attendance, can be a new page later
+  { title: 'Students', href: '/admin/students', icon: Users },
+  { title: 'Attendance', href: '/admin/attendance/student', icon: CalendarCheck },
   { title: 'Admissions', href: '/admin/admissions', icon: UserPlus },
-  { title: 'Expenses', href: '/admin/expenses', icon: DollarSign }, // New item
-  { title: 'Fee Notices', href: '/admin/fees/bulk-notice', icon: Receipt }, // Assuming bulk notice is the primary fee notice page
+  { title: 'Expenses', href: '/admin/expenses', icon: DollarSign },
+  { title: 'Fee Notices', href: '/admin/fees/bulk-notice', icon: Receipt },
+  { title: 'Notice Summarizer (AI)', href: '/admin/notices/summary', icon: Sparkles },
   { title: 'Reports', href: '/admin/reports/overview', icon: BarChart3 },
   // Settings is handled by the common footer in AppSidebar, but if it needs to be in main nav:
   // { title: 'Settings', href: '/admin/settings', icon: Settings },

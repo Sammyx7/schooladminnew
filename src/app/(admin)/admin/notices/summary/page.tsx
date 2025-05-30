@@ -6,7 +6,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, Info } from 'lucide-react'; // Added Info icon
 import { summarizeNoticeAction } from '@/lib/actions/noticeActions';
 import { useToast } from '@/hooks/use-toast';
 
@@ -63,7 +63,7 @@ export default function SummarizeNoticesPage() {
         description="Generate concise summaries of school notices for parents."
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border"> {/* Added border, shadow-md from base Card */}
+        <Card className="border">
           <CardHeader>
             <CardTitle>Enter Notice Text</CardTitle>
             <CardDescription>Paste the full text of the school notice below.</CardDescription>
@@ -94,25 +94,27 @@ export default function SummarizeNoticesPage() {
           </CardContent>
         </Card>
 
-        <Card className="border"> {/* Added border, shadow-md from base Card */}
+        <Card className="border">
           <CardHeader>
             <CardTitle>Generated Summary</CardTitle>
             <CardDescription>The AI-generated summary will appear below.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="min-h-[300px] flex flex-col"> {/* Ensure CardContent can flex */}
             {isLoading && !summary && (
-              <div className="flex items-center justify-center h-full min-h-[200px]">
+              <div className="flex-grow flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             )}
-            {summary && (
-              <div className="prose prose-sm max-w-none rounded-md border bg-muted/50 p-4 min-h-[200px]">
+            {summary && !isLoading && (
+              <div className="prose prose-sm max-w-none rounded-md border bg-muted/50 p-4 flex-grow">
                 <p>{summary}</p>
               </div>
             )}
             {!summary && !isLoading && (
-              <div className="text-center text-muted-foreground min-h-[200px] flex items-center justify-center">
-                <p>Summary will be displayed here once generated.</p>
+              <div className="flex-grow flex flex-col items-center justify-center text-center text-muted-foreground">
+                <Info className="h-12 w-12 mb-3 opacity-50" />
+                <p className="text-lg font-medium">No Summary Yet</p>
+                <p>The summary will be displayed here once generated.</p>
               </div>
             )}
           </CardContent>
