@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Receipt, Loader2, AlertCircle as AlertIcon, CreditCard } from 'lucide-react'; // Renamed AlertCircle
+import { Receipt, Loader2, AlertCircle as AlertIcon, CreditCard, CheckCircle, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -14,12 +14,28 @@ import type { FeeNotice, FeeNoticeStatus } from '@/lib/types';
 import { getStudentFeeNotices } from '@/lib/services/studentService';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function StudentFeeNoticesPage() {
   const [feeNotices, setFeeNotices] = useState<FeeNotice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const [selectedNoticeForPayment, setSelectedNoticeForPayment] = useState<FeeNotice | null>(null);
+  const [isPaymentDialogVisible, setIsPaymentDialogVisible] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -42,11 +58,34 @@ export default function StudentFeeNoticesPage() {
     fetchData();
   }, []);
 
-  const handlePayNow = (notice: FeeNotice) => {
+  const handlePayNowClick = (notice: FeeNotice) => {
+    setSelectedNoticeForPayment(notice);
+    setIsPaymentDialogVisible(true);
+  };
+
+  const handleConfirmMockPayment = async () => {
+    if (!selectedNoticeForPayment) return;
+
+    setIsProcessingPayment(true);
+    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+
+    setFeeNotices(prevNotices =>
+      prevNotices.map(notice =>
+        notice.id === selectedNoticeForPayment.id
+          ? { ...notice, status: 'Paid' as FeeNoticeStatus }
+          : notice
+      )
+    );
+
     toast({
-      title: "Payment Initiated (Demo)",
-      description: `Proceeding to payment for: ${notice.title}`,
+      title: "Payment Successful (Demo)",
+      description: `Payment for "${selectedNoticeForPayment.title}" has been processed.`,
+      action: <CheckCircle className="h-5 w-5 text-green-500" />,
     });
+
+    setIsProcessingPayment(false);
+    setIsPaymentDialogVisible(false);
+    setSelectedNoticeForPayment(null);
   };
   
   const getStatusBadgeClassName = (status: FeeNoticeStatus): string => {
@@ -61,7 +100,6 @@ export default function StudentFeeNoticesPage() {
             return '';
     }
   };
-
 
   return (
     <div className="space-y-6">
@@ -112,7 +150,7 @@ export default function StudentFeeNoticesPage() {
           {!isLoading && !error && feeNotices.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <Receipt className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg">No fee notices found.</p>
+              <p className="text-lg font-medium">No Fee Notices Found</p>
               <p>It looks like all your payments are up to date, or there are no notices to display at the moment.</p>
             </div>
           )}
@@ -150,7 +188,7 @@ export default function StudentFeeNoticesPage() {
                       {notice.status === 'Pending' || notice.status === 'Overdue' ? (
                         <Button
                           size="sm"
-                          onClick={() => handlePayNow(notice)}
+                          onClick={() => handlePayNowClick(notice)}
                           className="bg-primary hover:bg-primary/90 text-primary-foreground"
                         >
                           <CreditCard className="mr-2 h-4 w-4" />
@@ -167,6 +205,53 @@ export default function StudentFeeNoticesPage() {
           )}
         </CardContent>
       </Card>
+
+      {selectedNoticeForPayment && (
+        <AlertDialog open={isPaymentDialogVisible} onOpenChange={setIsPaymentDialogVisible}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm Payment for: {selectedNoticeForPayment.title}</AlertDialogTitle>
+              <AlertDialogDescription>
+                Amount Due: ₹{selectedNoticeForPayment.amount.toLocaleString('en-IN')}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="space-y-4 py-4">
+              <p className="text-sm text-muted-foreground">This is a mock payment screen. No real transaction will occur.</p>
+              <div className="space-y-2">
+                <Label htmlFor="cardNumber">Card Number</Label>
+                <Input id="cardNumber" placeholder="•••• •••• •••• ••••" disabled />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="expiryDate">Expiry (MM/YY)</Label>
+                  <Input id="expiryDate" placeholder="MM/YY" disabled />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cvv">CVV</Label>
+                  <Input id="cvv" placeholder="•••" disabled />
+                </div>
+              </div>
+               <div className="space-y-2">
+                <Label htmlFor="cardHolderName">Card Holder Name</Label>
+                <Input id="cardHolderName" placeholder="Name on Card" disabled />
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isProcessingPayment}>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConfirmMockPayment} disabled={isProcessingPayment}>
+                {isProcessingPayment ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  "Confirm & Pay (Demo)"
+                )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
