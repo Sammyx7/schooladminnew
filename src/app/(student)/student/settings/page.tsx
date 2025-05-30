@@ -60,7 +60,6 @@ export default function StudentSettingsPage() {
   const [profileError, setProfileError] = useState<string | null>(null);
 
   // Notification preferences state
-  const [feeReminders, setFeeReminders] = useState(true);
   const [newCirculars, setNewCirculars] = useState(true);
   const [reportCardUpdates, setReportCardUpdates] = useState(true);
 
@@ -200,19 +199,6 @@ export default function StudentSettingsPage() {
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between space-x-2 p-4 rounded-md border hover:bg-muted/50 transition-colors">
-              <Label htmlFor="feeReminders" className="flex flex-col space-y-1">
-                <span>Fee Reminders</span>
-                <span className="font-normal leading-snug text-muted-foreground text-sm">
-                  Receive notifications for upcoming fee due dates and payment confirmations.
-                </span>
-              </Label>
-              <Switch
-                id="feeReminders"
-                checked={feeReminders}
-                onCheckedChange={setFeeReminders}
-              />
-            </div>
-            <div className="flex items-center justify-between space-x-2 p-4 rounded-md border hover:bg-muted/50 transition-colors">
               <Label htmlFor="newCirculars" className="flex flex-col space-y-1">
                 <span>New Circulars & Announcements</span>
                 <span className="font-normal leading-snug text-muted-foreground text-sm">
@@ -303,7 +289,3 @@ export default function StudentSettingsPage() {
     </div>
   );
 }
-
-    
-
-    
