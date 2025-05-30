@@ -3,7 +3,7 @@
 
 import { useState, useEffect, type FormEvent } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Settings, UserCircle, Bell, ShieldCheck, Save, Loader2, AlertCircle } from 'lucide-react';
+import { Settings, UserCircle, Bell, ShieldCheck, Save, Loader2, AlertCircle as AlertIcon } from 'lucide-react'; // Renamed AlertCircle
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
 
 interface ProfileData extends StudentProfile {
-  email: string; // Adding email for display
+  email: string; 
 }
 
 const ProfileInfoSkeleton = () => (
@@ -25,7 +25,7 @@ const ProfileInfoSkeleton = () => (
     <CardHeader>
       <div className="flex items-center gap-3">
         <UserCircle className="h-6 w-6 text-primary" />
-        <CardTitle>Profile Information</CardTitle>
+        <CardTitle className="text-xl font-semibold">Profile Information</CardTitle>
       </div>
       <CardDescription>Your personal details. Some fields may not be editable.</CardDescription>
     </CardHeader>
@@ -59,11 +59,9 @@ export default function StudentSettingsPage() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [profileError, setProfileError] = useState<string | null>(null);
 
-  // Notification preferences state
   const [newCirculars, setNewCirculars] = useState(true);
   const [reportCardUpdates, setReportCardUpdates] = useState(true);
 
-  // Password change state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -75,10 +73,10 @@ export default function StudentSettingsPage() {
       setIsLoadingProfile(true);
       setProfileError(null);
       try {
-        const data = await getStudentDashboardData("S10234"); // Using a default studentId
+        const data = await getStudentDashboardData("S10234");
         setProfileData({
           ...data.profile,
-          email: `${data.profile.name.toLowerCase().replace(' ', '.')}@example.com` // Mock email
+          email: `${data.profile.name.toLowerCase().replace(' ', '.')}@example.com`
         });
       } catch (err) {
         if (err instanceof Error) {
@@ -97,7 +95,6 @@ export default function StudentSettingsPage() {
   const handleSaveSettings = async (event: FormEvent) => {
     event.preventDefault();
     setIsSaving(true);
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     toast({
       title: "Settings Saved",
@@ -126,7 +123,6 @@ export default function StudentSettingsPage() {
     }
     
     setIsSaving(true);
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     toast({
       title: "Password Changed (Demo)",
@@ -150,7 +146,7 @@ export default function StudentSettingsPage() {
       {isLoadingProfile && <ProfileInfoSkeleton />}
       {profileError && !isLoadingProfile && (
          <Alert variant="destructive" className="mt-4">
-          <AlertCircle className="h-5 w-5" />
+          <AlertIcon className="h-5 w-5" />
           <AlertMsgTitle>Error Fetching Profile</AlertMsgTitle>
           <AlertDescription>{profileError}</AlertDescription>
         </Alert>
@@ -161,7 +157,7 @@ export default function StudentSettingsPage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <UserCircle className="h-6 w-6 text-primary" />
-              <CardTitle>Profile Information</CardTitle>
+              <CardTitle className="text-xl font-semibold">Profile Information</CardTitle>
             </div>
             <CardDescription>Your personal details. Some fields may not be editable directly.</CardDescription>
           </CardHeader>
@@ -193,7 +189,7 @@ export default function StudentSettingsPage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <Bell className="h-6 w-6 text-primary" />
-              <CardTitle>Notification Preferences</CardTitle>
+              <CardTitle className="text-xl font-semibold">Notification Preferences</CardTitle>
             </div>
             <CardDescription>Choose what updates you want to receive.</CardDescription>
           </CardHeader>
@@ -242,7 +238,7 @@ export default function StudentSettingsPage() {
           <CardHeader>
             <div className="flex items-center gap-3">
               <ShieldCheck className="h-6 w-6 text-primary" />
-              <CardTitle>Account Security</CardTitle>
+              <CardTitle className="text-xl font-semibold">Account Security</CardTitle>
             </div>
             <CardDescription>Change your account password.</CardDescription>
           </CardHeader>

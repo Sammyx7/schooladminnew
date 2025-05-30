@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { CalendarDays, Loader2, AlertCircle, Info, ClipboardList } from 'lucide-react';
+import { CalendarDays, Loader2, AlertCircle as AlertIcon, Info, ClipboardList } from 'lucide-react'; // Renamed AlertCircle
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -11,19 +11,20 @@ import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/componen
 import { Skeleton } from '@/components/ui/skeleton';
 import type { TimetableEntry, DayOfWeek } from '@/lib/types';
 import { getStudentTimetable } from '@/lib/services/studentService';
+import { format } from 'date-fns';
 
 const daysOfWeek: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const groupTimetableByDay = (entries: TimetableEntry[]): Record<DayOfWeek, TimetableEntry[]> => {
   const grouped = {} as Record<DayOfWeek, TimetableEntry[]>;
-  daysOfWeek.forEach(day => grouped[day] = []); // Initialize all days
+  daysOfWeek.forEach(day => grouped[day] = []);
 
   entries.forEach((entry) => {
     grouped[entry.day].push(entry);
   });
 
   for (const day in grouped) {
-    grouped[day as DayOfWeek].sort((a, b) => a.period - b.period); // Sort by period
+    grouped[day as DayOfWeek].sort((a, b) => a.period - b.period);
   }
   return grouped;
 };
@@ -32,10 +33,10 @@ const DayTimetableSkeleton = () => (
   <Table>
     <TableHeader>
       <TableRow>
-        <TableHead className="w-[15%]"><Skeleton className="h-5 w-12" /></TableHead>
-        <TableHead className="w-[25%]"><Skeleton className="h-5 w-24" /></TableHead>
-        <TableHead className="w-[35%]"><Skeleton className="h-5 w-32" /></TableHead>
-        <TableHead className="w-[25%]"><Skeleton className="h-5 w-24" /></TableHead>
+        <TableHead className="w-[15%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-12" /></TableHead>
+        <TableHead className="w-[25%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-24" /></TableHead>
+        <TableHead className="w-[35%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-32" /></TableHead>
+        <TableHead className="w-[25%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-24" /></TableHead>
       </TableRow>
     </TableHeader>
     <TableBody>
@@ -76,8 +77,7 @@ export default function StudentTimetablePage() {
       setIsLoading(true);
       setError(null);
       try {
-        // In a real app, studentId would come from auth context
-        const data = await getStudentTimetable("S10234"); // Change to "S10235" for different data
+        const data = await getStudentTimetable("S10234");
         setTimetableEntries(data);
       } catch (err) {
         if (err instanceof Error) {
@@ -109,7 +109,7 @@ export default function StudentTimetablePage() {
       <div className="space-y-6">
         <PageHeader title="My Timetable" icon={CalendarDays} description="Your weekly class schedule." />
         <Alert variant="destructive" className="mt-4">
-          <AlertCircle className="h-5 w-5" />
+          <AlertIcon className="h-5 w-5" />
           <AlertMsgTitle>Error Fetching Timetable</AlertMsgTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
@@ -154,10 +154,10 @@ export default function StudentTimetablePage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-[15%] sm:w-[10%] text-center">Period</TableHead>
-                          <TableHead className="w-[30%] sm:w-[25%]">Time</TableHead>
-                          <TableHead className="w-[35%] sm:w-[40%]">Subject</TableHead>
-                          <TableHead className="w-[20%] sm:w-[25%] hidden sm:table-cell">Teacher</TableHead>
+                          <TableHead className="w-[15%] sm:w-[10%] text-center text-xs uppercase font-medium text-muted-foreground">Period</TableHead>
+                          <TableHead className="w-[30%] sm:w-[25%] text-xs uppercase font-medium text-muted-foreground">Time</TableHead>
+                          <TableHead className="w-[35%] sm:w-[40%] text-xs uppercase font-medium text-muted-foreground">Subject</TableHead>
+                          <TableHead className="w-[20%] sm:w-[25%] hidden sm:table-cell text-xs uppercase font-medium text-muted-foreground">Teacher</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>

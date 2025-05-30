@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Receipt, Loader2, AlertCircle, CreditCard } from 'lucide-react';
+import { Receipt, Loader2, AlertCircle as AlertIcon, CreditCard } from 'lucide-react'; // Renamed AlertCircle
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { FeeNotice, FeeNoticeStatus } from '@/lib/types';
 import { getStudentFeeNotices } from '@/lib/services/studentService';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 export default function StudentFeeNoticesPage() {
   const [feeNotices, setFeeNotices] = useState<FeeNotice[]>([]);
@@ -25,7 +26,6 @@ export default function StudentFeeNoticesPage() {
       setIsLoading(true);
       setError(null);
       try {
-        // In a real app, studentId would come from auth context
         const data = await getStudentFeeNotices("S10234"); 
         setFeeNotices(data);
       } catch (err) {
@@ -43,26 +43,10 @@ export default function StudentFeeNoticesPage() {
   }, []);
 
   const handlePayNow = (notice: FeeNotice) => {
-    // Placeholder for payment integration
     toast({
       title: "Payment Initiated (Demo)",
       description: `Proceeding to payment for: ${notice.title}`,
     });
-    // In a real app, you would redirect to a payment gateway or open a payment modal.
-    // if (notice.paymentLink) window.open(notice.paymentLink, '_blank');
-  };
-
-  const getStatusBadgeVariant = (status: FeeNoticeStatus): "default" | "secondary" | "destructive" | "outline" => {
-    switch (status) {
-      case 'Paid':
-        return 'default'; // Primary color for "Paid" (often green in themes, but default is fine)
-      case 'Pending':
-        return 'secondary'; // Secondary color for "Pending" (often yellow/orange)
-      case 'Overdue':
-        return 'destructive'; // Destructive color for "Overdue" (often red)
-      default:
-        return 'outline';
-    }
   };
   
   const getStatusBadgeClassName = (status: FeeNoticeStatus): string => {
@@ -89,18 +73,18 @@ export default function StudentFeeNoticesPage() {
 
       <Card className="border shadow-md">
         <CardHeader>
-          <CardTitle>All Fee Notices</CardTitle>
+          <CardTitle className="text-xl font-semibold">All Fee Notices</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading && (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[40%]">Description</TableHead>
-                  <TableHead className="text-right">Amount (₹)</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="w-[40%] text-xs uppercase font-medium text-muted-foreground">Description</TableHead>
+                  <TableHead className="text-right text-xs uppercase font-medium text-muted-foreground">Amount (₹)</TableHead>
+                  <TableHead className="text-xs uppercase font-medium text-muted-foreground">Due Date</TableHead>
+                  <TableHead className="text-xs uppercase font-medium text-muted-foreground">Status</TableHead>
+                  <TableHead className="text-right text-xs uppercase font-medium text-muted-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -119,7 +103,7 @@ export default function StudentFeeNoticesPage() {
 
           {!isLoading && error && (
             <Alert variant="destructive" className="mt-4">
-              <AlertCircle className="h-5 w-5" />
+              <AlertIcon className="h-5 w-5" />
               <AlertMsgTitle>Error Fetching Fee Notices</AlertMsgTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -137,12 +121,12 @@ export default function StudentFeeNoticesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[35%] hidden md:table-cell">Notice Title</TableHead>
-                  <TableHead className="w-[40%] md:w-[30%]">Description</TableHead>
-                  <TableHead className="text-right">Amount (₹)</TableHead>
-                  <TableHead className="hidden sm:table-cell">Due Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="w-[35%] hidden md:table-cell text-xs uppercase font-medium text-muted-foreground">Notice Title</TableHead>
+                  <TableHead className="w-[40%] md:w-[30%] text-xs uppercase font-medium text-muted-foreground">Description</TableHead>
+                  <TableHead className="text-right text-xs uppercase font-medium text-muted-foreground">Amount (₹)</TableHead>
+                  <TableHead className="hidden sm:table-cell text-xs uppercase font-medium text-muted-foreground">Due Date</TableHead>
+                  <TableHead className="text-xs uppercase font-medium text-muted-foreground">Status</TableHead>
+                  <TableHead className="text-right text-xs uppercase font-medium text-muted-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -156,9 +140,9 @@ export default function StudentFeeNoticesPage() {
                     <TableCell className="text-right font-medium">
                       {notice.amount.toLocaleString('en-IN')}
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{notice.dueDate}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{format(new Date(notice.dueDate), "do MMMM, yyyy")}</TableCell>
                     <TableCell>
-                      <Badge variant={getStatusBadgeVariant(notice.status)} className={getStatusBadgeClassName(notice.status)}>
+                      <Badge className={getStatusBadgeClassName(notice.status)}>
                         {notice.status}
                       </Badge>
                     </TableCell>

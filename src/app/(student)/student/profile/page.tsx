@@ -5,12 +5,12 @@ import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, FileText, Megaphone, Receipt, Clock, AlertTriangle, CheckCircle, ArrowRight, Loader2, AlertCircle } from "lucide-react";
+import { CalendarDays, FileText, Megaphone, Receipt, Clock, AlertTriangle, CheckCircle, ArrowRight, Loader2, AlertCircle as AlertIcon } from "lucide-react"; // Renamed AlertCircle to AlertIcon
 import Link from "next/link";
-import { getStudentDashboardData } from "@/lib/services/studentService"; // Assuming we might add getStudentDashboardDataWithError later
+import { getStudentDashboardData } from "@/lib/services/studentService";
 import type { StudentDashboardData, QuickLink } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription as AlertDesc, AlertTitle as AlertMsgTitle } from "@/components/ui/alert"; // Renamed to avoid conflict
+import { Alert, AlertDescription as AlertDesc, AlertTitle as AlertMsgTitle } from "@/components/ui/alert";
 
 // Quick Links remain static as they are part of the page structure
 const quickLinks: QuickLink[] = [
@@ -90,10 +90,7 @@ export default function StudentProfilePage() {
       setIsLoading(true);
       setError(null);
       try {
-        // In a real app, studentId would come from auth context or similar
         const data = await getStudentDashboardData("S10234"); 
-        // To test different data: await getStudentDashboardData("S10235");
-        // To test error: const data = await getStudentDashboardDataWithError();
         setDashboardData(data);
       } catch (err) {
         if (err instanceof Error) {
@@ -135,7 +132,7 @@ export default function StudentProfilePage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh]">
         <Alert variant="destructive" className="max-w-lg">
-          <AlertCircle className="h-5 w-5" />
+          <AlertIcon className="h-5 w-5" />
           <AlertMsgTitle>Error Fetching Data</AlertMsgTitle>
           <AlertDesc>{error}</AlertDesc>
         </Alert>
@@ -227,11 +224,11 @@ export default function StudentProfilePage() {
                   <div className="p-2 bg-primary/10 rounded-md">
                     <link.icon className="h-6 w-6 text-primary" />
                   </div>
-                  <CardTitle className="text-lg text-card-foreground">{link.title}</CardTitle>
+                  <CardTitle className="text-lg font-medium text-card-foreground">{link.title}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent className="flex-grow flex flex-col justify-between">
-                <CardDescription className="text-sm mb-4 text-muted-foreground">{link.description}</CardDescription>
+                <CardDescription className="text-sm text-muted-foreground mb-4">{link.description}</CardDescription>
                 <Button variant="outline" className="w-full mt-auto border-primary/50 text-primary hover:bg-primary/5 hover:text-primary" asChild>
                   <Link href={link.href}>
                     Go to {link.title}
@@ -280,4 +277,3 @@ export default function StudentProfilePage() {
     </div>
   );
 }
-

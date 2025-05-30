@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { FileSearch, Download, Loader2, AlertCircle, Info } from 'lucide-react';
+import { FileSearch, Download, Loader2, AlertCircle as AlertIcon, Info } from 'lucide-react'; // Renamed AlertCircle
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import type { ReportCardData, SubjectGrade } from '@/lib/types';
 import { getStudentReportCards } from '@/lib/services/studentService';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
 
 const ReportCardSkeleton = () => (
   <Card className="border shadow-md">
@@ -24,10 +25,10 @@ const ReportCardSkeleton = () => (
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[40%]"><Skeleton className="h-5 w-24" /></TableHead>
-            <TableHead><Skeleton className="h-5 w-16" /></TableHead>
-            <TableHead className="hidden sm:table-cell"><Skeleton className="h-5 w-16" /></TableHead>
-            <TableHead className="hidden md:table-cell"><Skeleton className="h-5 w-32" /></TableHead>
+            <TableHead className="w-[40%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-24" /></TableHead>
+            <TableHead className="text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-16" /></TableHead>
+            <TableHead className="hidden sm:table-cell text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-16" /></TableHead>
+            <TableHead className="hidden md:table-cell text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-32" /></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -65,7 +66,6 @@ export default function StudentReportCardPage() {
       setIsLoading(true);
       setError(null);
       try {
-        // In a real app, studentId would come from auth context
         const data = await getStudentReportCards("S10234");
         setReportCards(data);
       } catch (err) {
@@ -87,7 +87,6 @@ export default function StudentReportCardPage() {
       title: "Download Started (Demo)",
       description: `Downloading report: ${report.termName}`,
     });
-    // In a real app, you would trigger a file download, e.g., window.open(report.downloadLink, '_blank');
   };
 
   return (
@@ -107,7 +106,7 @@ export default function StudentReportCardPage() {
 
       {!isLoading && error && (
         <Alert variant="destructive" className="mt-4">
-          <AlertCircle className="h-5 w-5" />
+          <AlertIcon className="h-5 w-5" />
           <AlertMsgTitle>Error Fetching Report Cards</AlertMsgTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
@@ -131,9 +130,9 @@ export default function StudentReportCardPage() {
             <Card key={report.id} className="border shadow-md">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                  <CardTitle className="text-xl">{report.termName}</CardTitle>
-                  <Badge variant="outline" className="text-sm py-1 px-2.5 w-fit">
-                    Issued: {report.issueDate}
+                  <CardTitle className="text-xl font-semibold">{report.termName}</CardTitle>
+                  <Badge variant="outline" className="text-xs py-1 px-2.5 w-fit">
+                    Issued: {format(new Date(report.issueDate), "do MMMM, yyyy")}
                   </Badge>
                 </div>
               </CardHeader>
@@ -141,10 +140,10 @@ export default function StudentReportCardPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[35%] sm:w-[30%]">Subject</TableHead>
-                      <TableHead className="w-[15%] text-center">Grade</TableHead>
-                      <TableHead className="w-[20%] text-center hidden sm:table-cell">Marks</TableHead>
-                      <TableHead className="w-[30%] sm:w-[35%] hidden md:table-cell">Remarks</TableHead>
+                      <TableHead className="w-[35%] sm:w-[30%] text-xs uppercase font-medium text-muted-foreground">Subject</TableHead>
+                      <TableHead className="w-[15%] text-center text-xs uppercase font-medium text-muted-foreground">Grade</TableHead>
+                      <TableHead className="w-[20%] text-center hidden sm:table-cell text-xs uppercase font-medium text-muted-foreground">Marks</TableHead>
+                      <TableHead className="w-[30%] sm:w-[35%] hidden md:table-cell text-xs uppercase font-medium text-muted-foreground">Remarks</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

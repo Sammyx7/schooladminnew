@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { History, Loader2, AlertCircle, FileText, Landmark } from 'lucide-react';
+import { History, Loader2, AlertCircle as AlertIcon, FileText, Landmark } from 'lucide-react'; // Renamed AlertCircle
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,6 @@ export default function StudentPaymentsPage() {
       setIsLoading(true);
       setError(null);
       try {
-        // In a real app, studentId would come from auth context
         const data = await getStudentPaymentHistory("S10234"); 
         setPaymentHistory(data);
       } catch (err) {
@@ -43,13 +42,10 @@ export default function StudentPaymentsPage() {
   }, []);
 
   const handleViewReceipt = (record: PaymentRecord) => {
-    // Placeholder for viewing receipt
     toast({
       title: "View Receipt (Demo)",
       description: `Viewing receipt for payment of ₹${record.amountPaid} on ${format(new Date(record.paymentDate), "do MMMM, yyyy")}`,
     });
-    // In a real app, you would open a link or modal: 
-    // if (record.receiptLink) window.open(record.receiptLink, '_blank');
   };
 
   return (
@@ -62,18 +58,18 @@ export default function StudentPaymentsPage() {
 
       <Card className="border shadow-md">
         <CardHeader>
-          <CardTitle>Payment Records</CardTitle>
+          <CardTitle className="text-xl font-semibold">Payment Records</CardTitle>
         </CardHeader>
         <CardContent>
           {isLoading && (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[20%] hidden sm:table-cell">Payment Date</TableHead>
-                  <TableHead className="w-[35%]">Description</TableHead>
-                  <TableHead className="text-right w-[15%]">Amount (₹)</TableHead>
-                  <TableHead className="w-[20%] hidden md:table-cell">Payment Method</TableHead>
-                  <TableHead className="text-right w-[10%]">Actions</TableHead>
+                  <TableHead className="w-[20%] hidden sm:table-cell text-xs uppercase font-medium text-muted-foreground">Payment Date</TableHead>
+                  <TableHead className="w-[35%] text-xs uppercase font-medium text-muted-foreground">Description</TableHead>
+                  <TableHead className="text-right w-[15%] text-xs uppercase font-medium text-muted-foreground">Amount (₹)</TableHead>
+                  <TableHead className="w-[20%] hidden md:table-cell text-xs uppercase font-medium text-muted-foreground">Payment Method</TableHead>
+                  <TableHead className="text-right w-[10%] text-xs uppercase font-medium text-muted-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -92,7 +88,7 @@ export default function StudentPaymentsPage() {
 
           {!isLoading && error && (
             <Alert variant="destructive" className="mt-4">
-              <AlertCircle className="h-5 w-5" />
+              <AlertIcon className="h-5 w-5" />
               <AlertMsgTitle>Error Fetching Payment History</AlertMsgTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -110,11 +106,11 @@ export default function StudentPaymentsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[15%] hidden sm:table-cell">Payment Date</TableHead>
-                  <TableHead className="w-[40%] sm:w-[30%]">Description</TableHead>
-                  <TableHead className="text-right w-[20%] sm:w-[15%]">Amount (₹)</TableHead>
-                  <TableHead className="w-[30%] sm:w-[25%] hidden md:table-cell">Payment Method</TableHead>
-                  <TableHead className="text-right w-[15%] sm:w-[15%]">Actions</TableHead>
+                  <TableHead className="w-[15%] hidden sm:table-cell text-xs uppercase font-medium text-muted-foreground">Payment Date</TableHead>
+                  <TableHead className="w-[40%] sm:w-[30%] text-xs uppercase font-medium text-muted-foreground">Description</TableHead>
+                  <TableHead className="text-right w-[20%] sm:w-[15%] text-xs uppercase font-medium text-muted-foreground">Amount (₹)</TableHead>
+                  <TableHead className="w-[30%] sm:w-[25%] hidden md:table-cell text-xs uppercase font-medium text-muted-foreground">Payment Method</TableHead>
+                  <TableHead className="text-right w-[15%] sm:w-[15%] text-xs uppercase font-medium text-muted-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -134,7 +130,7 @@ export default function StudentPaymentsPage() {
                       {record.amountPaid.toLocaleString('en-IN')}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                        {record.paymentMethod}
+                        <span className="text-sm">{record.paymentMethod}</span>
                         {record.transactionId && <p className="text-xs text-muted-foreground mt-0.5">ID: {record.transactionId}</p>}
                     </TableCell>
                     <TableCell className="text-right">

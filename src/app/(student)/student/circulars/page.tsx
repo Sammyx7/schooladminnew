@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Megaphone, Download, FileText, AlertCircle, Loader2, Info } from 'lucide-react';
+import { Megaphone, Download, FileText, AlertCircle as AlertIcon, Loader2, Info } from 'lucide-react'; // Renamed AlertCircle
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,7 @@ import type { Circular } from '@/lib/types';
 import { getStudentCirculars } from '@/lib/services/studentService';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils'; // Added missing import
+import { cn } from '@/lib/utils';
 
 const CircularCardSkeleton = () => (
   <Card className="border shadow-md">
@@ -46,7 +46,6 @@ export default function StudentCircularsPage() {
       setIsLoading(true);
       setError(null);
       try {
-        // In a real app, studentId would come from auth context
         const data = await getStudentCirculars("S10234");
         setCirculars(data);
       } catch (err) {
@@ -69,20 +68,6 @@ export default function StudentCircularsPage() {
         title: "Opening Attachment (Demo)",
         description: `Opening attachment for: ${circular.title}`,
       });
-      // In a real app: window.open(circular.attachmentLink, '_blank');
-    }
-  };
-
-  const getCategoryBadgeVariant = (category?: Circular['category']): "default" | "secondary" | "destructive" | "outline" => {
-    switch (category) {
-      case 'Urgent':
-        return 'destructive';
-      case 'Events':
-        return 'default'; // primary
-      case 'Academics':
-        return 'secondary';
-      default:
-        return 'outline';
     }
   };
   
@@ -90,13 +75,13 @@ export default function StudentCircularsPage() {
     switch (category) {
         case 'Urgent':
             return 'bg-red-100 text-red-700 border-red-300 dark:bg-red-700/30 dark:text-red-400 dark:border-red-700';
-        case 'Events': // Use primary for events
+        case 'Events': 
             return 'bg-primary/10 text-primary border-primary/30 dark:bg-primary/20 dark:text-primary dark:border-primary/50';
-        case 'Academics': // Use secondary for academics
+        case 'Academics':
             return 'bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-700/30 dark:text-blue-400 dark:border-blue-700';
         case 'Holidays':
             return 'bg-green-100 text-green-700 border-green-300 dark:bg-green-700/30 dark:text-green-400 dark:border-green-700';
-        default: // General and others
+        default: 
             return 'bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-700/50 dark:text-slate-400 dark:border-slate-600';
     }
   };
@@ -118,7 +103,7 @@ export default function StudentCircularsPage() {
 
       {!isLoading && error && (
         <Alert variant="destructive" className="mt-4">
-          <AlertCircle className="h-5 w-5" />
+          <AlertIcon className="h-5 w-5" />
           <AlertMsgTitle>Error Fetching Circulars</AlertMsgTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
@@ -142,10 +127,10 @@ export default function StudentCircularsPage() {
             <Card key={circular.id} className="border shadow-md hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-2">
-                  <CardTitle className="text-lg mb-1 sm:mb-0">{circular.title}</CardTitle>
+                  <CardTitle className="text-lg font-medium mb-1 sm:mb-0">{circular.title}</CardTitle>
                   <div className="flex items-center gap-2 flex-wrap">
                     {circular.category && (
-                      <Badge variant={getCategoryBadgeVariant(circular.category)} className={cn("text-xs", getCategoryBadgeClassName(circular.category))}>
+                      <Badge className={cn("text-xs", getCategoryBadgeClassName(circular.category))}>
                         {circular.category}
                       </Badge>
                     )}
