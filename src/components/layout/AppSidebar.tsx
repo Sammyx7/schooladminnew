@@ -33,17 +33,17 @@ export function AppSidebar({ navItems, role }: AppSidebarProps) {
       <SidebarMenuItem key={item.href}>
         <SidebarMenuButton
           asChild
-          isActive={pathname === item.href || (item.href !== `/${role}/dashboard` && pathname.startsWith(item.href))}
-          tooltip={item.title}
-          className={isSubmenu ? "pl-8" : ""}
+          isActive={pathname === item.href || (item.href !== `/${role}/dashboard` && pathname.startsWith(item.href) && item.href !== `/${role}` && item.href.length > `/${role}`.length +1 )} // More specific active check
+          tooltip={{ content: item.title, side: 'right', align: 'center', className: "bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border" }}
+          className={isSubmenu ? "pl-10" : "pl-2"} // Adjusted padding
         >
           <Link href={item.href}>
-            <item.icon />
+            <item.icon className="h-5 w-5" /> {/* Ensured consistent icon size */}
             <span>{item.title}</span>
           </Link>
         </SidebarMenuButton>
         {item.children && item.children.length > 0 && (
-          <SidebarMenu className="pl-4"> {/* Indent sub-menu items visually */}
+          <SidebarMenu className="pl-6"> {/* Indent sub-menu items visually, slightly less */}
             {renderNavItems(item.children, true)}
           </SidebarMenu>
         )}
@@ -53,38 +53,38 @@ export function AppSidebar({ navItems, role }: AppSidebarProps) {
 
 
   return (
-    <Sidebar collapsible="icon" side="left">
+    <Sidebar collapsible="icon" side="left" variant="sidebar" className="border-r border-sidebar-border">
       <SidebarHeader>
-        <Link href={`/${role}/dashboard`} className="flex items-center gap-2 p-2 hover:bg-sidebar-accent rounded-md">
-          <School className="h-8 w-8 text-primary" />
-          <span className="text-xl font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+        <Link href={`/${role}/dashboard`} className="flex items-center gap-2 p-2 rounded-md transition-colors hover:bg-sidebar-accent/80">
+          <School className="h-9 w-9 text-sidebar-primary" /> {/* Slightly larger logo icon */}
+          <span className="text-2xl font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
             SchoolAdmin
           </span>
         </Link>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="p-2"> {/* Added padding to content area */}
         <SidebarMenu>
           {navItems.map((group, index) => (
-            <SidebarGroup key={index}>
-              {group.title && <SidebarGroupLabel>{group.title}</SidebarGroupLabel>}
+            <SidebarGroup key={index} className="p-0"> {/* Removed default padding from group */}
+              {group.title && <SidebarGroupLabel className="px-2 pt-2 pb-1 text-xs font-semibold uppercase text-sidebar-foreground/70 group-data-[collapsible=icon]:text-center">{group.title}</SidebarGroupLabel>}
               {renderNavItems(group.children || [group])}
             </SidebarGroup>
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border p-2"> {/* Added border and padding */}
         <SidebarMenu>
            <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Settings">
+            <SidebarMenuButton asChild tooltip={{ content: "Settings", side: 'right', align: 'center', className: "bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border" }} className="pl-2">
               <Link href={`/${role}/settings`}>
-                <Settings />
+                <Settings className="h-5 w-5" />
                 <span>Settings</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={logout} tooltip="Logout">
-              <LogOut />
+            <SidebarMenuButton onClick={logout} tooltip={{ content: "Logout", side: 'right', align: 'center', className: "bg-sidebar-accent text-sidebar-accent-foreground border-sidebar-border" }} className="pl-2">
+              <LogOut className="h-5 w-5" />
               <span>Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>

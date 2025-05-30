@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { UserRole } from '@/lib/types';
-import { School, LogIn } from 'lucide-react'; // Added LogIn for button
+import { School, LogIn } from 'lucide-react';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -34,11 +34,11 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-primary/5 to-background p-4">
-      <Card className="w-full max-w-md border shadow-xl"> {/* Added border */}
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-primary/10 to-background p-4 selection:bg-primary/20 selection:text-primary">
+      <Card className="w-full max-w-md border shadow-2xl"> {/* Enhanced shadow */}
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground"> {/* Changed icon background */}
-            <School className="h-8 w-8" />
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg"> {/* Larger icon, shadow */}
+            <School className="h-10 w-10" />
           </div>
           <CardTitle className="text-3xl font-bold">SchoolAdmin Portal</CardTitle>
           <CardDescription>Sign in to access your dashboard</CardDescription>
@@ -83,12 +83,12 @@ export default function LoginPage() {
               </Select>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full text-lg py-6">
+            <Button type="submit" className="w-full text-lg py-6 font-semibold"> {/* Added font-semibold */}
               <LogIn className="mr-2 h-5 w-5" /> Login
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="text-center text-sm text-muted-foreground">
+        <CardFooter className="text-center text-sm text-muted-foreground pt-6"> {/* Added padding top */}
           <p>Use test@example.com & 'password' for demo.</p>
         </CardFooter>
       </Card>
