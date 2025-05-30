@@ -1,60 +1,177 @@
 
 "use client";
 
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, FileText, Megaphone, Receipt, Clock, AlertTriangle, CheckCircle, ArrowRight } from "lucide-react";
+import { CalendarDays, FileText, Megaphone, Receipt, Clock, AlertTriangle, CheckCircle, ArrowRight, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { getStudentDashboardData } from "@/lib/services/studentService"; // Assuming we might add getStudentDashboardDataWithError later
+import type { StudentDashboardData, QuickLink } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription as AlertDesc, AlertTitle as AlertMsgTitle } from "@/components/ui/alert"; // Renamed to avoid conflict
 
-// Mock Data
-const studentData = {
-  name: "Aisha Sharma",
-  avatarUrl: "https://placehold.co/100x100.png",
-  studentId: "S10234",
-  classSection: "Class 10 - Section A",
-  pendingFees: {
-    amount: "2,500",
-    dueDate: "15th July 2024",
-    status: "pending" as "pending" | "none",
-  },
-  nextClass: {
-    subject: "Mathematics",
-    time: "10:00 AM",
-    teacher: "Mr. Srinivasan",
-  },
-  notifications: [
-    { id: 1, type: "circular", title: "Annual Sports Day announced", date: "2 days ago", href: "/student/circulars" },
-    { id: 2, type: "fee", title: "Term 2 fee payment reminder", date: "Yesterday", href: "/student/fee-notices" },
-    { id: 3, type: "report", title: "Mid-term report card available", date: "3 days ago", href: "/student/report-card" },
-  ],
-};
-
-const quickLinks = [
+// Quick Links remain static as they are part of the page structure
+const quickLinks: QuickLink[] = [
   { title: "My Timetable", href: "/student/timetable", icon: CalendarDays, description: "View your weekly class schedule." },
   { title: "Fee Notices", href: "/student/fee-notices", icon: Receipt, description: "Check your fee status and dues." },
   { title: "Report Card", href: "/student/report-card", icon: FileText, description: "Access your academic reports." },
   { title: "School Circulars", href: "/student/circulars", icon: Megaphone, description: "Read important school announcements." },
 ];
 
+// Skeleton components for loading state
+const WelcomeSkeleton = () => (
+  <section className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 bg-card border rounded-lg shadow-md">
+    <div className="flex items-center gap-4">
+      <Skeleton className="h-20 w-20 rounded-full" />
+      <div>
+        <Skeleton className="h-8 w-48 mb-2" />
+        <Skeleton className="h-5 w-40" />
+      </div>
+    </div>
+  </section>
+);
+
+const InfoCardSkeleton = () => (
+  <Card className="border shadow-md bg-card">
+    <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <Skeleton className="h-6 w-32" />
+      <Skeleton className="h-6 w-6 rounded-full" />
+    </CardHeader>
+    <CardContent>
+      <Skeleton className="h-10 w-24 mb-1" />
+      <Skeleton className="h-4 w-40 mb-3" />
+      <Skeleton className="h-5 w-28" />
+    </CardContent>
+  </Card>
+);
+
+const QuickLinkSkeleton = () => (
+  <Card className="border shadow-md hover:shadow-lg transition-shadow bg-card flex flex-col">
+    <CardHeader className="pb-3">
+      <div className="flex items-center gap-3 mb-2">
+        <Skeleton className="h-10 w-10 rounded-md" />
+        <Skeleton className="h-6 w-3/4" />
+      </div>
+    </CardHeader>
+    <CardContent className="flex-grow flex flex-col justify-between">
+      <Skeleton className="h-4 w-full mb-1" />
+      <Skeleton className="h-4 w-3/4 mb-4" />
+      <Skeleton className="h-9 w-full mt-auto" />
+    </CardContent>
+  </Card>
+);
+
+const ActivitySkeleton = () => (
+ <Card className="border shadow-md bg-card">
+    <CardContent className="pt-6 space-y-3">
+      {[...Array(3)].map((_, i) => (
+        <li key={i} className="flex items-center justify-between pb-3 border-b last:border-none list-none">
+          <div>
+            <Skeleton className="h-5 w-64 mb-1" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+          <Skeleton className="h-8 w-8 rounded-md" />
+        </li>
+      ))}
+    </CardContent>
+  </Card>
+);
+
+
 export default function StudentProfilePage() {
+  const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // In a real app, studentId would come from auth context or similar
+        const data = await getStudentDashboardData("S10234"); 
+        // To test different data: await getStudentDashboardData("S10235");
+        // To test error: const data = await getStudentDashboardDataWithError();
+        setDashboardData(data);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unknown error occurred.");
+        }
+        console.error("Failed to fetch dashboard data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <WelcomeSkeleton />
+        <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <InfoCardSkeleton />
+          <InfoCardSkeleton />
+        </section>
+        <section>
+          <h2 className="text-xl font-semibold mb-4 text-foreground">Quick Links</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => <QuickLinkSkeleton key={i} />)}
+          </div>
+        </section>
+        <section>
+          <h2 className="text-xl font-semibold mb-4 text-foreground">Recent Activity</h2>
+          <ActivitySkeleton />
+        </section>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Alert variant="destructive" className="max-w-lg">
+          <AlertCircle className="h-5 w-5" />
+          <AlertMsgTitle>Error Fetching Data</AlertMsgTitle>
+          <AlertDesc>{error}</AlertDesc>
+        </Alert>
+        <Button onClick={() => window.location.reload()} className="mt-6">
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <p className="text-muted-foreground">No dashboard data available.</p>
+      </div>
+    );
+  }
+
+  const { profile, pendingFees, nextClass, notifications } = dashboardData;
+
   return (
-    <div className="space-y-8"> {/* Increased spacing */}
+    <div className="space-y-8">
       {/* Welcome Section */}
       <section className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 bg-card border rounded-lg shadow-md">
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20 border-2 border-primary">
-            <AvatarImage src={studentData.avatarUrl} alt={studentData.name} data-ai-hint="student avatar" />
-            <AvatarFallback>{studentData.name.substring(0, 1)}</AvatarFallback>
+            <AvatarImage src={profile.avatarUrl} alt={profile.name} data-ai-hint="student avatar" />
+            <AvatarFallback>{profile.name.substring(0, 1)}</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Welcome back, {studentData.name}!</h1>
+            <h1 className="text-3xl font-bold text-foreground">Welcome back, {profile.name}!</h1>
             <p className="text-md text-muted-foreground">
-              {studentData.studentId} &bull; {studentData.classSection}
+              {profile.studentId} &bull; {profile.classSection}
             </p>
           </div>
         </div>
-        {/* Optional: A quick action button if needed e.g., Edit Profile */}
       </section>
 
       {/* Key Info Cards Row */}
@@ -62,16 +179,16 @@ export default function StudentProfilePage() {
         <Card className="border shadow-md bg-card">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-lg font-semibold text-card-foreground">Pending Fees</CardTitle>
-            {studentData.pendingFees.status === 'pending' ? 
-              <AlertTriangle className="h-6 w-6 text-destructive" /> : 
+            {pendingFees.status === 'pending' || pendingFees.status === 'overdue' ? 
+              <AlertTriangle className={`h-6 w-6 ${pendingFees.status === 'overdue' ? 'text-red-600' : 'text-destructive'}`} /> : 
               <CheckCircle className="h-6 w-6 text-green-500" />
             }
           </CardHeader>
           <CardContent>
-            {studentData.pendingFees.status === 'pending' ? (
+            {pendingFees.status === 'pending' || pendingFees.status === 'overdue' ? (
               <>
-                <p className="text-3xl font-bold text-destructive">₹{studentData.pendingFees.amount}</p>
-                <p className="text-sm text-muted-foreground">Due by {studentData.pendingFees.dueDate}</p>
+                <p className={`text-3xl font-bold ${pendingFees.status === 'overdue' ? 'text-red-700' : 'text-destructive'}`}>₹{pendingFees.amount}</p>
+                <p className="text-sm text-muted-foreground">Due by {pendingFees.dueDate}</p>
               </>
             ) : (
               <p className="text-xl text-green-600">No pending fees.</p>
@@ -88,9 +205,9 @@ export default function StudentProfilePage() {
             <Clock className="h-6 w-6 text-primary" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-foreground">{studentData.nextClass.subject}</p>
+            <p className="text-3xl font-bold text-foreground">{nextClass.subject}</p>
             <p className="text-sm text-muted-foreground">
-              At {studentData.nextClass.time} with {studentData.nextClass.teacher}
+              At {nextClass.time} with {nextClass.teacher}
             </p>
             <Button variant="link" className="px-0 pt-3 text-primary h-auto text-sm" asChild>
               <Link href="/student/timetable">Full Timetable <ArrowRight className="ml-1 h-4 w-4" /></Link>
@@ -132,15 +249,18 @@ export default function StudentProfilePage() {
         <h2 className="text-xl font-semibold mb-4 text-foreground">Recent Activity</h2>
         <Card className="border shadow-md bg-card">
           <CardContent className="pt-6">
-            {studentData.notifications.length > 0 ? (
+            {notifications.length > 0 ? (
               <ul className="space-y-3">
-                {studentData.notifications.map((notification) => (
+                {notifications.map((notification) => (
                   <li key={notification.id} className="flex items-center justify-between pb-3 border-b last:border-none">
-                    <div>
-                      <Link href={notification.href} className="font-medium text-foreground hover:underline hover:text-primary transition-colors">
-                        {notification.title}
-                      </Link>
-                      <p className="text-xs text-muted-foreground">{notification.date}</p>
+                    <div className="flex items-center gap-3">
+                       {!notification.read && <span className="h-2 w-2 rounded-full bg-primary inline-block shrink-0"></span>}
+                       <div className={notification.read ? "ml-5" : ""}> {/* Add margin if read to align text */}
+                        <Link href={notification.href} className="font-medium text-foreground hover:underline hover:text-primary transition-colors">
+                          {notification.title}
+                        </Link>
+                        <p className="text-xs text-muted-foreground">{notification.date}</p>
+                      </div>
                     </div>
                     <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary h-8 w-8" asChild>
                       <Link href={notification.href} aria-label={`View ${notification.title}`}><ArrowRight className="h-4 w-4" /></Link>
@@ -160,3 +280,4 @@ export default function StudentProfilePage() {
     </div>
   );
 }
+
