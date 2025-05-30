@@ -3,7 +3,7 @@
 // In a real application, this would involve API calls to a backend.
 'use client'; // Can be 'use server' if it were a real backend call used by server components.
 
-import type { StudentDashboardData } from '@/lib/types';
+import type { StudentDashboardData, FeeNotice } from '@/lib/types';
 
 const MOCK_STUDENT_DATA: StudentDashboardData = {
   profile: {
@@ -71,5 +71,31 @@ export async function getStudentDashboardDataWithError(): Promise<StudentDashboa
     setTimeout(() => {
       reject(new Error("Failed to fetch student dashboard data. Please try again later."));
     }, 1200);
+  });
+}
+
+
+// Mock Fee Notices Data
+const MOCK_FEE_NOTICES: FeeNotice[] = [
+  { id: 'FN001', title: 'Term 1 Fees', description: 'Tuition and activity fees for Term 1 2024-2025.', amount: 15000, dueDate: '2024-07-15', status: 'Paid', paymentLink: '#' },
+  { id: 'FN002', title: 'Term 2 Fees', description: 'Tuition and activity fees for Term 2 2024-2025.', amount: 12500, dueDate: '2024-10-15', status: 'Pending', paymentLink: '#' },
+  { id: 'FN003', title: 'Annual Sports Day Contribution', description: 'Contribution towards Annual Sports Day events.', amount: 500, dueDate: '2024-08-30', status: 'Pending', paymentLink: '#' },
+  { id: 'FN004', title: 'Library Late Fee', description: 'Late return fee for "Adventures of Tom Sawyer".', amount: 50, dueDate: '2024-06-01', status: 'Overdue', paymentLink: '#' },
+  { id: 'FN005', title: 'Bus Fees - Q1', description: 'Quarterly bus transportation charges.', amount: 3000, dueDate: '2024-07-10', status: 'Paid', paymentLink: '#' },
+];
+
+const MOCK_FEE_NOTICES_ALT: FeeNotice[] = [
+    { id: 'FN101', title: 'Term 1 Fees', description: 'Tuition and activity fees for Term 1 2024-2025.', amount: 14000, dueDate: '2024-07-20', status: 'Paid', paymentLink: '#' },
+    { id: 'FN102', title: 'Science Lab Contribution', description: 'Contribution for new lab equipment.', amount: 750, dueDate: '2024-09-10', status: 'Pending', paymentLink: '#' },
+];
+
+
+export async function getStudentFeeNotices(studentId: string): Promise<FeeNotice[]> {
+  // Simulate different data based on studentId if needed
+  const notices = studentId === "S10235" ? MOCK_FEE_NOTICES_ALT : MOCK_FEE_NOTICES;
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(notices);
+    }, 1000); // Simulate network delay
   });
 }

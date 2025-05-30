@@ -52,4 +52,17 @@ export interface StudentDashboardData {
   notifications: StudentNotification[];
 }
 
+// Student Fee Notices Types
+export type FeeNoticeStatus = 'Pending' | 'Paid' | 'Overdue';
+
+export interface FeeNotice {
+  id: string;
+  title: string;
+  description?: string;
+  amount: number;
+  dueDate: string; // Consider using Date object if more manipulation is needed
+  status: FeeNoticeStatus;
+  paymentLink?: string; // Optional, for a "Pay Now" button
+}
+
 // Add more shared types here as needed
