@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues } from '@/lib/types';
+import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus } from '@/lib/types';
 import { format } from 'date-fns';
 
 // Mock data for a list of students for the admin view
@@ -10,7 +10,7 @@ const MOCK_STUDENT_LIST: StudentProfile[] = [
     studentId: "S10234",
     name: "Aisha Sharma",
     classSection: "Class 10 - Section A",
-    avatarUrl: "https://placehold.co/40x40.png", 
+    avatarUrl: "https://placehold.co/40x40.png",
   },
   {
     studentId: "S10235",
@@ -50,7 +50,7 @@ export async function getAdminStudentList(): Promise<StudentProfile[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(MOCK_STUDENT_LIST);
-    }, 800); 
+    }, 800);
   });
 }
 
@@ -142,5 +142,74 @@ export async function createAdminBulkFeeNotice(data: BulkFeeNoticeFormValues): P
       MOCK_ADMIN_BULK_FEE_NOTICES.unshift(newNoticeDefinition);
       resolve(newNoticeDefinition);
     }, 700);
+  });
+}
+
+// Mock data for Admin Admissions Management
+const MOCK_STUDENT_APPLICATIONS: StudentApplication[] = [
+  {
+    id: `APP_${Date.now() - 100000}`,
+    applicantName: 'Riya Sharma',
+    classAppliedFor: 'Class 1',
+    applicationDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days ago
+    status: 'Pending Review',
+    parentName: 'Mr. Anil Sharma',
+    parentEmail: 'anil.sharma@example.com',
+    parentPhone: '9876543210',
+  },
+  {
+    id: `APP_${Date.now() - 200000}`,
+    applicantName: 'Aarav Patel',
+    classAppliedFor: 'Class 5',
+    applicationDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
+    status: 'Approved',
+    parentName: 'Ms. Sunita Patel',
+    parentEmail: 'sunita.p@example.com',
+  },
+  {
+    id: `APP_${Date.now() - 300000}`,
+    applicantName: 'Zara Khan',
+    classAppliedFor: 'Nursery',
+    applicationDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+    status: 'Interview Scheduled',
+    parentName: 'Mr. Imran Khan',
+    parentPhone: '9988776655',
+  },
+];
+
+export async function getAdminStudentApplications(): Promise<StudentApplication[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([...MOCK_STUDENT_APPLICATIONS]);
+    }, 750);
+  });
+}
+
+export async function createAdminStudentApplication(data: StudentApplicationFormValues): Promise<StudentApplication> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const newApplication: StudentApplication = {
+        ...data,
+        id: `APP_${Date.now()}`,
+        applicationDate: data.applicationDate.toISOString(), // Convert Date to ISO string
+        status: 'Pending Review', // Default status
+      };
+      MOCK_STUDENT_APPLICATIONS.unshift(newApplication);
+      resolve(newApplication);
+    }, 500);
+  });
+}
+
+export async function updateAdminStudentApplicationStatus(applicationId: string, status: ApplicationStatus): Promise<StudentApplication> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const applicationIndex = MOCK_STUDENT_APPLICATIONS.findIndex(app => app.id === applicationId);
+      if (applicationIndex !== -1) {
+        MOCK_STUDENT_APPLICATIONS[applicationIndex].status = status;
+        resolve(MOCK_STUDENT_APPLICATIONS[applicationIndex]);
+      } else {
+        reject(new Error("Application not found."));
+      }
+    }, 400);
   });
 }

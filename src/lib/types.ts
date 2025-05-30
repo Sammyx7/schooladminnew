@@ -22,15 +22,15 @@ export interface StudentProfile {
 
 export interface PendingFee {
   amount: string;
-  dueDate: string; 
+  dueDate: string;
   status: 'pending' | 'none' | 'overdue';
 }
 
 export interface NextClass {
   subject: string;
-  time: string; 
+  time: string;
   teacher: string;
-  subjectIcon?: LucideIcon; 
+  subjectIcon?: LucideIcon;
 }
 
 export interface StudentNotification {
@@ -45,7 +45,7 @@ export interface StudentNotification {
 export interface QuickLink {
   title: string;
   href: string;
-  icon: React.ElementType; 
+  icon: React.ElementType;
   description: string;
 }
 
@@ -64,31 +64,31 @@ export interface FeeNotice {
   title: string;
   description?: string;
   amount: number;
-  dueDate: string; 
+  dueDate: string;
   status: FeeNoticeStatus;
-  paymentLink?: string; 
+  paymentLink?: string;
 }
 
 // Student Report Card Types
 export interface SubjectGrade {
   id: string;
   subjectName: string;
-  grade: string; 
-  marks?: number; 
-  maxMarks?: number; 
+  grade: string;
+  marks?: number;
+  maxMarks?: number;
   remarks?: string;
 }
 
 export interface ReportCardData {
   id: string;
-  termName: string; 
+  termName: string;
   issueDate: string;
   subjects: SubjectGrade[];
   overallPercentage?: string;
   overallGrade?: string;
   classRank?: string;
   teacherComments?: string;
-  downloadLink?: string; 
+  downloadLink?: string;
 }
 
 // Circulars Types (Used by both Student and Admin)
@@ -98,10 +98,10 @@ export type CircularCategory = typeof circularCategories[number];
 export interface Circular {
   id: string;
   title: string;
-  date: string; 
+  date: string;
   summary: string;
   category?: CircularCategory;
-  attachmentLink?: string; 
+  attachmentLink?: string;
 }
 
 export const CreateCircularSchema = z.object({
@@ -120,7 +120,7 @@ export interface TimetableEntry {
   id: string;
   day: DayOfWeek;
   period: number;
-  timeSlot: string; 
+  timeSlot: string;
   subject: string;
   teacher: string;
 }
@@ -128,12 +128,12 @@ export interface TimetableEntry {
 // Student Payment History Types
 export interface PaymentRecord {
   id: string;
-  paymentDate: string; 
-  description: string; 
+  paymentDate: string;
+  description: string;
   amountPaid: number;
-  paymentMethod: string; 
+  paymentMethod: string;
   transactionId?: string;
-  receiptLink?: string; 
+  receiptLink?: string;
 }
 
 // Admin Bulk Fee Notice Types
@@ -154,4 +154,30 @@ export type BulkFeeNoticeFormValues = z.infer<typeof BulkFeeNoticeFormSchema>;
 export interface BulkFeeNoticeDefinition extends BulkFeeNoticeFormValues {
   id: string;
   generatedDate: string; // ISO string date
+}
+
+// Admin Admissions Management Types
+export const applicationStatuses = ['Pending Review', 'Approved', 'Rejected', 'Waitlisted', 'Interview Scheduled'] as const;
+export type ApplicationStatus = typeof applicationStatuses[number];
+
+export const StudentApplicationFormSchema = z.object({
+  applicantName: z.string().min(3, { message: "Applicant name must be at least 3 characters." }),
+  classAppliedFor: z.string().min(1, { message: "Class applied for is required." }),
+  applicationDate: z.date({
+    required_error: "Application date is required.",
+    invalid_type_error: "That's not a valid date!",
+  }),
+  // Optional fields, can be expanded
+  parentName: z.string().optional(),
+  parentEmail: z.string().email({ message: "Invalid email address."}).optional().or(z.literal('')),
+  parentPhone: z.string().optional(),
+});
+
+export type StudentApplicationFormValues = z.infer<typeof StudentApplicationFormSchema>;
+
+export interface StudentApplication extends StudentApplicationFormValues {
+  id: string;
+  status: ApplicationStatus;
+  // applicationDate is already in StudentApplicationFormValues, ensure it's a string after processing
+  applicationDate: string; // Store as ISO string
 }
