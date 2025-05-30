@@ -65,4 +65,27 @@ export interface FeeNotice {
   paymentLink?: string; // Optional, for a "Pay Now" button
 }
 
+// Student Report Card Types
+export interface SubjectGrade {
+  id: string;
+  subjectName: string;
+  grade: string; // e.g., "A+", "85%", "Good"
+  marks?: number; // Optional, if you want to show specific marks
+  maxMarks?: number; // Optional
+  remarks?: string;
+}
+
+export interface ReportCardData {
+  id: string;
+  termName: string; // e.g., "Term 1 Examination - 2024"
+  issueDate: string;
+  subjects: SubjectGrade[];
+  overallPercentage?: string;
+  overallGrade?: string;
+  classRank?: string;
+  teacherComments?: string;
+  downloadLink?: string; // Placeholder for PDF download
+}
+
+
 // Add more shared types here as needed

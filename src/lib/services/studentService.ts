@@ -3,7 +3,7 @@
 // In a real application, this would involve API calls to a backend.
 'use client'; // Can be 'use server' if it were a real backend call used by server components.
 
-import type { StudentDashboardData, FeeNotice } from '@/lib/types';
+import type { StudentDashboardData, FeeNotice, ReportCardData } from '@/lib/types';
 
 const MOCK_STUDENT_DATA: StudentDashboardData = {
   profile: {
@@ -97,5 +97,67 @@ export async function getStudentFeeNotices(studentId: string): Promise<FeeNotice
     setTimeout(() => {
       resolve(notices);
     }, 1000); // Simulate network delay
+  });
+}
+
+// Mock Report Card Data
+const MOCK_REPORT_CARDS_S10234: ReportCardData[] = [
+  {
+    id: 'RC001_T1',
+    termName: 'Term 1 Examination - 2024',
+    issueDate: '2024-08-15',
+    subjects: [
+      { id: 'SUB01', subjectName: 'English Literature', grade: 'A+', marks: 92, maxMarks: 100, remarks: 'Excellent understanding' },
+      { id: 'SUB02', subjectName: 'Mathematics', grade: 'A', marks: 85, maxMarks: 100, remarks: 'Good problem-solving skills' },
+      { id: 'SUB03', subjectName: 'Physics', grade: 'A', marks: 88, maxMarks: 100, remarks: 'Strong grasp of concepts' },
+      { id: 'SUB04', subjectName: 'Chemistry', grade: 'B+', marks: 78, maxMarks: 100, remarks: 'Needs to focus on reactions' },
+      { id: 'SUB05', subjectName: 'Biology', grade: 'A+', marks: 90, maxMarks: 100, remarks: 'Very detailed diagrams' },
+      { id: 'SUB06', subjectName: 'History', grade: 'A', marks: 82, maxMarks: 100, remarks: 'Good analytical answers' },
+    ],
+    overallPercentage: '85.83%',
+    overallGrade: 'A',
+    classRank: '3rd',
+    teacherComments: 'Aisha has shown excellent progress this term. Consistent effort will yield even better results. Keep up the good work!',
+    downloadLink: '#',
+  },
+  {
+    id: 'RC001_MT',
+    termName: 'Mid-Term Assessment - 2024',
+    issueDate: '2024-05-10',
+    subjects: [
+      { id: 'SUB01_MT', subjectName: 'English Literature', grade: 'A', marks: 88, maxMarks: 100 },
+      { id: 'SUB02_MT', subjectName: 'Mathematics', grade: 'B+', marks: 75, maxMarks: 100 },
+      { id: 'SUB03_MT', subjectName: 'Physics', grade: 'A-', marks: 80, maxMarks: 100 },
+    ],
+    overallPercentage: '81.00%',
+    overallGrade: 'A-',
+    teacherComments: 'Good performance. Focus on consistent revision.',
+    downloadLink: '#',
+  }
+];
+
+const MOCK_REPORT_CARDS_S10235: ReportCardData[] = [
+ {
+    id: 'RC002_T1',
+    termName: 'Term 1 Examination - 2024',
+    issueDate: '2024-08-16',
+    subjects: [
+      { id: 'SUB07', subjectName: 'English Language', grade: 'A', marks: 85, maxMarks: 100 },
+      { id: 'SUB08', subjectName: 'Mathematics', grade: 'A-', marks: 80, maxMarks: 100 },
+      { id: 'SUB09', subjectName: 'General Science', grade: 'B+', marks: 77, maxMarks: 100 },
+    ],
+    overallPercentage: '80.67%',
+    overallGrade: 'A-',
+    teacherComments: 'Rohan is a dedicated student. Improvement seen in Science.',
+    downloadLink: '#',
+  }
+];
+
+export async function getStudentReportCards(studentId: string): Promise<ReportCardData[]> {
+  const reports = studentId === "S10235" ? MOCK_REPORT_CARDS_S10235 : MOCK_REPORT_CARDS_S10234;
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(reports);
+    }, 1300); // Simulate network delay
   });
 }
