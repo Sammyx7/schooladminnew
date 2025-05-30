@@ -1,4 +1,6 @@
 
+import type { LucideIcon } from 'lucide-react';
+
 export type UserRole = 'admin' | 'student' | 'staff';
 
 export interface NavItem {
@@ -19,14 +21,15 @@ export interface StudentProfile {
 
 export interface PendingFee {
   amount: string;
-  dueDate: string;
+  dueDate: string; // Consider making this a Date object for easier manipulation
   status: 'pending' | 'none' | 'overdue';
 }
 
 export interface NextClass {
   subject: string;
-  time: string;
+  time: string; // e.g., "11:00 AM" - consider a full ISO date string for countdowns
   teacher: string;
+  subjectIcon?: LucideIcon; // Optional icon for the subject
 }
 
 export interface StudentNotification {

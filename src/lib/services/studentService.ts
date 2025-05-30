@@ -4,11 +4,12 @@
 'use client'; // Can be 'use server' if it were a real backend call used by server components.
 
 import type { StudentDashboardData, FeeNotice, ReportCardData, Circular, TimetableEntry, PaymentRecord } from '@/lib/types';
+import { Atom } from 'lucide-react'; // Using Atom for Physics
 
 const MOCK_STUDENT_DATA: StudentDashboardData = {
   profile: {
     name: "Aisha Sharma",
-    avatarUrl: "https://placehold.co/100x100.png",
+    avatarUrl: "https://placehold.co/100x100.png", // data-ai-hint="student avatar" should be on the <img> tag
     studentId: "S10234",
     classSection: "Class 10 - Section A",
   },
@@ -19,8 +20,9 @@ const MOCK_STUDENT_DATA: StudentDashboardData = {
   },
   nextClass: {
     subject: "Physics",
-    time: "11:00 AM",
+    time: "11:00 AM", // For countdown, this should ideally be a full timestamp
     teacher: "Ms. Kaur",
+    subjectIcon: Atom,
   },
   notifications: [
     { id: 1, type: "circular", title: "Annual Sports Day registration open", date: "1 day ago", href: "/student/circulars", read: false },
@@ -34,7 +36,7 @@ const MOCK_STUDENT_DATA: StudentDashboardData = {
 const MOCK_STUDENT_DATA_NO_FEES: StudentDashboardData = {
   profile: {
     name: "Rohan Verma",
-    avatarUrl: "https://placehold.co/100x100.png",
+    avatarUrl: "https://placehold.co/100x100.png", // data-ai-hint="student avatar"
     studentId: "S10235",
     classSection: "Class 9 - Section B",
   },
@@ -47,22 +49,48 @@ const MOCK_STUDENT_DATA_NO_FEES: StudentDashboardData = {
     subject: "Chemistry",
     time: "09:00 AM",
     teacher: "Mr. Gupta",
+    // subjectIcon: BeakerIcon, // Example
   },
   notifications: [
     { id: 1, type: "circular", title: "School picnic details announced", date: "2 days ago", href: "/student/circulars", read: false },
   ],
 };
 
+const MOCK_STUDENT_DATA_OVERDUE: StudentDashboardData = {
+  profile: {
+    name: "Priya Singh",
+    avatarUrl: "https://placehold.co/100x100.png", // data-ai-hint="student avatar"
+    studentId: "S10236",
+    classSection: "Class 11 - Commerce",
+  },
+  pendingFees: {
+    amount: "5,750",
+    dueDate: "1st July 2024", // Past due date
+    status: "overdue",
+  },
+  nextClass: {
+    subject: "Accountancy",
+    time: "14:30 PM",
+    teacher: "Mr. Mehta",
+  },
+  notifications: [
+    { id: 1, type: "fee", title: "Urgent: Fee payment overdue!", date: "5 days ago", href: "/student/fee-notices", read: false },
+  ],
+};
+
 
 export async function getStudentDashboardData(studentId: string): Promise<StudentDashboardData> {
-  // Simulate student-specific data or different scenarios
-  // For this example, we'll return different data for a specific ID to show variation.
-  const dataToReturn = studentId === "S10235" ? MOCK_STUDENT_DATA_NO_FEES : MOCK_STUDENT_DATA;
+  let dataToReturn = MOCK_STUDENT_DATA;
+  if (studentId === "S10235") {
+    dataToReturn = MOCK_STUDENT_DATA_NO_FEES;
+  } else if (studentId === "S10236") {
+    dataToReturn = MOCK_STUDENT_DATA_OVERDUE;
+  }
 
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(dataToReturn);
-    }, 1200); // Simulate network delay
+    }, 1200); 
   });
 }
 

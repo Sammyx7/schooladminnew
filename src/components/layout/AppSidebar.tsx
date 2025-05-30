@@ -28,7 +28,7 @@ export function AppSidebar({ navItems, role, className }: AppSidebarProps) {
 
   const renderNavItems = (items: NavItem[]) => {
     return items.map((item) => {
-      const isActive = pathname === item.href || (item.href !== `/${role}/dashboard` && pathname.startsWith(item.href));
+      const isActive = pathname === item.href || (item.href !== `/${role}/dashboard` && item.href !== `/${role}/profile` && pathname.startsWith(item.href));
       
       return (
         <SidebarMenuItem key={item.href}>
@@ -42,14 +42,14 @@ export function AppSidebar({ navItems, role, className }: AppSidebarProps) {
               className: "bg-primary text-primary-foreground border-none shadow-md" 
             }}
             className={cn(
-              "pl-3 pr-2 py-2 h-auto text-sm justify-start",
+              "pl-3 pr-2 py-2 h-auto text-sm justify-start relative", // Added relative for border positioning
               isActive 
-                ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" 
+                ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold border-l-4 border-primary" // Added border-l-4
                 : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
             )}
           >
             <Link href={item.href} className="flex items-center gap-3 w-full">
-              <item.icon className={`h-5 w-5 shrink-0 ${isActive ? 'text-sidebar-accent-foreground' : 'text-sidebar-foreground/80 group-hover:text-sidebar-accent-foreground'}`} />
+              <item.icon className={cn('h-5 w-5 shrink-0', isActive ? 'text-sidebar-accent-foreground' : 'text-sidebar-foreground/80 group-hover:text-sidebar-accent-foreground')} />
               <span className="truncate">{item.title}</span>
             </Link>
           </SidebarMenuButton>
@@ -65,10 +65,9 @@ export function AppSidebar({ navItems, role, className }: AppSidebarProps) {
       variant="sidebar"
       className={cn(
         "border-r border-sidebar-border bg-sidebar-background",
-        "w-[var(--sidebar-width)] group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]", // Handle collapsed width
-        className // Allow overriding classes for positioning (fixed, etc.)
+        "w-[var(--sidebar-width)] group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]",
+        className 
       )}
-      // style={{ width: 'var(--sidebar-width)', transition: 'width 0.2s ease-in-out' }} // CSS variables handle this
     >
       <SidebarContent className="p-2 mt-2 flex-grow">
         <SidebarMenu>
@@ -83,15 +82,15 @@ export function AppSidebar({ navItems, role, className }: AppSidebarProps) {
               asChild 
               tooltip={{ content: "Settings", side: 'right', align: 'center', className: "bg-primary text-primary-foreground border-none shadow-md" }} 
               className={cn(
-                "pl-3 pr-2 py-2 h-auto text-sm justify-start",
+                "pl-3 pr-2 py-2 h-auto text-sm justify-start relative",
                 pathname === `/${role}/settings`
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold border-l-4 border-primary"
                   : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
               )}
               isActive={pathname === `/${role}/settings`}
             >
               <Link href={`/${role}/settings`} className="flex items-center gap-3 w-full">
-                <Settings className={`h-5 w-5 shrink-0 ${pathname === `/${role}/settings` ? 'text-sidebar-accent-foreground' : 'text-sidebar-foreground/80 group-hover:text-sidebar-accent-foreground'}`} />
+                <Settings className={cn('h-5 w-5 shrink-0', pathname === `/${role}/settings` ? 'text-sidebar-accent-foreground' : 'text-sidebar-foreground/80 group-hover:text-sidebar-accent-foreground')} />
                 <span className="truncate">Settings</span>
               </Link>
             </SidebarMenuButton>
