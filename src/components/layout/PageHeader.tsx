@@ -10,14 +10,14 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, icon: Icon, actions }: PageHeaderProps) {
   return (
-    <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">{/* Increased mb */}
+    <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <div className="flex items-center gap-3">
-          {Icon && <Icon className="h-8 w-8 text-primary" />}{/* Increased icon size */}
-          <h1 className="text-4xl font-bold tracking-tight">{title}</h1>{/* Increased title size */}
+        <div className="flex items-center gap-2">
+          {Icon && <Icon className="h-6 w-6 text-primary hidden sm:block" />}
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
         </div>
         {description && (
-          <p className="mt-2 text-lg text-muted-foreground">{description}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         )}
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}

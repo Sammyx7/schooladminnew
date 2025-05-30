@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { UserRole } from '@/lib/types';
-import { School, LogIn } from 'lucide-react';
+import { School, LogIn } from 'lucide-react'; // Using School icon as a placeholder
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -25,7 +25,6 @@ export default function LoginPage() {
       setError('All fields are required.');
       return;
     }
-    // Mock authentication: In a real app, verify credentials
     if (email === "test@example.com" && password === "password") {
       login(role as UserRole);
     } else {
@@ -34,19 +33,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-primary/10 to-background p-4 selection:bg-primary/20 selection:text-primary">
-      <Card className="w-full max-w-md border shadow-2xl"> {/* Enhanced shadow */}
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md border shadow-xl">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg"> {/* Larger icon, shadow */}
-            <School className="h-10 w-10" />
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg">
+            {/* Placeholder Logo, matching TopHeader style */}
+            <span className="font-bold text-xl">LOGO</span> 
           </div>
-          <CardTitle className="text-3xl font-bold">SchoolAdmin Portal</CardTitle>
-          <CardDescription>Sign in to access your dashboard</CardDescription>
+          <CardTitle className="text-2xl font-bold text-foreground">School Admin Portal</CardTitle>
+          <CardDescription className="text-muted-foreground">Sign in to access your dashboard</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-foreground">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -54,11 +54,11 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="text-base"
+                className="text-sm"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-foreground">Password</Label>
               <Input
                 id="password"
                 type="password"
@@ -66,13 +66,13 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="text-base"
+                className="text-sm"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="role" className="text-foreground">Role</Label>
               <Select onValueChange={(value) => setRole(value as UserRole)} value={role}>
-                <SelectTrigger id="role" className="text-base">
+                <SelectTrigger id="role" className="text-sm">
                   <SelectValue placeholder="Select your role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -83,12 +83,12 @@ export default function LoginPage() {
               </Select>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full text-lg py-6 font-semibold"> {/* Added font-semibold */}
-              <LogIn className="mr-2 h-5 w-5" /> Login
+            <Button type="submit" className="w-full text-base py-2.5 mt-2">
+              <LogIn className="mr-2 h-4 w-4" /> Login
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="text-center text-sm text-muted-foreground pt-6"> {/* Added padding top */}
+        <CardFooter className="text-center text-xs text-muted-foreground pt-4">
           <p>Use test@example.com & 'password' for demo.</p>
         </CardFooter>
       </Card>

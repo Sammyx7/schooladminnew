@@ -8,97 +8,121 @@ body {
 
 @layer base {
   :root {
-    --background: 210 40% 98%; /* Very light cool gray */
-    --foreground: 224 71% 4%; /* Very dark blue (almost black) */
+    /* Light Theme based on image */
+    --background: 220 16% 97%; /* hsl(220, 16%, 96%) - F9FAFB (Gray 50) */
+    --foreground: 215 28% 17%; /* hsl(215, 28%, 17%) - 1F2937 (Gray 800) */
 
-    --card: 0 0% 100%; /* White */
-    --card-foreground: 224 71% 4%; /* Dark text for cards */
+    --card: 0 0% 100%; /* hsl(0, 0%, 100%) - White */
+    --card-foreground: 215 28% 17%; /* hsl(215, 28%, 17%) */
 
-    --popover: 0 0% 100%; /* White */
-    --popover-foreground: 224 71% 4%; /* Dark text for popovers */
+    --popover: 0 0% 100%; /* hsl(0, 0%, 100%) */
+    --popover-foreground: 215 28% 17%; /* hsl(215, 28%, 17%) */
 
-    --primary: 221 83% 53%; /* Vibrant Blue */
-    --primary-foreground: 210 40% 98%; /* Almost white for contrast on primary */
+    --primary: 243 75% 63%; /* hsl(243, 75%, 63%) - 4F46E5 (Indigo 600) */
+    --primary-foreground: 0 0% 100%; /* hsl(0, 0%, 100%) - White */
 
-    --secondary: 210 40% 96.1%; /* Light grayish blue */
-    --secondary-foreground: 222.2 47.4% 11.2%; /* Dark blue for text on secondary */
+    --secondary: 210 40% 96.1%; /* hsl(210, 40%, 96.1%) - f0f8ff (Alice Blue - kept for now) */
+    --secondary-foreground: 222.2 47.4% 11.2%; /* hsl(222.2, 47.4%, 11.2%) */
+    
+    --muted: 220 13% 91%; /* hsl(220, 13%, 91%) - E5E7EB (Gray 200) */
+    --muted-foreground: 215 14% 47%; /* hsl(215, 14%, 47%) - 6B7280 (Gray 500) */
 
-    --muted: 210 40% 94%; /* Slightly darker muted */
-    --muted-foreground: 215 20.2% 55.1%; /* Softer muted text */
+    --accent: 217 90% 95%; /* hsl(217, 90%, 95%) - EFF6FF (Blue 50 like) for active sidebar */
+    --accent-foreground: 217 91% 59%; /* hsl(217, 91%, 59%) - 3B82F6 (Blue 500) for active sidebar text */
 
-    --accent: 158 70% 45%; /* A vibrant Teal/Green */
-    --accent-foreground: 210 40% 98%; /* Almost white for contrast on accent */
+    --destructive: 0 84% 60%; /* hsl(0, 84%, 60%) - EF4444 (Red 500) */
+    --destructive-foreground: 0 0% 100%; /* hsl(0, 0%, 100%) */
 
-    --destructive: 0 72% 51%; /* A balanced Red */
-    --destructive-foreground: 0 0% 98%; /* Almost white for contrast on destructive */
+    --border: 220 13% 88%; /* hsl(220, 13%, 88%) - E5E7EB adjusted for borders */
+    --input: 0 0% 100%; /* hsl(0, 0%, 100%) - White for input backgrounds */
+    --ring: 217 91% 59%; /* hsl(217, 91%, 59%) - Blue 500 for focus rings */
 
-    --border: 214.3 31.8% 91.4%; /* Light gray border */
-    --input: 214.3 31.8% 91.4%; /* Light gray input background */
-    --ring: 221 83% 63%; /* Slightly lighter primary for ring */
+    --radius: 0.5rem; /* Default border radius from image */
 
-    --radius: 0.75rem; /* Softer, more modern radius */
+    /* Sidebar specific theme variables (updated to match image) */
+    --sidebar-background: 0 0% 100%; /* hsl(0, 0%, 100%) - White */
+    --sidebar-foreground: 215 14% 34%; /* hsl(215, 14%, 34%) - 4B5563 (Gray 600) */
+    --sidebar-primary: 243 75% 63%; /* hsl(243, 75%, 63%) - Same as primary */
+    --sidebar-primary-foreground: 0 0% 100%; /* hsl(0, 0%, 100%) */
+    
+    /* Active sidebar item */
+    --sidebar-accent: 217 90% 95%; /* hsl(217, 90%, 95%) - Light blue background */
+    --sidebar-accent-foreground: 217 91% 59%; /* hsl(217, 91%, 59%) - Darker blue text */
+    
+    --sidebar-border: 220 13% 91%; /* hsl(220, 13%, 91%) - E5E7EB (Gray 200 for subtle borders if any) */
+    --sidebar-ring: 217 91% 59%; /* hsl(217, 91%, 59%) */
 
-    /* Sidebar specific theme variables */
-    --sidebar-background: 220 25% 97%; /* Very light, almost white, slightly cool gray */
-    --sidebar-foreground: 224 71% 10%; /* Darker foreground for sidebar readability */
-    --sidebar-primary: 221 83% 53%; /* Consistent with main primary */
-    --sidebar-primary-foreground: 210 40% 98%; /* Consistent with main primary foreground */
-    --sidebar-accent: 158 70% 40%; /* Slightly darker accent for sidebar interaction */
-    --sidebar-accent-foreground: 210 40% 98%; /* Consistent accent foreground */
-    --sidebar-border: 214.3 31.8% 88%; /* Slightly darker border for sidebar */
-    --sidebar-ring: 221 83% 63%; /* Consistent with main ring */
+    /* Chart colors (can be refined later if charts are implemented) */
+    --chart-1: 243 75% 63%; /* Primary Blue */
+    --chart-2: 145 63% 49%; /* Green */
+    --chart-3: 0 84% 60%;   /* Red */
+    --chart-4: 270 70% 60%; /* Purple */
+    --chart-5: 30 90% 55%;  /* Orange */
 
-    --chart-1: 221 83% 53%; /* Primary Blue */
-    --chart-2: 158 70% 45%; /* Accent Teal/Green */
-    --chart-3: 30 90% 55%;  /* Vibrant Orange */
-    --chart-4: 280 70% 60%; /* Purple */
-    --chart-5: 50 85% 58%;  /* Yellow-Orange */
+    /* Metric Card specific colors */
+    --metric-card-green-bg: 145 75% 94%;
+    --metric-card-green-icon: 145 63% 42%; /* Slightly darker for icon */
+    --metric-card-green-value: 145 67% 35%; /* Darker for value text */
+
+    --metric-card-blue-bg: 217 100% 96%;
+    --metric-card-blue-icon: 217 91% 59%;
+    --metric-card-blue-value: 217 91% 53%;
+
+    --metric-card-red-bg: 0 100% 96%;
+    --metric-card-red-icon: 0 84% 60%;
+    --metric-card-red-value: 0 72% 51%;
+
+    --metric-card-purple-bg: 270 100% 97%;
+    --metric-card-purple-icon: 270 70% 60%;
+    --metric-card-purple-value: 270 75% 55%;
   }
 
+  /* Basic dark theme setup (can be further customized if needed) */
+  /* For now, focusing on the light theme from the image */
   .dark {
-    /* A basic dark theme setup, can be further customized */
-    --background: 224 71% 4%; /* Very dark blue */
-    --foreground: 210 40% 98%; /* Almost white */
-
-    --card: 224 71% 8%; /* Darker card background */
+    --background: 224 71% 4%; 
+    --foreground: 210 40% 98%;
+    --card: 224 71% 8%;
     --card-foreground: 210 40% 98%;
-
     --popover: 224 71% 8%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 221 83% 63%; /* Lighter primary for dark mode */
-    --primary-foreground: 224 71% 4%; /* Dark text on light primary */
-
+    --primary: 243 75% 73%; /* Lighter primary for dark mode */
+    --primary-foreground: 224 71% 4%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 20%; /* Slightly lighter muted for dark */
+    --muted: 217.2 32.6% 20%;
     --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 158 70% 50%; /* Lighter accent for dark mode */
-    --accent-foreground: 224 71% 4%; /* Dark text on light accent */
-
-    --destructive: 0 62.8% 50.6%; /* Slightly lighter destructive */
+    --accent: 217 90% 25%; /* Darker accent bg for dark mode */
+    --accent-foreground: 217 91% 79%; /* Lighter accent text for dark mode */
+    --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 98%;
-
-    --border: 217.2 32.6% 22.5%; /* Darker border */
-    --input: 217.2 32.6% 22.5%; /* Darker input */
-    --ring: 221 83% 73%; /* Lighter ring for dark mode */
-
-    --sidebar-background: 224 71% 6%; /* Darker sidebar */
+    --border: 217.2 32.6% 22.5%;
+    --input: 217.2 32.6% 22.5%;
+    --ring: 217 91% 70%;
+    --sidebar-background: 224 71% 6%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 221 83% 63%;
+    --sidebar-primary: 243 75% 73%;
     --sidebar-primary-foreground: 224 71% 4%;
-    --sidebar-accent: 158 70% 45%;
-    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-accent: 217 90% 25%;
+    --sidebar-accent-foreground: 217 91% 79%;
     --sidebar-border: 217.2 32.6% 15%;
-    --sidebar-ring: 221 83% 73%;
+    --sidebar-ring: 217 91% 70%;
 
-    --chart-1: 221 83% 63%;
-    --chart-2: 158 70% 50%;
-    --chart-3: 30 90% 65%;
-    --chart-4: 280 70% 70%;
-    --chart-5: 50 85% 68%;
+    --metric-card-green-bg: 145 75% 14%;
+    --metric-card-green-icon: 145 63% 59%;
+    --metric-card-green-value: 145 67% 75%;
+
+    --metric-card-blue-bg: 217 100% 16%;
+    --metric-card-blue-icon: 217 91% 69%;
+    --metric-card-blue-value: 217 91% 73%;
+
+    --metric-card-red-bg: 0 100% 16%;
+    --metric-card-red-icon: 0 84% 70%;
+    --metric-card-red-value: 0 72% 71%;
+
+    --metric-card-purple-bg: 270 100% 17%;
+    --metric-card-purple-icon: 270 70% 70%;
+    --metric-card-purple-value: 270 75% 75%;
   }
 }
 
