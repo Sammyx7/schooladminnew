@@ -14,9 +14,14 @@ export interface NavItem {
 // Student Dashboard Specific Types
 export interface StudentProfile {
   name: string;
-  avatarUrl: string;
+  avatarUrl?: string; // Made optional as admin list might not show it directly
   studentId: string;
   classSection: string;
+  // Potential future fields for admin view:
+  // parentName?: string;
+  // contactNumber?: string;
+  // email?: string;
+  // address?: string;
 }
 
 export interface PendingFee {
