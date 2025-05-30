@@ -15,6 +15,7 @@ export const adminNavItems: NavItem[] = [
   { title: 'Admissions', href: '/admin/admissions', icon: UserPlus },
   { title: 'Expenses', href: '/admin/expenses', icon: DollarSign },
   { title: 'Fee Notices', href: '/admin/fees/bulk-notice', icon: Receipt },
+  { title: 'Circulars', href: '/admin/circulars', icon: Megaphone },
   { title: 'Notice Summarizer (AI)', href: '/admin/notices/summary', icon: Sparkles },
   { title: 'Reports', href: '/admin/reports/overview', icon: BarChart3 },
   // Settings is handled by the common footer in AppSidebar, but if it needs to be in main nav:
@@ -39,3 +40,4 @@ export const staffNavItems: NavItem[] = [
   { title: 'Timetable', href: '/staff/timetable', icon: CalendarDays },
   { title: 'Circulars', href: '/staff/circulars', icon: Megaphone },
 ];
+
