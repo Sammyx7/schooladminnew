@@ -24,8 +24,7 @@ export default function StudentLayout({ children }: { children: ReactNode }) {
                 className="fixed left-0 top-16 bottom-0 z-30 hidden md:block" // Ensure sidebar is fixed and visible
               />
             )}
-            {/* Removed min-w-0 */}
-            <main className="flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto md:ml-[var(--sidebar-width)]">
+            <main className="flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto md:ml-[var(--sidebar-width)] md:w-[calc(100%_-_var(--sidebar-width))]">
               {children}
             </main>
           </div>
