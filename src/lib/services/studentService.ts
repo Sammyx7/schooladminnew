@@ -3,7 +3,7 @@
 // In a real application, this would involve API calls to a backend.
 'use client'; // Can be 'use server' if it were a real backend call used by server components.
 
-import type { StudentDashboardData, FeeNotice, ReportCardData, Circular } from '@/lib/types';
+import type { StudentDashboardData, FeeNotice, ReportCardData, Circular, TimetableEntry } from '@/lib/types';
 
 const MOCK_STUDENT_DATA: StudentDashboardData = {
   profile: {
@@ -182,5 +182,37 @@ export async function getStudentCirculars(studentId: string): Promise<Circular[]
     setTimeout(() => {
       resolve(circulars);
     }, 900); // Simulate network delay
+  });
+}
+
+// Mock Timetable Data
+const MOCK_TIMETABLE_S10234: TimetableEntry[] = [
+  { id: 'TT001', day: 'Monday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Mathematics', teacher: 'Mr. A. Sharma' },
+  { id: 'TT002', day: 'Monday', period: 2, timeSlot: '09:45 - 10:30', subject: 'Physics', teacher: 'Ms. B. Kaur' },
+  { id: 'TT003', day: 'Monday', period: 3, timeSlot: '10:45 - 11:30', subject: 'English', teacher: 'Mrs. C. Davis' },
+  { id: 'TT004', day: 'Monday', period: 4, timeSlot: '11:30 - 12:15', subject: 'Chemistry', teacher: 'Mr. D. Gupta' },
+  { id: 'TT005', day: 'Tuesday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Biology', teacher: 'Dr. E. Singh' },
+  { id: 'TT006', day: 'Tuesday', period: 2, timeSlot: '09:45 - 10:30', subject: 'History', teacher: 'Ms. F. Roy' },
+  { id: 'TT007', day: 'Wednesday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Geography', teacher: 'Mr. G. Khan' },
+  { id: 'TT008', day: 'Wednesday', period: 2, timeSlot: '09:45 - 10:30', subject: 'Mathematics', teacher: 'Mr. A. Sharma' },
+  { id: 'TT009', day: 'Thursday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Physics', teacher: 'Ms. B. Kaur' },
+  { id: 'TT010', day: 'Friday', period: 1, timeSlot: '09:00 - 09:45', subject: 'English', teacher: 'Mrs. C. Davis' },
+  { id: 'TT011', day: 'Friday', period: 2, timeSlot: '09:45 - 10:30', subject: 'Physical Education', teacher: 'Mr. H. Kumar' },
+  { id: 'TT012', day: 'Saturday', period: 1, timeSlot: '10:00 - 11:30', subject: 'Activity Club', teacher: 'Coordinator' },
+];
+
+const MOCK_TIMETABLE_S10235: TimetableEntry[] = [
+  { id: 'TT101', day: 'Monday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Art & Craft', teacher: 'Ms. I. Reddy' },
+  { id: 'TT102', day: 'Monday', period: 2, timeSlot: '09:45 - 10:30', subject: 'Music', teacher: 'Mr. J. Lobo' },
+  { id: 'TT103', day: 'Wednesday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Computer Science', teacher: 'Ms. K. Iyer' },
+  // This student has fewer classes to test empty day tabs
+];
+
+export async function getStudentTimetable(studentId: string): Promise<TimetableEntry[]> {
+  const timetable = studentId === "S10235" ? MOCK_TIMETABLE_S10235 : MOCK_TIMETABLE_S10234;
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(timetable);
+    }, 1100); // Simulate network delay
   });
 }

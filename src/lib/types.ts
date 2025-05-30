@@ -97,5 +97,17 @@ export interface Circular {
   attachmentLink?: string; // Optional URL to a PDF or document
 }
 
+// Student Timetable Types
+export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
+
+export interface TimetableEntry {
+  id: string;
+  day: DayOfWeek;
+  period: number;
+  timeSlot: string; // e.g., "09:00 AM - 09:45 AM"
+  subject: string;
+  teacher: string;
+}
+
 
 // Add more shared types here as needed
