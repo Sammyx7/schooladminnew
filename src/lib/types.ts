@@ -1,5 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
+import { z } from 'zod';
 
 export type UserRole = 'admin' | 'student' | 'staff';
 
@@ -14,27 +15,22 @@ export interface NavItem {
 // Student Dashboard Specific Types
 export interface StudentProfile {
   name: string;
-  avatarUrl?: string; // Made optional as admin list might not show it directly
+  avatarUrl?: string;
   studentId: string;
   classSection: string;
-  // Potential future fields for admin view:
-  // parentName?: string;
-  // contactNumber?: string;
-  // email?: string;
-  // address?: string;
 }
 
 export interface PendingFee {
   amount: string;
-  dueDate: string; // Consider making this a Date object for easier manipulation
+  dueDate: string; 
   status: 'pending' | 'none' | 'overdue';
 }
 
 export interface NextClass {
   subject: string;
-  time: string; // e.g., "11:00 AM" - consider a full ISO date string for countdowns
+  time: string; 
   teacher: string;
-  subjectIcon?: LucideIcon; // Optional icon for the subject
+  subjectIcon?: LucideIcon; 
 }
 
 export interface StudentNotification {
@@ -49,7 +45,7 @@ export interface StudentNotification {
 export interface QuickLink {
   title: string;
   href: string;
-  icon: React.ElementType; // LucideIcon
+  icon: React.ElementType; 
   description: string;
 }
 
@@ -68,42 +64,54 @@ export interface FeeNotice {
   title: string;
   description?: string;
   amount: number;
-  dueDate: string; // Consider using Date object if more manipulation is needed
+  dueDate: string; 
   status: FeeNoticeStatus;
-  paymentLink?: string; // Optional, for a "Pay Now" button
+  paymentLink?: string; 
 }
 
 // Student Report Card Types
 export interface SubjectGrade {
   id: string;
   subjectName: string;
-  grade: string; // e.g., "A+", "85%", "Good"
-  marks?: number; // Optional, if you want to show specific marks
-  maxMarks?: number; // Optional
+  grade: string; 
+  marks?: number; 
+  maxMarks?: number; 
   remarks?: string;
 }
 
 export interface ReportCardData {
   id: string;
-  termName: string; // e.g., "Term 1 Examination - 2024"
+  termName: string; 
   issueDate: string;
   subjects: SubjectGrade[];
   overallPercentage?: string;
   overallGrade?: string;
   classRank?: string;
   teacherComments?: string;
-  downloadLink?: string; // Placeholder for PDF download
+  downloadLink?: string; 
 }
 
-// Student Circulars Types
+// Circulars Types (Used by both Student and Admin)
+export const circularCategories = ["Academics", "Events", "Holidays", "Urgent", "General"] as const;
+export type CircularCategory = typeof circularCategories[number];
+
 export interface Circular {
   id: string;
   title: string;
-  date: string; // e.g., "2024-08-10"
+  date: string; 
   summary: string;
-  category?: 'Academics' | 'Events' | 'Holidays' | 'Urgent' | 'General';
-  attachmentLink?: string; // Optional URL to a PDF or document
+  category?: CircularCategory;
+  attachmentLink?: string; 
 }
+
+export const CreateCircularSchema = z.object({
+  title: z.string().min(3, { message: "Title must be at least 3 characters long." }),
+  summary: z.string().min(10, { message: "Summary must be at least 10 characters long." }),
+  category: z.enum(circularCategories, { errorMap: () => ({ message: "Please select a category." }) }),
+  attachmentLink: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
+});
+export type CreateCircularFormValues = z.infer<typeof CreateCircularSchema>;
+
 
 // Student Timetable Types
 export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
@@ -112,7 +120,7 @@ export interface TimetableEntry {
   id: string;
   day: DayOfWeek;
   period: number;
-  timeSlot: string; // e.g., "09:00 AM - 09:45 AM"
+  timeSlot: string; 
   subject: string;
   teacher: string;
 }
@@ -120,13 +128,30 @@ export interface TimetableEntry {
 // Student Payment History Types
 export interface PaymentRecord {
   id: string;
-  paymentDate: string; // e.g., "2024-07-10"
-  description: string; // e.g., "Term 1 Fees - 2024-2025"
+  paymentDate: string; 
+  description: string; 
   amountPaid: number;
-  paymentMethod: string; // e.g., "Credit Card ending **** 1234"
+  paymentMethod: string; 
   transactionId?: string;
-  receiptLink?: string; // Optional URL to a receipt PDF
+  receiptLink?: string; 
 }
 
+// Admin Bulk Fee Notice Types
+export const BulkFeeNoticeFormSchema = z.object({
+  noticeTitle: z.string().min(5, { message: "Notice title must be at least 5 characters." }),
+  description: z.string().optional(),
+  amount: z.coerce.number().positive({ message: "Amount must be a positive number." }),
+  dueDate: z.date({
+    required_error: "Due date is required.",
+    invalid_type_error: "That's not a valid date!",
+  }),
+  targetClasses: z.string().min(1, { message: "Please specify at least one target class/section." }),
+  additionalNotes: z.string().optional(),
+});
 
-// Add more shared types here as needed
+export type BulkFeeNoticeFormValues = z.infer<typeof BulkFeeNoticeFormSchema>;
+
+export interface BulkFeeNoticeDefinition extends BulkFeeNoticeFormValues {
+  id: string;
+  generatedDate: string; // ISO string date
+}
