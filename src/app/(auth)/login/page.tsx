@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { UserRole } from '@/lib/types';
-import { School } from 'lucide-react';
+import { School, LogIn } from 'lucide-react'; // Added LogIn for button
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -34,10 +34,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-primary/5 to-background p-4">
+      <Card className="w-full max-w-md border shadow-xl"> {/* Added border */}
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground"> {/* Changed icon background */}
             <School className="h-8 w-8" />
           </div>
           <CardTitle className="text-3xl font-bold">SchoolAdmin Portal</CardTitle>
@@ -54,6 +54,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                className="text-base"
               />
             </div>
             <div className="space-y-2">
@@ -65,12 +66,13 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                className="text-base"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
               <Select onValueChange={(value) => setRole(value as UserRole)} value={role}>
-                <SelectTrigger id="role">
+                <SelectTrigger id="role" className="text-base">
                   <SelectValue placeholder="Select your role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -82,7 +84,7 @@ export default function LoginPage() {
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full text-lg py-6">
-              Login
+              <LogIn className="mr-2 h-5 w-5" /> Login
             </Button>
           </form>
         </CardContent>

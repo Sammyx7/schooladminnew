@@ -63,7 +63,7 @@ export default function SummarizeNoticesPage() {
         description="Generate concise summaries of school notices for parents."
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="shadow-lg">
+        <Card className="border"> {/* Added border, shadow-md from base Card */}
           <CardHeader>
             <CardTitle>Enter Notice Text</CardTitle>
             <CardDescription>Paste the full text of the school notice below.</CardDescription>
@@ -94,7 +94,7 @@ export default function SummarizeNoticesPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg">
+        <Card className="border"> {/* Added border, shadow-md from base Card */}
           <CardHeader>
             <CardTitle>Generated Summary</CardTitle>
             <CardDescription>The AI-generated summary will appear below.</CardDescription>

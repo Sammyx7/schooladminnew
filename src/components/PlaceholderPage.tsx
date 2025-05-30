@@ -14,7 +14,7 @@ export function PlaceholderPage({ title, description, icon, featureName }: Place
   return (
     <div>
       <PageHeader title={title} description={description} icon={icon} />
-      <Card className="shadow-lg">
+      <Card className="border"> {/* Added border, shadow-md will come from base Card */}
         <CardHeader>
           <CardTitle>{featureName || title}</CardTitle>
         </CardHeader>
