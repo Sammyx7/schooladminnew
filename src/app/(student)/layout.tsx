@@ -25,7 +25,7 @@ export default function StudentLayout({ children }: { children: ReactNode }) {
               />
             )}
             {/* Ensure main content area classes match AdminLayout's main content area for consistency */}
-            <main className="flex-1 min-w-0 p-4 md:p-6 lg:p-8 bg-background overflow-auto md:ml-[var(--sidebar-width)]"> {/* ADDED min-w-0 HERE */}
+            <main className="flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto md:ml-[var(--sidebar-width)]"> {/* REMOVED min-w-0 HERE */}
               {children}
             </main>
           </div>
