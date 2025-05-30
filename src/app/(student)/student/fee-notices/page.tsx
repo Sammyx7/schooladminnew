@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, type FormEvent } from 'react';
+import Image from 'next/image'; // Added for UPI QR code placeholder
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Receipt, Loader2, AlertCircle as AlertIcon, CreditCard, CheckCircle, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Added Tabs
 
 export default function StudentFeeNoticesPage() {
   const [feeNotices, setFeeNotices] = useState<FeeNotice[]>([]);
@@ -208,34 +210,64 @@ export default function StudentFeeNoticesPage() {
 
       {selectedNoticeForPayment && (
         <AlertDialog open={isPaymentDialogVisible} onOpenChange={setIsPaymentDialogVisible}>
-          <AlertDialogContent>
+          <AlertDialogContent className="sm:max-w-md">
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm Payment for: {selectedNoticeForPayment.title}</AlertDialogTitle>
               <AlertDialogDescription>
                 Amount Due: ₹{selectedNoticeForPayment.amount.toLocaleString('en-IN')}
               </AlertDialogDescription>
             </AlertDialogHeader>
-            <div className="space-y-4 py-4">
-              <p className="text-sm text-muted-foreground">This is a mock payment screen. No real transaction will occur.</p>
-              <div className="space-y-2">
-                <Label htmlFor="cardNumber">Card Number</Label>
-                <Input id="cardNumber" placeholder="•••• •••• •••• ••••" disabled />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="expiryDate">Expiry (MM/YY)</Label>
-                  <Input id="expiryDate" placeholder="MM/YY" disabled />
+            
+            <Tabs defaultValue="card" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="card">Card</TabsTrigger>
+                <TabsTrigger value="upi">UPI</TabsTrigger>
+              </TabsList>
+              <TabsContent value="card">
+                <div className="space-y-4 py-4">
+                  <p className="text-xs text-muted-foreground">This is a mock payment screen. No real transaction will occur.</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="cardNumber">Card Number</Label>
+                    <Input id="cardNumber" placeholder="•••• •••• •••• ••••" disabled />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="expiryDate">Expiry (MM/YY)</Label>
+                      <Input id="expiryDate" placeholder="MM/YY" disabled />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cvv">CVV</Label>
+                      <Input id="cvv" placeholder="•••" disabled />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cardHolderName">Card Holder Name</Label>
+                    <Input id="cardHolderName" placeholder="Name on Card" disabled />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cvv">CVV</Label>
-                  <Input id="cvv" placeholder="•••" disabled />
+              </TabsContent>
+              <TabsContent value="upi">
+                <div className="space-y-4 py-4">
+                   <p className="text-xs text-muted-foreground">This is a mock UPI payment. Scan the QR or enter UPI ID.</p>
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="p-2 border rounded-md bg-background">
+                      <Image 
+                        src="https://placehold.co/160x160.png" // Placeholder QR
+                        alt="Mock UPI QR Code" 
+                        width={160} 
+                        height={160}
+                        data-ai-hint="qr code" 
+                      />
+                    </div>
+                    <div className="w-full space-y-2">
+                      <Label htmlFor="upiId">Or Enter UPI ID</Label>
+                      <Input id="upiId" placeholder="yourname@upi" disabled />
+                    </div>
+                  </div>
                 </div>
-              </div>
-               <div className="space-y-2">
-                <Label htmlFor="cardHolderName">Card Holder Name</Label>
-                <Input id="cardHolderName" placeholder="Name on Card" disabled />
-              </div>
-            </div>
+              </TabsContent>
+            </Tabs>
+            
             <AlertDialogFooter>
               <AlertDialogCancel disabled={isProcessingPayment}>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={handleConfirmMockPayment} disabled={isProcessingPayment}>
@@ -255,3 +287,4 @@ export default function StudentFeeNoticesPage() {
     </div>
   );
 }
+
