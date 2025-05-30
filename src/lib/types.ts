@@ -87,5 +87,15 @@ export interface ReportCardData {
   downloadLink?: string; // Placeholder for PDF download
 }
 
+// Student Circulars Types
+export interface Circular {
+  id: string;
+  title: string;
+  date: string; // e.g., "2024-08-10"
+  summary: string;
+  category?: 'Academics' | 'Events' | 'Holidays' | 'Urgent' | 'General';
+  attachmentLink?: string; // Optional URL to a PDF or document
+}
+
 
 // Add more shared types here as needed

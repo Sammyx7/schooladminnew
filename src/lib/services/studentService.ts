@@ -3,7 +3,7 @@
 // In a real application, this would involve API calls to a backend.
 'use client'; // Can be 'use server' if it were a real backend call used by server components.
 
-import type { StudentDashboardData, FeeNotice, ReportCardData } from '@/lib/types';
+import type { StudentDashboardData, FeeNotice, ReportCardData, Circular } from '@/lib/types';
 
 const MOCK_STUDENT_DATA: StudentDashboardData = {
   profile: {
@@ -159,5 +159,28 @@ export async function getStudentReportCards(studentId: string): Promise<ReportCa
     setTimeout(() => {
       resolve(reports);
     }, 1300); // Simulate network delay
+  });
+}
+
+// Mock Circulars Data
+const MOCK_CIRCULARS_S10234: Circular[] = [
+  { id: 'CIR001', title: 'Annual Sports Day - Schedule & Guidelines', date: '2024-08-05', summary: 'Details about the upcoming Annual Sports Day, including event schedules, participation guidelines, and venue information.', category: 'Events', attachmentLink: '#' },
+  { id: 'CIR002', title: 'Holiday Declared: Independence Day', date: '2024-08-01', summary: 'The school will remain closed on August 15th, 2024, on account of Independence Day.', category: 'Holidays' },
+  { id: 'CIR003', title: 'Parent-Teacher Meeting for Class 10', date: '2024-07-28', summary: 'A parent-teacher meeting is scheduled for all students of Class 10 to discuss academic progress and upcoming board examinations.', category: 'Academics' },
+  { id: 'CIR004', title: 'Library Books Return Reminder', date: '2024-07-25', summary: 'All students are reminded to return any overdue library books by July 30th to avoid late fees.', category: 'General', attachmentLink: '#' },
+  { id: 'CIR005', title: 'Urgent: School Timings Change for Friday', date: '2024-07-18', summary: 'Due to unavoidable circumstances, school will disperse at 12:00 PM on Friday, July 19th.', category: 'Urgent'},
+];
+
+const MOCK_CIRCULARS_S10235: Circular[] = [
+  { id: 'CIR101', title: 'Science Fair Participation Announcement', date: '2024-08-02', summary: 'Students interested in participating in the Inter-School Science Fair are requested to register by August 10th.', category: 'Academics', attachmentLink: '#' },
+  { id: 'CIR102', title: 'Art Competition for Classes 6-9', date: '2024-07-29', summary: 'An art competition will be held on August 5th. Theme: "Our Environment".', category: 'Events' },
+];
+
+export async function getStudentCirculars(studentId: string): Promise<Circular[]> {
+  const circulars = studentId === "S10235" ? MOCK_CIRCULARS_S10235 : MOCK_CIRCULARS_S10234;
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(circulars);
+    }, 900); // Simulate network delay
   });
 }
