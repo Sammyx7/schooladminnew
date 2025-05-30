@@ -2,7 +2,6 @@
 "use client";
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Bell, LogOut, UserCircle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,8 +25,7 @@ export function TopHeader() {
   return (
     <header className="bg-card text-card-foreground h-16 flex items-center justify-between px-4 md:px-6 border-b fixed top-0 left-0 right-0 z-40">
       <div className="flex items-center gap-3">
-        <Link href={`/${userRole}/dashboard`} className="flex items-center gap-2">
-          {/* Placeholder Logo */}
+        <Link href={`/${userRole === 'admin' ? 'admin/dashboard' : userRole === 'student' ? 'student/profile' : 'staff/profile' }`} className="flex items-center gap-2">
           <div className="bg-primary text-primary-foreground p-2 rounded-md w-10 h-10 flex items-center justify-center">
             <span className="font-bold text-sm">LOGO</span>
           </div>
@@ -38,23 +36,32 @@ export function TopHeader() {
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:text-foreground">
+      <div className="flex items-center gap-3 md:gap-4">
+        <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:text-foreground relative">
           <Bell className="h-5 w-5" />
+          {/* Notification dot */}
+          <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-card"></span>
           <span className="sr-only">Notifications</span>
         </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 px-2 py-1 h-auto">
+            <Button variant="ghost" className="flex items-center gap-2 px-2 py-1 h-auto rounded-md">
               <Avatar className="h-8 w-8">
                 <AvatarImage src="https://placehold.co/40x40.png" alt={userName} data-ai-hint="user avatar" />
                 <AvatarFallback>{userName.substring(0, 1).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="text-left hidden md:block">
                 <p className="text-sm font-medium text-foreground">{userName}</p>
-                {userRole && <Badge variant="outline" className="capitalize text-xs px-1.5 py-0.5 border-primary/50 text-primary">{userRole}</Badge>}
               </div>
+              {userRole && (
+                <Badge 
+                  variant="outline" 
+                  className="capitalize text-xs px-1.5 py-0.5 border-primary/30 bg-accent text-accent-foreground hidden md:inline-flex"
+                >
+                  {userRole}
+                </Badge>
+              )}
               <ChevronDown className="h-4 w-4 text-muted-foreground hidden md:block" />
             </Button>
           </DropdownMenuTrigger>
@@ -65,10 +72,13 @@ export function TopHeader() {
                 <p className="text-xs leading-none text-muted-foreground">
                   {userEmail}
                 </p>
+                <p className="text-xs leading-none text-muted-foreground capitalize md:hidden">
+                  Role: {userRole}
+                </p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => alert('Profile page placeholder')}>
+            <DropdownMenuItem onClick={() => router.push(`/${userRole}/profile`)}> {/* Assuming profile page exists */}
               <UserCircle className="mr-2 h-4 w-4" />
               <span>Profile</span>
             </DropdownMenuItem>
@@ -83,3 +93,13 @@ export function TopHeader() {
     </header>
   );
 }
+
+// Helper function to get a default dashboard path - you might want to move this or improve it
+const getDefaultDashboardPath = (role: string | null) => {
+  switch (role) {
+    case 'admin': return '/admin/dashboard';
+    case 'student': return '/student/profile';
+    case 'staff': return '/staff/profile';
+    default: return '/login';
+  }
+};

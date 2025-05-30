@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { UserRole } from '@/lib/types';
-import { School, LogIn } from 'lucide-react'; // Using School icon as a placeholder
+import { LogIn } from 'lucide-react';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -25,6 +25,7 @@ export default function LoginPage() {
       setError('All fields are required.');
       return;
     }
+    // Using fixed credentials as per original setup
     if (email === "test@example.com" && password === "password") {
       login(role as UserRole);
     } else {
@@ -34,10 +35,9 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md border shadow-xl">
+      <Card className="w-full max-w-md border shadow-xl bg-card"> {/* Added bg-card */}
         <CardHeader className="text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg">
-            {/* Placeholder Logo, matching TopHeader style */}
             <span className="font-bold text-xl">LOGO</span> 
           </div>
           <CardTitle className="text-2xl font-bold text-foreground">School Admin Portal</CardTitle>
@@ -54,7 +54,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="text-sm"
+                className="text-sm bg-input text-foreground border-border focus:border-primary"
               />
             </div>
             <div className="space-y-1.5">
@@ -66,16 +66,16 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="text-sm"
+                className="text-sm bg-input text-foreground border-border focus:border-primary"
               />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="role" className="text-foreground">Role</Label>
               <Select onValueChange={(value) => setRole(value as UserRole)} value={role}>
-                <SelectTrigger id="role" className="text-sm">
+                <SelectTrigger id="role" className="text-sm bg-input text-foreground border-border focus:border-primary">
                   <SelectValue placeholder="Select your role" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-popover text-popover-foreground">
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="student">Student</SelectItem>
                   <SelectItem value="staff">Staff</SelectItem>
@@ -83,7 +83,7 @@ export default function LoginPage() {
               </Select>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button type="submit" className="w-full text-base py-2.5 mt-2">
+            <Button type="submit" className="w-full text-base py-2.5 mt-2 bg-primary text-primary-foreground hover:bg-primary/90">
               <LogIn className="mr-2 h-4 w-4" /> Login
             </Button>
           </form>

@@ -3,9 +3,8 @@
 import { PageHeader } from '@/components/layout/PageHeader';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, TrendingUp, AlertTriangle, Users, ArrowRight, LayoutDashboard, Eye } from 'lucide-react';
-import { List, ListItem } from '@/components/ui/list'; // Assuming you'll create a List component
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DollarSign, TrendingUp, AlertTriangle, Users, Eye, LayoutDashboard } from 'lucide-react';
 
 // Mock data - replace with actual data fetching
 const feesCollected = "₹1,250,000";
@@ -20,9 +19,9 @@ const recentPaymentsData = [
 ];
 
 const pendingNoticesData = [
-  { name: "Meera Singh", due: "Due in 3 days", amount: "₹18,000", amountColor: "text-orange-600" },
-  { name: "Vikram Joshi", due: "Due in 5 days", amount: "₹22,000", amountColor: "text-orange-600" },
-  { name: "Ananya Reddy", due: "Due in 1 week", amount: "₹15,000", amountColor: "text-orange-600" },
+  { name: "Meera Singh", due: "Due in 3 days", amount: "₹18,000", amountColor: "text-orange-500" },
+  { name: "Vikram Joshi", due: "Due in 5 days", amount: "₹22,000", amountColor: "text-orange-500" },
+  { name: "Ananya Reddy", due: "Due in 1 week", amount: "₹15,000", amountColor: "text-orange-500" },
 ];
 
 
@@ -32,10 +31,9 @@ export default function AdminDashboardPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <PageHeader 
           title="Admin Dashboard" 
-          icon={LayoutDashboard} 
           description="Overview of school fees management" 
         />
-        <Button variant="outline" className="bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] hover:bg-blue-100 border-blue-300">
+        <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/5 hover:text-primary">
           <Eye className="mr-2 h-4 w-4" />
           Switch to Parent View (Demo)
         </Button>
@@ -48,15 +46,17 @@ export default function AdminDashboardPage() {
           icon={DollarSign}
           description="This month"
           bgColorClass="bg-[hsl(var(--metric-card-green-bg))]"
+          iconBgClass="bg-[hsl(var(--metric-card-green-icon-bg))]"
           iconColorClass="text-[hsl(var(--metric-card-green-icon))]"
           valueColorClass="text-[hsl(var(--metric-card-green-value))]"
         />
         <MetricCard
           title="Pending Payments"
           value={pendingPayments}
-          icon={TrendingUp} // Or Clock icon
+          icon={TrendingUp}
           description="This month"
           bgColorClass="bg-[hsl(var(--metric-card-blue-bg))]"
+          iconBgClass="bg-[hsl(var(--metric-card-blue-icon-bg))]"
           iconColorClass="text-[hsl(var(--metric-card-blue-icon))]"
           valueColorClass="text-[hsl(var(--metric-card-blue-value))]"
         />
@@ -66,6 +66,7 @@ export default function AdminDashboardPage() {
           icon={AlertTriangle}
           description="This month"
           bgColorClass="bg-[hsl(var(--metric-card-red-bg))]"
+          iconBgClass="bg-[hsl(var(--metric-card-red-icon-bg))]"
           iconColorClass="text-[hsl(var(--metric-card-red-icon))]"
           valueColorClass="text-[hsl(var(--metric-card-red-value))]"
         />
@@ -75,20 +76,21 @@ export default function AdminDashboardPage() {
           icon={Users}
           description="Enrolled students"
           bgColorClass="bg-[hsl(var(--metric-card-purple-bg))]"
+          iconBgClass="bg-[hsl(var(--metric-card-purple-icon-bg))]"
           iconColorClass="text-[hsl(var(--metric-card-purple-icon))]"
           valueColorClass="text-[hsl(var(--metric-card-purple-value))]"
         />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="shadow-md border">
+        <Card className="shadow-md border bg-card">
           <CardHeader>
-            <CardTitle className="text-lg">Recent Payments</CardTitle>
+            <CardTitle className="text-lg font-semibold text-card-foreground">Recent Payments</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <ul className="space-y-3">
+            <ul className="space-y-0">
               {recentPaymentsData.map((item, index) => (
-                <li key={index} className="flex items-center justify-between py-2 border-b last:border-none">
+                <li key={index} className="flex items-center justify-between py-3 border-b last:border-none">
                   <div>
                     <p className="font-medium text-sm text-foreground">{item.name}</p>
                     <p className="text-xs text-muted-foreground">{item.time}</p>
@@ -100,14 +102,14 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-md border">
+        <Card className="shadow-md border bg-card">
           <CardHeader>
-            <CardTitle className="text-lg">Pending Fee Notices</CardTitle>
+            <CardTitle className="text-lg font-semibold text-card-foreground">Pending Fee Notices</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
-            <ul className="space-y-3">
+            <ul className="space-y-0">
               {pendingNoticesData.map((item, index) => (
-                <li key={index} className="flex items-center justify-between py-2 border-b last:border-none">
+                <li key={index} className="flex items-center justify-between py-3 border-b last:border-none">
                   <div>
                     <p className="font-medium text-sm text-foreground">{item.name}</p>
                     <p className="text-xs text-muted-foreground">{item.due}</p>

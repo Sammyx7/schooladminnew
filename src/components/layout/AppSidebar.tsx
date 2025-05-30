@@ -5,36 +5,31 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Sidebar,
-  SidebarHeader,
   SidebarContent,
   SidebarFooter,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarGroupLabel,
-  SidebarGroup,
 } from '@/components/ui/sidebar';
 import { LogOut, Settings } from 'lucide-react';
 import type { NavItem } from '@/lib/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/lib/utils';
 
 interface AppSidebarProps {
   navItems: NavItem[];
   role: string;
+  className?: string;
 }
 
-export function AppSidebar({ navItems, role }: AppSidebarProps) {
+export function AppSidebar({ navItems, role, className }: AppSidebarProps) {
   const pathname = usePathname();
   const { logout } = useAuth();
 
-  const renderNavItems = (items: NavItem[], isSubmenu = false, groupTitle?: string) => {
+  const renderNavItems = (items: NavItem[]) => {
     return items.map((item) => {
-      // For top-level items that are groups, their href might be a parent path.
-      // For direct nav items, exact match or startsWith for children.
-      const isActive = item.children && item.children.length > 0 
-        ? pathname.startsWith(item.href)
-        : pathname === item.href;
-
+      const isActive = pathname === item.href || (item.href !== `/${role}/dashboard` && pathname.startsWith(item.href));
+      
       return (
         <SidebarMenuItem key={item.href}>
           <SidebarMenuButton
@@ -46,18 +41,18 @@ export function AppSidebar({ navItems, role }: AppSidebarProps) {
               align: 'center', 
               className: "bg-primary text-primary-foreground border-none shadow-md" 
             }}
-            className={isSubmenu ? "pl-10 pr-2 py-2 h-auto text-sm" : "pl-3 pr-2 py-2 h-auto text-sm"}
+            className={cn(
+              "pl-3 pr-2 py-2 h-auto text-sm justify-start",
+              isActive 
+                ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold" 
+                : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+            )}
           >
-            <Link href={item.href} className="flex items-center gap-3">
-              <item.icon className={`h-5 w-5 shrink-0 ${isActive ? 'text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 group-hover:text-sidebar-foreground'}`} />
-              <span className={`${isActive ? 'font-semibold text-sidebar-accent-foreground' : 'text-sidebar-foreground group-hover:text-sidebar-foreground/90'}`}>{item.title}</span>
+            <Link href={item.href} className="flex items-center gap-3 w-full">
+              <item.icon className={`h-5 w-5 shrink-0 ${isActive ? 'text-sidebar-accent-foreground' : 'text-sidebar-foreground/80 group-hover:text-sidebar-accent-foreground'}`} />
+              <span className="truncate">{item.title}</span>
             </Link>
           </SidebarMenuButton>
-          {isActive && item.children && item.children.length > 0 && (
-            <SidebarMenu className="pl-4 mt-1"> {/* Indent sub-menu items visually */}
-              {renderNavItems(item.children, true)}
-            </SidebarMenu>
-          )}
         </SidebarMenuItem>
       );
     });
@@ -67,34 +62,17 @@ export function AppSidebar({ navItems, role }: AppSidebarProps) {
     <Sidebar 
       collapsible="icon" 
       side="left" 
-      variant="sidebar" // This variant makes it sit on the side, not floating
-      className="border-r border-sidebar-border bg-sidebar-background fixed left-0 top-16 bottom-0 z-30" // fixed position below TopHeader
-      style={{ width: 'var(--sidebar-width)', transition: 'width 0.2s' }} // Ensure width is applied
+      variant="sidebar"
+      className={cn(
+        "border-r border-sidebar-border bg-sidebar-background",
+        "w-[var(--sidebar-width)] group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]", // Handle collapsed width
+        className // Allow overriding classes for positioning (fixed, etc.)
+      )}
+      // style={{ width: 'var(--sidebar-width)', transition: 'width 0.2s ease-in-out' }} // CSS variables handle this
     >
-      {/* SidebarHeader is not used as per the new design where logo is in TopHeader */}
-      {/* <SidebarHeader> ... </SidebarHeader> */}
-      
-      <SidebarContent className="p-2 mt-2"> {/* Added padding to content area */}
+      <SidebarContent className="p-2 mt-2 flex-grow">
         <SidebarMenu>
-          {navItems.map((groupItem, index) => {
-            // If the item itself is a link and has no children, render it directly.
-            // If it has a title (acting as a group label) and children, render group.
-            if (!groupItem.children || groupItem.children.length === 0) {
-              // Single top-level item
-              return renderNavItems([groupItem], false);
-            }
-            // Item is a group
-            return (
-              <SidebarGroup key={groupItem.title || index} className="p-0 mb-2">
-                {groupItem.title && (
-                  <SidebarGroupLabel className="px-3 pt-2 pb-1 text-xs font-medium uppercase text-sidebar-foreground/60 group-data-[collapsible=icon]:text-center">
-                    {groupItem.title}
-                  </SidebarGroupLabel>
-                )}
-                {renderNavItems(groupItem.children, false, groupItem.title)}
-              </SidebarGroup>
-            );
-          })}
+          {renderNavItems(navItems)}
         </SidebarMenu>
       </SidebarContent>
       
@@ -104,12 +82,17 @@ export function AppSidebar({ navItems, role }: AppSidebarProps) {
             <SidebarMenuButton 
               asChild 
               tooltip={{ content: "Settings", side: 'right', align: 'center', className: "bg-primary text-primary-foreground border-none shadow-md" }} 
-              className="pl-3 pr-2 py-2 h-auto text-sm"
+              className={cn(
+                "pl-3 pr-2 py-2 h-auto text-sm justify-start",
+                pathname === `/${role}/settings`
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+              )}
               isActive={pathname === `/${role}/settings`}
             >
-              <Link href={`/${role}/settings`} className="flex items-center gap-3">
-                <Settings className={`h-5 w-5 shrink-0 ${pathname === `/${role}/settings` ? 'text-sidebar-accent-foreground' : 'text-sidebar-foreground/70 group-hover:text-sidebar-foreground'}`} />
-                <span className={`${pathname === `/${role}/settings` ? 'font-semibold text-sidebar-accent-foreground' : 'text-sidebar-foreground group-hover:text-sidebar-foreground/90'}`}>Settings</span>
+              <Link href={`/${role}/settings`} className="flex items-center gap-3 w-full">
+                <Settings className={`h-5 w-5 shrink-0 ${pathname === `/${role}/settings` ? 'text-sidebar-accent-foreground' : 'text-sidebar-foreground/80 group-hover:text-sidebar-accent-foreground'}`} />
+                <span className="truncate">Settings</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -117,11 +100,11 @@ export function AppSidebar({ navItems, role }: AppSidebarProps) {
             <SidebarMenuButton 
               onClick={logout} 
               tooltip={{ content: "Logout", side: 'right', align: 'center', className: "bg-primary text-primary-foreground border-none shadow-md" }} 
-              className="pl-3 pr-2 py-2 h-auto text-sm"
+              className="pl-3 pr-2 py-2 h-auto text-sm text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground justify-start"
             >
-              <div className="flex items-center gap-3">
-                <LogOut className="h-5 w-5 shrink-0 text-sidebar-foreground/70 group-hover:text-sidebar-foreground" />
-                <span className="text-sidebar-foreground group-hover:text-sidebar-foreground/90">Logout</span>
+              <div className="flex items-center gap-3 w-full">
+                <LogOut className="h-5 w-5 shrink-0 text-sidebar-foreground/80 group-hover:text-sidebar-accent-foreground" />
+                <span className="truncate">Logout</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>

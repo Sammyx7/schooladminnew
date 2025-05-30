@@ -10,6 +10,7 @@ interface MetricCardProps {
   description?: string;
   bgColorClass: string; // e.g., 'bg-[hsl(var(--metric-card-green-bg))]'
   iconColorClass: string; // e.g., 'text-[hsl(var(--metric-card-green-icon))]'
+  iconBgClass: string; // e.g., 'bg-[hsl(var(--metric-card-green-icon-bg))]'
   valueColorClass?: string; // e.g., 'text-[hsl(var(--metric-card-green-value))]'
   className?: string;
 }
@@ -21,17 +22,15 @@ export function MetricCard({
   description, 
   bgColorClass,
   iconColorClass,
+  iconBgClass,
   valueColorClass,
   className 
 }: MetricCardProps) {
   return (
-    <Card className={cn("shadow-md border", bgColorClass, className)}>
+    <Card className={cn("shadow-md border-none rounded-lg", bgColorClass, className)}>
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 pt-4 px-4">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <div className={cn("p-1.5 rounded-full bg-opacity-20", bgColorClass === 'bg-[hsl(var(--metric-card-green-bg))]' ? 'bg-green-500/20' : 
-                                     bgColorClass === 'bg-[hsl(var(--metric-card-blue-bg))]' ? 'bg-blue-500/20' :
-                                     bgColorClass === 'bg-[hsl(var(--metric-card-red-bg))]' ? 'bg-red-500/20' :
-                                     bgColorClass === 'bg-[hsl(var(--metric-card-purple-bg))]' ? 'bg-purple-500/20' : '')}>
+        <div className={cn("p-2 rounded-full", iconBgClass)}>
           <Icon className={cn("h-5 w-5", iconColorClass)} />
         </div>
       </CardHeader>
