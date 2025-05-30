@@ -13,6 +13,7 @@ import type { Circular } from '@/lib/types';
 import { getStudentCirculars } from '@/lib/services/studentService';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils'; // Added missing import
 
 const CircularCardSkeleton = () => (
   <Card className="border shadow-md">
