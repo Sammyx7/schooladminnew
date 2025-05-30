@@ -3,7 +3,7 @@
 // In a real application, this would involve API calls to a backend.
 'use client'; // Can be 'use server' if it were a real backend call used by server components.
 
-import type { StudentDashboardData, FeeNotice, ReportCardData, Circular, TimetableEntry } from '@/lib/types';
+import type { StudentDashboardData, FeeNotice, ReportCardData, Circular, TimetableEntry, PaymentRecord } from '@/lib/types';
 
 const MOCK_STUDENT_DATA: StudentDashboardData = {
   profile: {
@@ -214,5 +214,27 @@ export async function getStudentTimetable(studentId: string): Promise<TimetableE
     setTimeout(() => {
       resolve(timetable);
     }, 1100); // Simulate network delay
+  });
+}
+
+// Mock Payment History Data
+const MOCK_PAYMENT_HISTORY_S10234: PaymentRecord[] = [
+  { id: 'PAY001', paymentDate: '2024-07-10', description: 'Term 1 Fees - 2024-2025', amountPaid: 15000, paymentMethod: 'Net Banking - HDFC000123', transactionId: 'TXN734589201' },
+  { id: 'PAY002', paymentDate: '2024-07-08', description: 'Bus Fees - Q1 2024', amountPaid: 3000, paymentMethod: 'UPI - studentparent@okhdfc', transactionId: 'UPI987654321' },
+  { id: 'PAY003', paymentDate: '2024-04-05', description: 'Term 4 Fees - 2023-2024', amountPaid: 14500, paymentMethod: 'Credit Card **** 5678', transactionId: 'CC408723456' },
+  { id: 'PAY004', paymentDate: '2024-03-15', description: 'Annual Day Costume Contribution', amountPaid: 350, paymentMethod: 'Cash', transactionId: 'CASH00123' },
+];
+
+const MOCK_PAYMENT_HISTORY_S10235: PaymentRecord[] = [
+  { id: 'PAY101', paymentDate: '2024-07-15', description: 'Term 1 Fees - 2024-2025', amountPaid: 14000, paymentMethod: 'Credit Card **** 1122', transactionId: 'TXN982345001' },
+  { id: 'PAY102', paymentDate: '2024-04-10', description: 'Term 4 Fees - 2023-2024', amountPaid: 13500, paymentMethod: 'Net Banking - ICICI000456', transactionId: 'NB500239871' },
+];
+
+export async function getStudentPaymentHistory(studentId: string): Promise<PaymentRecord[]> {
+  const history = studentId === "S10235" ? MOCK_PAYMENT_HISTORY_S10235 : MOCK_PAYMENT_HISTORY_S10234;
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(history);
+    }, 800); // Simulate network delay
   });
 }

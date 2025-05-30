@@ -109,5 +109,16 @@ export interface TimetableEntry {
   teacher: string;
 }
 
+// Student Payment History Types
+export interface PaymentRecord {
+  id: string;
+  paymentDate: string; // e.g., "2024-07-10"
+  description: string; // e.g., "Term 1 Fees - 2024-2025"
+  amountPaid: number;
+  paymentMethod: string; // e.g., "Credit Card ending **** 1234"
+  transactionId?: string;
+  receiptLink?: string; // Optional URL to a receipt PDF
+}
+
 
 // Add more shared types here as needed
