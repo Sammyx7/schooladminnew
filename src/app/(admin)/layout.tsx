@@ -34,7 +34,8 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
           className={cn(
             "flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto transition-all duration-300 ease-in-out",
             sidebarState === 'expanded' ? 'md:ml-[var(--sidebar-width)]' : 'md:ml-[var(--sidebar-width-icon)]',
-            isAIDocked ? "mr-[var(--ai-sidebar-width)]" : "mr-0" 
+            // Use explicit pixel value for AI sidebar margin
+            isAIDocked ? "mr-[360px]" : "mr-0" 
           )}
         >
           {children}
