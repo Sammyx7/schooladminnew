@@ -2,7 +2,7 @@
 import type { NavItem } from './types';
 import {
   LayoutDashboard, Users, UserCircle, Receipt, Briefcase, FileText, Sparkles,
-  Mail, History, UserPlus, QrCode, CalendarCheck, UserCheck, // Added UserCheck
+  Mail, History, UserPlus, QrCode, CalendarCheck, UserCheck, 
   CalendarDays, BookOpen, TrendingUp, ClipboardEdit, Printer,
   Megaphone, Send, Bus, Route, BarChart3, Settings, DollarSign, FileSearch, MessageSquare
 } from 'lucide-react';
@@ -11,16 +11,17 @@ import {
 export const adminNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { title: 'Students', href: '/admin/students', icon: Users },
-  { title: 'Staff', href: '/admin/staff', icon: Briefcase },
-  { title: 'Student Attendance', href: '/admin/attendance/student', icon: CalendarCheck }, // Renamed
-  { title: 'Staff Attendance', href: '/admin/attendance/staff', icon: UserCheck }, // Added
+  { title: 'Staff', href: '/admin/staff', icon: Briefcase }, // Corrected link
+  { title: 'Student Attendance', href: '/admin/attendance/student', icon: CalendarCheck },
+  { title: 'Staff Attendance', href: '/admin/attendance/staff', icon: UserCheck },
   { title: 'Admissions', href: '/admin/admissions', icon: UserPlus },
   { title: 'Timetable', href: '/admin/timetable', icon: CalendarDays },
   { title: 'Expenses', href: '/admin/expenses', icon: DollarSign },
   { title: 'Fee Notices', href: '/admin/fees/bulk-notice', icon: Receipt },
   { title: 'Payment History', href: '/admin/payments', icon: History },
   { title: 'Circulars', href: '/admin/circulars', icon: Megaphone },
-  { title: 'Notice Summarizer (AI)', href: '/admin/notices/summary', icon: Sparkles },
+  // Removed AI Assistant from here as it's now a floating UI element
+  // { title: 'AI Assistant', href: '/admin/ai-assistant', icon: Sparkles }, 
   { title: 'Reports', href: '/admin/reports/overview', icon: BarChart3 },
 ];
 
@@ -42,4 +43,3 @@ export const staffNavItems: NavItem[] = [
   { title: 'Timetable', href: '/staff/timetable', icon: CalendarDays },
   { title: 'Circulars', href: '/staff/circulars', icon: Megaphone },
 ];
-
