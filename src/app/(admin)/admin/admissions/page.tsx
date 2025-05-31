@@ -41,7 +41,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-  DropdownMenuLabel, // Added missing import
+  DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
 
@@ -364,4 +364,3 @@ export default function AdminAdmissionsPage() {
     </div>
   );
 }
-

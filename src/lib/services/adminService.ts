@@ -150,7 +150,7 @@ export async function createAdminBulkFeeNotice(data: BulkFeeNoticeFormValues): P
 }
 
 // Mock data for Admin Admissions Management
-const MOCK_STUDENT_APPLICATIONS: StudentApplication[] = [
+let MOCK_STUDENT_APPLICATIONS: StudentApplication[] = [
   {
     id: `APP_${Date.now() - 100000}`,
     applicantName: 'Riya Sharma',
@@ -184,7 +184,7 @@ const MOCK_STUDENT_APPLICATIONS: StudentApplication[] = [
 export async function getAdminStudentApplications(): Promise<StudentApplication[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve([...MOCK_STUDENT_APPLICATIONS]);
+      resolve([...MOCK_STUDENT_APPLICATIONS].sort((a,b) => new Date(b.applicationDate).getTime() - new Date(a.applicationDate).getTime()));
     }, 750);
   });
 }
