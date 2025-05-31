@@ -1,4 +1,5 @@
 
+
 import type { LucideIcon } from 'lucide-react';
 import { z } from 'zod';
 
@@ -157,6 +158,7 @@ export type BulkFeeNoticeFormValues = z.infer<typeof BulkFeeNoticeFormSchema>;
 export interface BulkFeeNoticeDefinition extends BulkFeeNoticeFormValues {
   id: string;
   generatedDate: string; // ISO string date
+  dueDate: Date; // Ensure dueDate is a Date object
 }
 
 // Admin Admissions Management Types
@@ -254,4 +256,14 @@ export interface StaffProfile {
   dateOfJoining: string; // ISO Date string
   qualifications: string[];
   avatarUrl?: string;
+}
+
+// Admin Reports Overview
+export interface ReportListItem {
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  href?: string; // Optional if isImplemented is false
+  actionText: string;
+  isImplemented: boolean;
 }
