@@ -13,12 +13,14 @@ export interface NavItem {
 }
 
 // Student Dashboard Specific Types
-export interface StudentProfile {
-  name: string;
-  avatarUrl?: string;
-  studentId: string;
-  classSection: string;
-}
+export const StudentProfileSchema = z.object({
+  name: z.string(),
+  avatarUrl: z.string().optional(),
+  studentId: z.string(),
+  classSection: z.string(),
+});
+export type StudentProfile = z.infer<typeof StudentProfileSchema>;
+
 
 export interface PendingFee {
   amount: string;
@@ -57,52 +59,60 @@ export interface StudentDashboardData {
 }
 
 // Student Fee Notices Types
-export type FeeNoticeStatus = 'Pending' | 'Paid' | 'Overdue';
+export const feeNoticeStatuses = ['Pending', 'Paid', 'Overdue'] as const;
+export type FeeNoticeStatus = typeof feeNoticeStatuses[number];
 
-export interface FeeNotice {
-  id: string;
-  title: string;
-  description?: string;
-  amount: number;
-  dueDate: string; // ISO Date string
-  status: FeeNoticeStatus;
-  paymentLink?: string; // Could be used for actual payment integration
-}
+export const FeeNoticeSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  amount: z.number(),
+  dueDate: z.string(), 
+  status: z.enum(feeNoticeStatuses),
+  paymentLink: z.string().optional(),
+});
+export type FeeNotice = z.infer<typeof FeeNoticeSchema>;
+
 
 // Student Report Card Types
-export interface SubjectGrade {
-  id: string;
-  subjectName: string;
-  grade: string;
-  marks?: number;
-  maxMarks?: number;
-  remarks?: string;
-}
+export const SubjectGradeSchema = z.object({
+  id: z.string(),
+  subjectName: z.string(),
+  grade: z.string(),
+  marks: z.number().optional(),
+  maxMarks: z.number().optional(),
+  remarks: z.string().optional(),
+});
+export type SubjectGrade = z.infer<typeof SubjectGradeSchema>;
 
-export interface ReportCardData {
-  id: string;
-  termName: string;
-  issueDate: string; // ISO Date string
-  subjects: SubjectGrade[];
-  overallPercentage?: string;
-  overallGrade?: string;
-  classRank?: string;
-  teacherComments?: string;
-  downloadLink?: string;
-}
+export const ReportCardDataSchema = z.object({
+  id: z.string(),
+  termName: z.string(),
+  issueDate: z.string(), 
+  subjects: z.array(SubjectGradeSchema),
+  overallPercentage: z.string().optional(),
+  overallGrade: z.string().optional(),
+  classRank: z.string().optional(),
+  teacherComments: z.string().optional(),
+  downloadLink: z.string().optional(),
+});
+export type ReportCardData = z.infer<typeof ReportCardDataSchema>;
+
 
 // Circulars Types (Used by both Student and Admin)
 export const circularCategories = ["Academics", "Events", "Holidays", "Urgent", "General"] as const;
 export type CircularCategory = typeof circularCategories[number];
 
-export interface Circular {
-  id: string;
-  title: string;
-  date: string; // ISO Date string
-  summary: string;
-  category?: CircularCategory;
-  attachmentLink?: string;
-}
+export const CircularSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  date: z.string(), 
+  summary: z.string(),
+  category: z.enum(circularCategories).optional(),
+  attachmentLink: z.string().optional(),
+});
+export type Circular = z.infer<typeof CircularSchema>;
+
 
 export const CreateCircularSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters long." }),
@@ -114,35 +124,42 @@ export type CreateCircularFormValues = z.infer<typeof CreateCircularSchema>;
 
 
 // Timetable Types (Shared by Student, Staff and Admin)
-export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
+export const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+export type DayOfWeek = typeof daysOfWeek[number];
 
-export interface TimetableEntry {
-  id: string;
-  day: DayOfWeek;
-  period: number;
-  timeSlot: string;
-  subject: string;
-  teacher: string;
-  class?: string; // Optional: For admin/staff view to specify class
-  section?: string; // Optional: For admin/staff view to specify section
-}
+
+export const TimetableEntrySchema = z.object({
+  id: z.string(),
+  day: z.enum(daysOfWeek),
+  period: z.number(),
+  timeSlot: z.string(),
+  subject: z.string(),
+  teacher: z.string(),
+  class: z.string().optional(), 
+  section: z.string().optional(), 
+});
+export type TimetableEntry = z.infer<typeof TimetableEntrySchema>;
 
 
 // Student Payment History Types & Admin Payment History Types
-export interface PaymentRecord {
-  id: string;
-  paymentDate: string; // ISO string date
-  description: string;
-  amountPaid: number;
-  paymentMethod: string;
-  transactionId?: string;
-  receiptLink?: string;
-}
+export const PaymentRecordSchema = z.object({
+  id: z.string(),
+  paymentDate: z.string(), 
+  description: z.string(),
+  amountPaid: z.number(),
+  paymentMethod: z.string(),
+  transactionId: z.string().optional(),
+  receiptLink: z.string().optional(),
+});
+export type PaymentRecord = z.infer<typeof PaymentRecordSchema>;
 
-export interface AdminPaymentRecord extends PaymentRecord {
-  studentId: string;
-  studentName: string;
-}
+
+export const AdminPaymentRecordSchema = PaymentRecordSchema.extend({
+  studentId: z.string(),
+  studentName: z.string(),
+});
+export type AdminPaymentRecord = z.infer<typeof AdminPaymentRecordSchema>;
+
 
 export const AdminPaymentFiltersSchema = z.object({
   studentIdOrName: z.string().optional(),
@@ -167,11 +184,13 @@ export const BulkFeeNoticeFormSchema = z.object({
 
 export type BulkFeeNoticeFormValues = z.infer<typeof BulkFeeNoticeFormSchema>;
 
-export interface BulkFeeNoticeDefinition extends BulkFeeNoticeFormValues {
-  id: string;
-  generatedDate: string; // ISO string date
-  dueDate: Date; // Ensure dueDate is a Date object
-}
+export const BulkFeeNoticeDefinitionSchema = BulkFeeNoticeFormSchema.extend({
+  id: z.string(),
+  generatedDate: z.string(), 
+  dueDate: z.date(), 
+});
+export type BulkFeeNoticeDefinition = z.infer<typeof BulkFeeNoticeDefinitionSchema>;
+
 
 // Admin Admissions Management Types
 export const applicationStatuses = ['Pending Review', 'Approved', 'Rejected', 'Waitlisted', 'Interview Scheduled'] as const;
@@ -191,26 +210,30 @@ export const StudentApplicationFormSchema = z.object({
 
 export type StudentApplicationFormValues = z.infer<typeof StudentApplicationFormSchema>;
 
-export interface StudentApplication extends StudentApplicationFormValues {
-  id: string;
-  status: ApplicationStatus;
-  applicationDate: string; // Store as ISO string
-}
+export const StudentApplicationSchema = StudentApplicationFormSchema.extend({
+  id: z.string(),
+  status: z.enum(applicationStatuses),
+  applicationDate: z.string(), 
+});
+export type StudentApplication = z.infer<typeof StudentApplicationSchema>;
+
 
 // General Attendance Types
 export const attendanceStatuses = ['Present', 'Absent', 'Late', 'Excused'] as const;
 export type AttendanceStatus = typeof attendanceStatuses[number];
 
 // Admin Student Attendance Types
-export interface StudentAttendanceRecord {
-  id: string;
-  studentId: string;
-  studentName: string;
-  class: string;
-  section: string;
-  date: string; // ISO Date string
-  status: AttendanceStatus;
-}
+export const StudentAttendanceRecordSchema = z.object({
+  id: z.string(),
+  studentId: z.string(),
+  studentName: z.string(),
+  class: z.string(),
+  section: z.string(),
+  date: z.string(), 
+  status: z.enum(attendanceStatuses),
+});
+export type StudentAttendanceRecord = z.infer<typeof StudentAttendanceRecordSchema>;
+
 
 export const StudentAttendanceFilterSchema = z.object({
   classFilter: z.string().optional(),
@@ -220,14 +243,16 @@ export const StudentAttendanceFilterSchema = z.object({
 export type StudentAttendanceFilterFormValues = z.infer<typeof StudentAttendanceFilterSchema>;
 
 // Admin & Staff Attendance Types
-export interface StaffAttendanceRecord {
-  id: string;
-  staffId: string;
-  staffName: string;
-  department: string;
-  date: string; // ISO Date string
-  status: AttendanceStatus;
-}
+export const StaffAttendanceRecordSchema = z.object({
+  id: z.string(),
+  staffId: z.string(),
+  staffName: z.string(),
+  department: z.string(),
+  date: z.string(), 
+  status: z.enum(attendanceStatuses),
+});
+export type StaffAttendanceRecord = z.infer<typeof StaffAttendanceRecordSchema>;
+
 
 export const StaffAttendanceFilterSchema = z.object({
   departmentFilter: z.string().optional(),
@@ -250,22 +275,26 @@ export const ExpenseFormSchema = z.object({
 });
 export type ExpenseFormValues = z.infer<typeof ExpenseFormSchema>;
 
-export interface ExpenseRecord extends ExpenseFormValues {
-  id: string;
-  date: string; // Stored as ISO string
-}
+export const ExpenseRecordSchema = ExpenseFormSchema.extend({
+  id: z.string(),
+  date: z.string(), 
+});
+export type ExpenseRecord = z.infer<typeof ExpenseRecordSchema>;
+
 
 // Admin Staff Management Types
-export interface AdminStaffListItem {
-  id: string;
-  staffId: string;
-  name: string;
-  role: string;
-  department: string;
-  email: string;
-  phone?: string;
-  joiningDate: string; // ISO string
-}
+export const AdminStaffListItemSchema = z.object({
+  id: z.string(),
+  staffId: z.string(),
+  name: z.string(),
+  role: z.string(),
+  department: z.string(),
+  email: z.string(),
+  phone: z.string().optional(),
+  joiningDate: z.string(), 
+});
+export type AdminStaffListItem = z.infer<typeof AdminStaffListItemSchema>;
+
 
 // Admin Timetable Management Types
 export const AdminTimetableFilterSchema = z.object({
@@ -276,25 +305,35 @@ export const AdminTimetableFilterSchema = z.object({
 export type AdminTimetableFilterFormValues = z.infer<typeof AdminTimetableFilterSchema>;
 
 // Staff Profile (for Staff Portal)
-export interface StaffProfile {
-  id: string;
-  staffId: string;
-  name: string;
-  role: string;
-  department: string;
-  email: string;
-  phone: string;
-  dateOfJoining: string; // ISO Date string
-  qualifications: string[];
-  avatarUrl?: string;
-}
+export const StaffProfileSchema = z.object({
+  id: z.string(),
+  staffId: z.string(),
+  name: z.string(),
+  role: z.string(),
+  department: z.string(),
+  email: z.string(),
+  phone: z.string(),
+  dateOfJoining: z.string(), 
+  qualifications: z.array(z.string()),
+  avatarUrl: z.string().optional(),
+});
+export type StaffProfile = z.infer<typeof StaffProfileSchema>;
+
 
 // Admin Reports Overview
 export interface ReportListItem {
   title: string;
   description: string;
   icon: LucideIcon;
-  href?: string; // Optional if isImplemented is false
+  href?: string; 
   actionText: string;
   isImplemented: boolean;
+}
+
+// AI Assistant Chat Message Type
+export interface ChatMessage {
+  id: string;
+  text: string;
+  sender: 'user' | 'ai';
+  timestamp: Date;
 }

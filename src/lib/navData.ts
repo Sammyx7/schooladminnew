@@ -10,6 +10,7 @@ import {
 // Admin Nav Items based on the new image
 export const adminNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
+  { title: 'AI Assistant', href: '/admin/ai-assistant', icon: Sparkles },
   { title: 'Students', href: '/admin/students', icon: Users },
   { title: 'Staff', href: '/admin/staff', icon: Briefcase },
   { title: 'Attendance', href: '/admin/attendance/student', icon: CalendarCheck },
