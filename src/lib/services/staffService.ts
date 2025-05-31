@@ -28,16 +28,19 @@ export async function getStaffProfileData(staffId: string): Promise<StaffProfile
 }
 
 const MOCK_STAFF_CIRCULARS: Circular[] = [
-  { id: 'CIR_STF_001', title: 'Mandatory Training Session: New Assessment Policies', date: '2024-08-10', summary: 'All teaching staff are required to attend a training session on the updated assessment policies.', category: 'Academics', attachmentLink: '#' },
-  { id: 'CIR_STF_002', title: 'Staff Meeting Schedule - August 2024', date: '2024-07-28', summary: 'The schedule for upcoming staff meetings in August is now available.', category: 'General' },
-  { id: 'CIR_STF_003', title: 'Professional Development Workshop Opportunity', date: '2024-07-20', summary: 'Opportunity to enroll in an advanced workshop on "Digital Tools in Education". Limited seats.', category: 'Events', attachmentLink: '#' },
+  { id: 'CIR_STF_001', title: 'Mandatory Training Session: New Assessment Policies', date: new Date('2024-08-10').toISOString(), summary: 'All teaching staff are required to attend a training session on the updated assessment policies.', category: 'Academics', attachmentLink: 'https://placehold.co/training_details.pdf' },
+  { id: 'CIR_STF_002', title: 'Staff Meeting Schedule - August 2024', date: new Date('2024-07-28').toISOString(), summary: 'The schedule for upcoming staff meetings in August is now available. Agenda includes discussion on annual day prep.', category: 'General' },
+  { id: 'CIR_STF_003', title: 'Professional Development Workshop Opportunity', date: new Date('2024-07-20').toISOString(), summary: 'Opportunity to enroll in an advanced workshop on "Digital Tools in Education". Limited seats available. Please register by EOD.', category: 'Events', attachmentLink: 'https://placehold.co/workshop_brochure.pdf' },
+  { id: 'CIR_STF_004', title: 'Holiday Reminder: Janmashtami', date: new Date('2024-08-20').toISOString(), summary: 'The school will remain closed on August 26th, 2024 on account of Janmashtami.', category: 'Holidays'},
 ];
 
 export async function getStaffCirculars(staffId: string): Promise<Circular[]> {
   // In a real app, filter circulars relevant to the staff member or their department
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve([...MOCK_STAFF_CIRCULARS]);
+      // Sort by date descending before resolving
+      const sortedCirculars = [...MOCK_STAFF_CIRCULARS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      resolve(sortedCirculars);
     }, 700);
   });
 }

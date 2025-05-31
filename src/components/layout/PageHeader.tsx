@@ -4,7 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 interface PageHeaderProps {
   title: string;
   description?: string;
-  icon?: LucideIcon; // Icon is optional as per dashboard image
+  icon?: LucideIcon; 
   actions?: React.ReactNode;
 }
 
@@ -12,8 +12,8 @@ export function PageHeader({ title, description, icon: Icon, actions }: PageHead
   return (
     <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        {Icon && ( // Only render Icon container if Icon is provided
-          <div className="flex items-center gap-2 mb-1"> 
+        {Icon && ( 
+          <div className="mb-1"> {/* Removed flex items-center gap-2 if only icon is present */}
             <Icon className="h-6 w-6 text-primary" />
           </div>
         )}

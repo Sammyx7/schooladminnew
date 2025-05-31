@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { StudentProfile } from '@/lib/types';
-import { getAdminStudentList } from '@/lib/services/adminService'; // New service
+import { getAdminStudentList } from '@/lib/services/adminService'; 
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminStudentsPage() {
@@ -37,25 +37,22 @@ export default function AdminStudentsPage() {
         setStudents(data);
         setFilteredStudents(data);
       } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unknown error occurred while fetching student data.");
-        }
-        console.error("Failed to fetch students:", err);
+        const errorMessage = err instanceof Error ? err.message : "An unknown error occurred fetching student data.";
+        setError(errorMessage);
+        toast({ title: "Error Fetching Students", description: errorMessage, variant: "destructive" });
       } finally {
         setIsLoading(false);
       }
     }
     fetchData();
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     const lowercasedFilter = searchTerm.toLowerCase();
     const filteredData = students.filter(student =>
       student.name.toLowerCase().includes(lowercasedFilter) ||
       student.studentId.toLowerCase().includes(lowercasedFilter) ||
-      student.classSection.toLowerCase().includes(lowercasedFilter)
+      (student.classSection && student.classSection.toLowerCase().includes(lowercasedFilter))
     );
     setFilteredStudents(filteredData);
   }, [searchTerm, students]);
