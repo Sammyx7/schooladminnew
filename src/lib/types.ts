@@ -113,7 +113,7 @@ export const CreateCircularSchema = z.object({
 export type CreateCircularFormValues = z.infer<typeof CreateCircularSchema>;
 
 
-// Student Timetable Types
+// Timetable Types (Shared by Student and Admin)
 export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday';
 
 export interface TimetableEntry {
@@ -123,7 +123,10 @@ export interface TimetableEntry {
   timeSlot: string;
   subject: string;
   teacher: string;
+  class?: string; // Optional: For admin view to specify class
+  section?: string; // Optional: For admin view to specify section
 }
+
 
 // Student Payment History Types
 export interface PaymentRecord {
@@ -217,4 +220,38 @@ export type ExpenseFormValues = z.infer<typeof ExpenseFormSchema>;
 export interface ExpenseRecord extends ExpenseFormValues {
   id: string;
   date: string; // Stored as ISO string
+}
+
+// Admin Staff Management Types
+export interface AdminStaffListItem {
+  id: string;
+  staffId: string;
+  name: string;
+  role: string;
+  department: string;
+  email: string;
+  phone?: string;
+  joiningDate: string; // ISO string
+}
+
+// Admin Timetable Management Types
+export const AdminTimetableFilterSchema = z.object({
+  classFilter: z.string().optional(),
+  sectionFilter: z.string().optional(),
+  teacherFilter: z.string().optional(),
+});
+export type AdminTimetableFilterFormValues = z.infer<typeof AdminTimetableFilterSchema>;
+
+// Staff Profile (for Staff Portal)
+export interface StaffProfile {
+  id: string;
+  staffId: string;
+  name: string;
+  role: string;
+  department: string;
+  email: string;
+  phone: string;
+  dateOfJoining: string; // ISO Date string
+  qualifications: string[];
+  avatarUrl?: string;
 }

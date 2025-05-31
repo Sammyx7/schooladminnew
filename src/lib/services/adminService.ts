@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, StudentAttendanceRecord, StudentAttendanceFilterFormValues, AttendanceStatus, ExpenseRecord, ExpenseFormValues } from '@/lib/types';
+import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, StudentAttendanceRecord, StudentAttendanceFilterFormValues, AttendanceStatus, ExpenseRecord, ExpenseFormValues, AdminStaffListItem, TimetableEntry, DayOfWeek, AdminTimetableFilterFormValues } from '@/lib/types';
 import { format, parseISO, isEqual, startOfDay } from 'date-fns';
 
 // Mock data for a list of students for the admin view
@@ -280,4 +280,57 @@ export async function createAdminExpenseRecord(data: ExpenseFormValues): Promise
       resolve(newExpense);
     }, 400);
   });
+}
+
+
+// Admin Staff Management
+const MOCK_ADMIN_STAFF_LIST: AdminStaffListItem[] = [
+  { id: 'STF001', staffId: 'TCH101', name: 'Dr. Anjali Sharma', role: 'Principal', department: 'Administration', email: 'anjali.sharma@example.com', phone: '9876543210', joiningDate: '2010-05-15' },
+  { id: 'STF002', staffId: 'TCH102', name: 'Mr. Vikram Singh', role: 'Mathematics Teacher', department: 'Academics - Senior Secondary', email: 'vikram.singh@example.com', phone: '9876543211', joiningDate: '2015-08-01' },
+  { id: 'STF003', staffId: 'TCH103', name: 'Ms. Priya Patel', role: 'Science Coordinator', department: 'Academics - Middle School', email: 'priya.patel@example.com', phone: '9876543212', joiningDate: '2018-06-20' },
+  { id: 'STF004', staffId: 'ADM001', name: 'Mr. Rajesh Kumar', role: 'Accountant', department: 'Administration', email: 'rajesh.kumar@example.com', phone: '9876543213', joiningDate: '2019-01-10' },
+  { id: 'STF005', staffId: 'SUP001', name: 'Mrs. Sunita Devi', role: 'Librarian', department: 'Support Staff', email: 'sunita.devi@example.com', phone: '9876543214', joiningDate: '2012-03-01' },
+];
+
+export async function getAdminStaffList(): Promise<AdminStaffListItem[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([...MOCK_ADMIN_STAFF_LIST]);
+    }, 700);
+  });
+}
+
+// Admin Timetable Management
+const MOCK_ADMIN_TIMETABLE_ENTRIES: TimetableEntry[] = [
+  // Class 10A
+  { id: 'ATT001', day: 'Monday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Mathematics', teacher: 'Mr. V. Singh', class: '10', section: 'A' },
+  { id: 'ATT002', day: 'Monday', period: 2, timeSlot: '09:45 - 10:30', subject: 'Physics', teacher: 'Ms. P. Patel', class: '10', section: 'A' },
+  { id: 'ATT003', day: 'Tuesday', period: 1, timeSlot: '09:00 - 09:45', subject: 'English', teacher: 'Mrs. S. Iyer', class: '10', section: 'A' },
+  // Class 9B
+  { id: 'ATT004', day: 'Monday', period: 1, timeSlot: '09:00 - 09:45', subject: 'History', teacher: 'Mr. R. Khan', class: '9', section: 'B' },
+  { id: 'ATT005', day: 'Monday', period: 2, timeSlot: '09:45 - 10:30', subject: 'Geography', teacher: 'Ms. A. Desai', class: '9', section: 'B' },
+  { id: 'ATT006', day: 'Tuesday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Biology', teacher: 'Dr. N. Reddy', class: '9', section: 'B' },
+  // Shared Teacher
+  { id: 'ATT007', day: 'Wednesday', period: 3, timeSlot: '10:45 - 11:30', subject: 'Mathematics', teacher: 'Mr. V. Singh', class: '9', section: 'B' },
+  { id: 'ATT008', day: 'Wednesday', period: 4, timeSlot: '11:30 - 12:15', subject: 'Computer Science', teacher: 'Ms. P. Patel', class: '10', section: 'A' },
+];
+
+export async function getAdminTimetable(filters?: AdminTimetableFilterFormValues): Promise<TimetableEntry[]> {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            let filteredEntries = [...MOCK_ADMIN_TIMETABLE_ENTRIES];
+            if (filters) {
+                if (filters.classFilter) {
+                    filteredEntries = filteredEntries.filter(e => e.class?.toLowerCase().includes(filters.classFilter!.toLowerCase()));
+                }
+                if (filters.sectionFilter) {
+                    filteredEntries = filteredEntries.filter(e => e.section?.toLowerCase().includes(filters.sectionFilter!.toLowerCase()));
+                }
+                if (filters.teacherFilter) {
+                    filteredEntries = filteredEntries.filter(e => e.teacher.toLowerCase().includes(filters.teacherFilter!.toLowerCase()));
+                }
+            }
+            resolve(filteredEntries);
+        }, 600);
+    });
 }
