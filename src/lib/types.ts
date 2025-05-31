@@ -1,5 +1,4 @@
 
-
 import type { LucideIcon } from 'lucide-react';
 import { z } from 'zod';
 
@@ -185,10 +184,11 @@ export interface StudentApplication extends StudentApplicationFormValues {
   applicationDate: string; // Store as ISO string
 }
 
-// Admin Student Attendance Types
+// General Attendance Types
 export const attendanceStatuses = ['Present', 'Absent', 'Late', 'Excused'] as const;
 export type AttendanceStatus = typeof attendanceStatuses[number];
 
+// Admin Student Attendance Types
 export interface StudentAttendanceRecord {
   id: string;
   studentId: string;
@@ -205,6 +205,24 @@ export const StudentAttendanceFilterSchema = z.object({
   dateFilter: z.date().optional(),
 });
 export type StudentAttendanceFilterFormValues = z.infer<typeof StudentAttendanceFilterSchema>;
+
+// Admin Staff Attendance Types
+export interface StaffAttendanceRecord {
+  id: string;
+  staffId: string;
+  staffName: string;
+  department: string;
+  date: string; // ISO Date string
+  status: AttendanceStatus;
+}
+
+export const StaffAttendanceFilterSchema = z.object({
+  departmentFilter: z.string().optional(),
+  staffNameOrIdFilter: z.string().optional(),
+  dateFilter: z.date().optional(),
+});
+export type StaffAttendanceFilterFormValues = z.infer<typeof StaffAttendanceFilterSchema>;
+
 
 // Admin Expenses Management Types
 export const expenseCategories = ['Utilities', 'Salaries', 'Supplies', 'Maintenance', 'Events', 'Transport', 'Other'] as const;

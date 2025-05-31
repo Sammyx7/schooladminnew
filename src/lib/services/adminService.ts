@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, StudentAttendanceRecord, StudentAttendanceFilterFormValues, AttendanceStatus, ExpenseRecord, ExpenseFormValues, AdminStaffListItem, TimetableEntry, DayOfWeek, AdminTimetableFilterFormValues } from '@/lib/types';
+import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, StudentAttendanceRecord, StudentAttendanceFilterFormValues, AttendanceStatus, ExpenseRecord, ExpenseFormValues, AdminStaffListItem, TimetableEntry, DayOfWeek, AdminTimetableFilterFormValues, StaffAttendanceRecord, StaffAttendanceFilterFormValues } from '@/lib/types';
 import { format, parseISO, isEqual, startOfDay } from 'date-fns';
 
 // Mock data for a list of students for the admin view
@@ -333,4 +333,39 @@ export async function getAdminTimetable(filters?: AdminTimetableFilterFormValues
             resolve(filteredEntries);
         }, 600);
     });
+}
+
+// Admin Staff Attendance Management
+const MOCK_STAFF_ATTENDANCE_RECORDS: StaffAttendanceRecord[] = [
+  { id: 'S_ATT001', staffId: 'TCH101', staffName: 'Dr. Anjali Sharma', department: 'Administration', date: today.toISOString(), status: 'Present' },
+  { id: 'S_ATT002', staffId: 'TCH102', staffName: 'Mr. Vikram Singh', department: 'Academics - Senior Secondary', date: today.toISOString(), status: 'Absent' },
+  { id: 'S_ATT003', staffId: 'ADM001', staffName: 'Mr. Rajesh Kumar', department: 'Administration', date: today.toISOString(), status: 'Late' },
+  { id: 'S_ATT004', staffId: 'TCH101', staffName: 'Dr. Anjali Sharma', department: 'Administration', date: yesterday.toISOString(), status: 'Present' },
+  { id: 'S_ATT005', staffId: 'TCH102', staffName: 'Mr. Vikram Singh', department: 'Academics - Senior Secondary', date: yesterday.toISOString(), status: 'Present' },
+  { id: 'S_ATT006', staffId: 'TCH103', staffName: 'Ms. Priya Patel', department: 'Academics - Middle School', date: today.toISOString(), status: 'Excused' },
+];
+
+export async function getAdminStaffAttendanceRecords(filters?: StaffAttendanceFilterFormValues): Promise<StaffAttendanceRecord[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      let filteredRecords = [...MOCK_STAFF_ATTENDANCE_RECORDS];
+      if (filters) {
+        if (filters.departmentFilter) {
+          filteredRecords = filteredRecords.filter(r => r.department.toLowerCase().includes(filters.departmentFilter!.toLowerCase()));
+        }
+        if (filters.staffNameOrIdFilter) {
+          const searchTerm = filters.staffNameOrIdFilter.toLowerCase();
+          filteredRecords = filteredRecords.filter(r => 
+            r.staffName.toLowerCase().includes(searchTerm) || 
+            r.staffId.toLowerCase().includes(searchTerm)
+          );
+        }
+        if (filters.dateFilter) {
+          const filterDate = startOfDay(filters.dateFilter);
+          filteredRecords = filteredRecords.filter(r => isEqual(startOfDay(parseISO(r.date)), filterDate));
+        }
+      }
+      resolve(filteredRecords);
+    }, 650);
+  });
 }
