@@ -2,7 +2,7 @@
 import type { NavItem } from './types';
 import {
   LayoutDashboard, Users, UserCircle, Receipt, Briefcase, FileText, Sparkles,
-  Mail, History, UserPlus, QrCode, CalendarCheck,
+  Mail, History, UserPlus, QrCode, CalendarCheck, UserCheck, // Added UserCheck
   CalendarDays, BookOpen, TrendingUp, ClipboardEdit, Printer,
   Megaphone, Send, Bus, Route, BarChart3, Settings, DollarSign, FileSearch, MessageSquare
 } from 'lucide-react';
@@ -10,11 +10,10 @@ import {
 // Admin Nav Items based on the new image
 export const adminNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-  // AI Assistant is now a floating widget, so removing from main nav
-  // { title: 'AI Assistant', href: '/admin/ai-assistant', icon: MessageSquare }, 
   { title: 'Students', href: '/admin/students', icon: Users },
   { title: 'Staff', href: '/admin/staff', icon: Briefcase },
-  { title: 'Attendance', href: '/admin/attendance/student', icon: CalendarCheck },
+  { title: 'Student Attendance', href: '/admin/attendance/student', icon: CalendarCheck }, // Renamed
+  { title: 'Staff Attendance', href: '/admin/attendance/staff', icon: UserCheck }, // Added
   { title: 'Admissions', href: '/admin/admissions', icon: UserPlus },
   { title: 'Timetable', href: '/admin/timetable', icon: CalendarDays },
   { title: 'Expenses', href: '/admin/expenses', icon: DollarSign },
@@ -43,3 +42,4 @@ export const staffNavItems: NavItem[] = [
   { title: 'Timetable', href: '/staff/timetable', icon: CalendarDays },
   { title: 'Circulars', href: '/staff/circulars', icon: Megaphone },
 ];
+
