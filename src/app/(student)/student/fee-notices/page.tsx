@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, type FormEvent } from 'react';
-import Image from 'next/image'; // Added for UPI QR code placeholder
+import Image from 'next/image';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Receipt, Loader2, AlertCircle as AlertIcon, CreditCard, CheckCircle, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"; // Added Tabs
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function StudentFeeNoticesPage() {
   const [feeNotices, setFeeNotices] = useState<FeeNotice[]>([]);
@@ -252,7 +252,7 @@ export default function StudentFeeNoticesPage() {
                   <div className="flex flex-col items-center gap-4">
                     <div className="p-2 border rounded-md bg-background">
                       <Image 
-                        src="https://placehold.co/160x160.png" // Placeholder QR
+                        src="https://placehold.co/160x160.png"
                         alt="Mock UPI QR Code" 
                         width={160} 
                         height={160}
