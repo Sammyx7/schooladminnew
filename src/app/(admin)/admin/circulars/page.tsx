@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"; // Removed AlertDialogTrigger from here as it's not needed for this fix, but was present.
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -222,11 +222,9 @@ export default function AdminCircularsPage() {
                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditCircular(circ)}>
                             <Edit className="h-4 w-4" /> <span className="sr-only">Edit</span>
                         </Button>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setCircularToDelete(circ)}>
-                                <Trash2 className="h-4 w-4" /> <span className="sr-only">Delete</span>
-                            </Button>
-                        </AlertDialogTrigger>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setCircularToDelete(circ)}>
+                            <Trash2 className="h-4 w-4" /> <span className="sr-only">Delete</span>
+                        </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -323,6 +321,7 @@ export default function AdminCircularsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* AlertDialog for delete confirmation remains controlled by circularToDelete state */}
       {circularToDelete && (
         <AlertDialog open={!!circularToDelete} onOpenChange={() => setCircularToDelete(null)}>
           <AlertDialogContent>
