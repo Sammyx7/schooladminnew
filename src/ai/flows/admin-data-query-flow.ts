@@ -27,10 +27,13 @@ import {
   AdminStaffListItemSchema,
   AdminPaymentRecordSchema,
   CircularSchema,
+  circularCategories, // Added import
   StudentAttendanceRecordSchema,
   StaffAttendanceRecordSchema,
   ExpenseRecordSchema,
-  StudentApplicationSchema
+  expenseCategories, // Added import
+  StudentApplicationSchema,
+  applicationStatuses // Added import
 } from '@/lib/types';
 
 
@@ -298,3 +301,4 @@ const adminDataQueryFlow = ai.defineFlow(
 export async function querySchoolData(input: AdminDataQueryInput): Promise<AdminDataQueryOutput> {
   return adminDataQueryFlow(input);
 }
+
