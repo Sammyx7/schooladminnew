@@ -21,7 +21,7 @@ export async function getAIResponseForAdminQuery(input: AIResponseActionInput): 
     const genkitInput: AdminDataQueryInput = { question: input.question };
     const result = await querySchoolData(genkitInput);
     return { answer: result.answer };
-  } catch (error)
+  } catch (error) { // Added the missing opening brace here
     console.error("Error in querySchoolData flow:", error);
     if (error instanceof Error) {
         return { error: `AI assistant failed to respond: ${error.message}` };
@@ -29,3 +29,4 @@ export async function getAIResponseForAdminQuery(input: AIResponseActionInput): 
     return { error: "An unexpected error occurred with the AI assistant." };
   }
 }
+
