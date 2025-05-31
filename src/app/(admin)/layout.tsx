@@ -2,7 +2,7 @@
 "use client";
 
 import type { ReactNode } from 'react';
-import { SidebarProvider, useSidebar } from '@/components/ui/sidebar'; // Added useSidebar
+import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { adminNavItems } from '@/lib/navData';
@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 function AdminLayoutContent({ children }: { children: ReactNode }) {
   const { userRole } = useAuth();
   const { isAIDocked } = useAISidebar();
-  const { state: sidebarState } = useSidebar(); // Get sidebar state (expanded/collapsed)
+  const { state: sidebarState } = useSidebar();
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -27,14 +27,13 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
             navItems={adminNavItems} 
             role="admin" 
             className="fixed left-0 top-16 bottom-0 z-30 hidden md:block"
-            collapsible="icon" // Ensure it's collapsible to icon
+            collapsible="icon"
           />
         )}
         <main 
           className={cn(
-            "flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto transition-all duration-300 ease-in-out",
+            "flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto duration-300 ease-in-out transition-[margin-left]", // Changed from transition-all
             sidebarState === 'expanded' ? 'md:ml-[var(--sidebar-width)]' : 'md:ml-[var(--sidebar-width-icon)]',
-            // Use explicit pixel value for AI sidebar margin
             isAIDocked ? "mr-[360px]" : "mr-0" 
           )}
         >
@@ -49,7 +48,7 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <ProtectedRoute allowedRoles={['admin']}>
-      <SidebarProvider defaultOpen={true}> {/* Ensure SidebarProvider is here */}
+      <SidebarProvider defaultOpen={true}>
         <AISidebarProvider>
           <AdminLayoutContent>{children}</AdminLayoutContent>
         </AISidebarProvider>
