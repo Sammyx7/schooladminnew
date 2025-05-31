@@ -73,14 +73,14 @@ export default function AdminStudentsPage() {
 
 
   return (
-    <div className="space-y-6 w-full"> {/* Ensures this div takes full width of its parent (<main>) */}
+    <div className="space-y-6 w-full"> {/* Ensure this root div is w-full */}
       <PageHeader
         title="Student Management"
         icon={Users}
         description="View, search, and manage student profiles and details."
       />
 
-      <Card className="border shadow-md"> {/* Card will now expand within the w-full div */}
+      <Card className="border shadow-md w-full"> {/* Explicitly make Card w-full */}
         <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <CardTitle className="text-xl font-semibold">Student List</CardTitle>
           <div className="relative w-full sm:w-auto sm:max-w-xs">
