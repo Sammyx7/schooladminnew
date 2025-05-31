@@ -233,6 +233,9 @@ const MOCK_STUDENT_ATTENDANCE_RECORDS: StudentAttendanceRecord[] = [
   { id: 'ATT004', studentId: 'S10234', studentName: 'Aisha Sharma', class: '10', section: 'A', date: yesterday.toISOString(), status: 'Late' },
   { id: 'ATT005', studentId: 'S10237', studentName: 'Karan Mehta', class: '10', section: 'A', date: yesterday.toISOString(), status: 'Excused' },
   { id: 'ATT006', studentId: 'S10239', studentName: 'Vikram Reddy', class: '9', section: 'C', date: today.toISOString(), status: 'Present' },
+  { id: 'ATT007', studentId: 'S10240', studentName: 'Ananya Joshi', class: '11', section: 'Arts', date: today.toISOString(), status: 'Present' },
+  { id: 'ATT008', studentId: 'S10238', studentName: 'Sneha Patel', class: '12', section: 'Science', date: dayBeforeYesterday.toISOString(), status: 'Present' },
+  { id: 'ATT009', studentId: 'S10236', studentName: 'Priya Singh', class: '11', section: 'Commerce', date: dayBeforeYesterday.toISOString(), status: 'Absent' },
 ];
 
 export async function getAdminStudentAttendanceRecords(filters?: StudentAttendanceFilterFormValues): Promise<StudentAttendanceRecord[]> {
@@ -251,7 +254,7 @@ export async function getAdminStudentAttendanceRecords(filters?: StudentAttendan
           filteredRecords = filteredRecords.filter(r => isEqual(startOfDay(parseISO(r.date)), filterDate));
         }
       }
-      resolve(filteredRecords);
+      resolve(filteredRecords.sort((a,b) => parseISO(b.date).getTime() - parseISO(a.date).getTime()));
     }, 600);
   });
 }
@@ -263,6 +266,8 @@ let MOCK_EXPENSE_RECORDS: ExpenseRecord[] = [
   { id: 'EXP002', date: new Date('2024-07-10').toISOString(), category: 'Supplies', description: 'Stationery Purchase', amount: 3500, paymentMethod: 'Cash' },
   { id: 'EXP003', date: new Date('2024-07-01').toISOString(), category: 'Salaries', description: 'Teaching Staff Salaries - June', amount: 350000, paymentMethod: 'Bank Transfer' },
   { id: 'EXP004', date: new Date('2024-06-25').toISOString(), category: 'Maintenance', description: 'Classroom Projector Repair', amount: 8000, paymentMethod: 'Vendor Cheque' },
+  { id: 'EXP005', date: new Date('2024-07-20').toISOString(), category: 'Events', description: 'Annual Day Stage Setup', amount: 25000, paymentMethod: 'Online Transfer' },
+  { id: 'EXP006', date: new Date('2024-07-22').toISOString(), category: 'Transport', description: 'Bus Fuel - July Week 3', amount: 15000, paymentMethod: 'Fuel Card' },
 ];
 
 export async function getAdminExpenseRecords(): Promise<ExpenseRecord[]> {
@@ -348,6 +353,7 @@ const MOCK_STAFF_ATTENDANCE_RECORDS: StaffAttendanceRecord[] = [
   { id: 'S_ATT004', staffId: 'TCH101', staffName: 'Dr. Anjali Sharma', department: 'Administration', date: yesterday.toISOString(), status: 'Present' },
   { id: 'S_ATT005', staffId: 'TCH102', staffName: 'Mr. Vikram Singh', department: 'Academics - Senior Secondary', date: yesterday.toISOString(), status: 'Present' },
   { id: 'S_ATT006', staffId: 'TCH103', staffName: 'Ms. Priya Patel', department: 'Academics - Middle School', date: today.toISOString(), status: 'Excused' },
+  { id: 'S_ATT007', staffId: 'SUP001', staffName: 'Mrs. Sunita Devi', department: 'Support Staff', date: dayBeforeYesterday.toISOString(), status: 'Present' },
 ];
 
 export async function getAdminStaffAttendanceRecords(filters?: StaffAttendanceFilterFormValues): Promise<StaffAttendanceRecord[]> {
@@ -370,7 +376,7 @@ export async function getAdminStaffAttendanceRecords(filters?: StaffAttendanceFi
           filteredRecords = filteredRecords.filter(r => isEqual(startOfDay(parseISO(r.date)), filterDate));
         }
       }
-      resolve(filteredRecords);
+      resolve(filteredRecords.sort((a,b) => parseISO(b.date).getTime() - parseISO(a.date).getTime()));
     }, 650);
   });
 }
