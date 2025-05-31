@@ -1,8 +1,8 @@
 
 'use client';
 
-import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, StudentAttendanceRecord, StudentAttendanceFilterFormValues, AttendanceStatus, ExpenseRecord, ExpenseFormValues, AdminStaffListItem, TimetableEntry, DayOfWeek, AdminTimetableFilterFormValues, StaffAttendanceRecord, StaffAttendanceFilterFormValues } from '@/lib/types';
-import { format, parseISO, isEqual, startOfDay } from 'date-fns';
+import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, StudentAttendanceRecord, StudentAttendanceFilterFormValues, AttendanceStatus, ExpenseRecord, ExpenseFormValues, AdminStaffListItem, TimetableEntry, DayOfWeek, AdminTimetableFilterFormValues, StaffAttendanceRecord, StaffAttendanceFilterFormValues, AdminPaymentRecord, AdminPaymentFiltersFormValues, PaymentRecord } from '@/lib/types';
+import { format, parseISO, isEqual, startOfDay, isWithinInterval, endOfDay } from 'date-fns';
 
 // Mock data for a list of students for the admin view
 const MOCK_STUDENT_LIST: StudentProfile[] = [
@@ -138,7 +138,6 @@ export async function createAdminBulkFeeNotice(data: BulkFeeNoticeFormValues): P
         ...data,
         id: `BFN_${Date.now()}`,
         generatedDate: new Date().toISOString(),
-        // Ensure dueDate is a Date object before it's converted elsewhere if needed
         dueDate: typeof data.dueDate === 'string' ? parseISO(data.dueDate) : data.dueDate,
       };
       MOCK_ADMIN_BULK_FEE_NOTICES.unshift(newNoticeDefinition);
@@ -193,8 +192,8 @@ export async function createAdminStudentApplication(data: StudentApplicationForm
       const newApplication: StudentApplication = {
         ...data,
         id: `APP_${Date.now()}`,
-        applicationDate: data.applicationDate.toISOString(), // Convert Date to ISO string
-        status: 'Pending Review', // Default status
+        applicationDate: data.applicationDate.toISOString(), 
+        status: 'Pending Review', 
       };
       MOCK_STUDENT_APPLICATIONS.unshift(newApplication);
       resolve(newApplication);
@@ -220,6 +219,9 @@ export async function updateAdminStudentApplicationStatus(applicationId: string,
 const today = new Date();
 const yesterday = new Date(today);
 yesterday.setDate(today.getDate() - 1);
+const dayBeforeYesterday = new Date(today);
+dayBeforeYesterday.setDate(today.getDate() - 2);
+
 
 const MOCK_STUDENT_ATTENDANCE_RECORDS: StudentAttendanceRecord[] = [
   { id: 'ATT001', studentId: 'S10234', studentName: 'Aisha Sharma', class: '10', section: 'A', date: today.toISOString(), status: 'Present' },
@@ -303,16 +305,16 @@ export async function getAdminStaffList(): Promise<AdminStaffListItem[]> {
 // Admin Timetable Management
 const MOCK_ADMIN_TIMETABLE_ENTRIES: TimetableEntry[] = [
   // Class 10A
-  { id: 'ATT001', day: 'Monday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Mathematics', teacher: 'Mr. V. Singh', class: '10', section: 'A' },
-  { id: 'ATT002', day: 'Monday', period: 2, timeSlot: '09:45 - 10:30', subject: 'Physics', teacher: 'Ms. P. Patel', class: '10', section: 'A' },
+  { id: 'ATT001', day: 'Monday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Mathematics', teacher: 'Mr. Vikram Singh', class: '10', section: 'A' },
+  { id: 'ATT002', day: 'Monday', period: 2, timeSlot: '09:45 - 10:30', subject: 'Physics', teacher: 'Ms. Priya Patel', class: '10', section: 'A' },
   { id: 'ATT003', day: 'Tuesday', period: 1, timeSlot: '09:00 - 09:45', subject: 'English', teacher: 'Mrs. S. Iyer', class: '10', section: 'A' },
   // Class 9B
   { id: 'ATT004', day: 'Monday', period: 1, timeSlot: '09:00 - 09:45', subject: 'History', teacher: 'Mr. R. Khan', class: '9', section: 'B' },
   { id: 'ATT005', day: 'Monday', period: 2, timeSlot: '09:45 - 10:30', subject: 'Geography', teacher: 'Ms. A. Desai', class: '9', section: 'B' },
   { id: 'ATT006', day: 'Tuesday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Biology', teacher: 'Dr. N. Reddy', class: '9', section: 'B' },
   // Shared Teacher
-  { id: 'ATT007', day: 'Wednesday', period: 3, timeSlot: '10:45 - 11:30', subject: 'Mathematics', teacher: 'Mr. V. Singh', class: '9', section: 'B' },
-  { id: 'ATT008', day: 'Wednesday', period: 4, timeSlot: '11:30 - 12:15', subject: 'Computer Science', teacher: 'Ms. P. Patel', class: '10', section: 'A' },
+  { id: 'ATT007', day: 'Wednesday', period: 3, timeSlot: '10:45 - 11:30', subject: 'Mathematics', teacher: 'Mr. Vikram Singh', class: '9', section: 'B' },
+  { id: 'ATT008', day: 'Wednesday', period: 4, timeSlot: '11:30 - 12:15', subject: 'Computer Science', teacher: 'Ms. Priya Patel', class: '10', section: 'A' },
 ];
 
 export async function getAdminTimetable(filters?: AdminTimetableFilterFormValues): Promise<TimetableEntry[]> {
@@ -367,5 +369,54 @@ export async function getAdminStaffAttendanceRecords(filters?: StaffAttendanceFi
       }
       resolve(filteredRecords);
     }, 650);
+  });
+}
+
+
+// Admin Payment History
+const MOCK_ADMIN_PAYMENT_HISTORY: AdminPaymentRecord[] = [
+  { id: 'PAY_ADM_001', studentId: 'S10234', studentName: 'Aisha Sharma', paymentDate: '2024-07-10T10:00:00Z', description: 'Term 1 Fees - 2024-2025', amountPaid: 15000, paymentMethod: 'Net Banking', transactionId: 'TXN734589201' },
+  { id: 'PAY_ADM_002', studentId: 'S10235', studentName: 'Rohan Verma', paymentDate: '2024-07-11T11:30:00Z', description: 'Term 1 Fees - 2024-2025', amountPaid: 14000, paymentMethod: 'Credit Card', transactionId: 'CCPAY_ROHVER001' },
+  { id: 'PAY_ADM_003', studentId: 'S10234', studentName: 'Aisha Sharma', paymentDate: '2024-04-05T09:15:00Z', description: 'Term 4 Fees - 2023-2024', amountPaid: 14500, paymentMethod: 'UPI', transactionId: 'UPIPAY_AISHA002' },
+  { id: 'PAY_ADM_004', studentId: 'S10236', studentName: 'Priya Singh', paymentDate: '2024-07-12T14:00:00Z', description: 'Term 1 Fees & Bus Fees', amountPaid: 18500, paymentMethod: 'Cheque', transactionId: 'CHQ123456' },
+  { id: 'PAY_ADM_005', studentId: 'S10238', studentName: 'Sneha Patel', paymentDate: dayBeforeYesterday.toISOString(), description: 'Admission Fee', amountPaid: 25000, paymentMethod: 'Online Transfer', transactionId: 'NEFT00SPATEL' },
+  { id: 'PAY_ADM_006', studentId: 'S10239', studentName: 'Vikram Reddy', paymentDate: yesterday.toISOString(), description: 'Term 1 Fees - 2024-25', amountPaid: 16000, paymentMethod: 'Net Banking', transactionId: 'TXNVRREDDY001' },
+];
+
+export async function getAdminPaymentHistory(filters?: AdminPaymentFiltersFormValues): Promise<AdminPaymentRecord[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      let filteredRecords = [...MOCK_ADMIN_PAYMENT_HISTORY];
+      if (filters) {
+        if (filters.studentIdOrName) {
+          const searchTerm = filters.studentIdOrName.toLowerCase();
+          filteredRecords = filteredRecords.filter(r =>
+            r.studentName.toLowerCase().includes(searchTerm) ||
+            r.studentId.toLowerCase().includes(searchTerm)
+          );
+        }
+        if (filters.dateFrom && filters.dateTo) {
+          const startDate = startOfDay(filters.dateFrom);
+          const endDate = endOfDay(filters.dateTo);
+          filteredRecords = filteredRecords.filter(r => {
+            const paymentDate = parseISO(r.paymentDate);
+            return isWithinInterval(paymentDate, { start: startDate, end: endDate });
+          });
+        } else if (filters.dateFrom) {
+          const startDate = startOfDay(filters.dateFrom);
+          filteredRecords = filteredRecords.filter(r => {
+            const paymentDate = parseISO(r.paymentDate);
+            return paymentDate >= startDate;
+          });
+        } else if (filters.dateTo) {
+          const endDate = endOfDay(filters.dateTo);
+          filteredRecords = filteredRecords.filter(r => {
+            const paymentDate = parseISO(r.paymentDate);
+            return paymentDate <= endDate;
+          });
+        }
+      }
+      resolve(filteredRecords.sort((a, b) => parseISO(b.paymentDate).getTime() - parseISO(a.paymentDate).getTime()));
+    }, 700);
   });
 }
