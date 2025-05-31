@@ -104,7 +104,7 @@ export async function deleteAdminCircular(circularId: string): Promise<void> {
 }
 
 // Mock data for Admin Bulk Fee Notices
-const MOCK_ADMIN_BULK_FEE_NOTICES: BulkFeeNoticeDefinition[] = [
+let MOCK_ADMIN_BULK_FEE_NOTICES: BulkFeeNoticeDefinition[] = [
   {
     id: 'BFN_001',
     noticeTitle: 'Term 2 Fees - Academic Year 2024-2025',
@@ -113,7 +113,7 @@ const MOCK_ADMIN_BULK_FEE_NOTICES: BulkFeeNoticeDefinition[] = [
     dueDate: new Date('2024-10-15T00:00:00.000Z'),
     targetClasses: 'Class 1 - Section A\nClass 1 - Section B\nClass 2 - All Sections',
     additionalNotes: 'Late fee of ₹500 will apply after the due date.',
-    generatedDate: '2024-09-01T10:00:00.000Z',
+    generatedDate: new Date('2024-09-01T10:00:00.000Z').toISOString(),
   },
   {
     id: 'BFN_002',
@@ -122,14 +122,14 @@ const MOCK_ADMIN_BULK_FEE_NOTICES: BulkFeeNoticeDefinition[] = [
     amount: 750,
     dueDate: new Date('2024-08-30T00:00:00.000Z'),
     targetClasses: 'All Classes (1-12)',
-    generatedDate: '2024-08-01T11:30:00.000Z',
+    generatedDate: new Date('2024-08-01T11:30:00.000Z').toISOString(),
   }
 ];
 
 export async function getAdminGeneratedFeeNotices(): Promise<BulkFeeNoticeDefinition[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve([...MOCK_ADMIN_BULK_FEE_NOTICES]);
+      resolve([...MOCK_ADMIN_BULK_FEE_NOTICES].sort((a,b) => parseISO(b.generatedDate).getTime() - parseISO(a.generatedDate).getTime()));
     }, 600);
   });
 }
@@ -139,9 +139,10 @@ export async function createAdminBulkFeeNotice(data: BulkFeeNoticeFormValues): P
     setTimeout(() => {
       const newNoticeDefinition: BulkFeeNoticeDefinition = {
         ...data,
+        amount: Number(data.amount), // Ensure amount is number
         id: `BFN_${Date.now()}`,
         generatedDate: new Date().toISOString(),
-        dueDate: typeof data.dueDate === 'string' ? parseISO(data.dueDate) : data.dueDate,
+        // dueDate remains Date object from form
       };
       MOCK_ADMIN_BULK_FEE_NOTICES.unshift(newNoticeDefinition);
       resolve(newNoticeDefinition);
@@ -285,6 +286,7 @@ export async function createAdminExpenseRecord(data: ExpenseFormValues): Promise
         ...data,
         id: `EXP_${Date.now()}`,
         date: data.date.toISOString(), // Store date as ISO string
+        amount: Number(data.amount), // Ensure amount is a number
       };
       MOCK_EXPENSE_RECORDS.unshift(newExpense);
       resolve(newExpense);

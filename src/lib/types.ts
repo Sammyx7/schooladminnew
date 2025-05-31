@@ -186,8 +186,8 @@ export type BulkFeeNoticeFormValues = z.infer<typeof BulkFeeNoticeFormSchema>;
 
 export const BulkFeeNoticeDefinitionSchema = BulkFeeNoticeFormSchema.extend({
   id: z.string(),
-  generatedDate: z.string(), 
-  dueDate: z.date(), 
+  generatedDate: z.string(), // Should be ISOString
+  dueDate: z.date(), // Keep as Date object for consistency with form, convert on display
 });
 export type BulkFeeNoticeDefinition = z.infer<typeof BulkFeeNoticeDefinitionSchema>;
 
@@ -213,7 +213,7 @@ export type StudentApplicationFormValues = z.infer<typeof StudentApplicationForm
 export const StudentApplicationSchema = StudentApplicationFormSchema.extend({
   id: z.string(),
   status: z.enum(applicationStatuses),
-  applicationDate: z.string(), 
+  applicationDate: z.string(), // Stored as ISOString
 });
 export type StudentApplication = z.infer<typeof StudentApplicationSchema>;
 
@@ -229,7 +229,7 @@ export const StudentAttendanceRecordSchema = z.object({
   studentName: z.string(),
   class: z.string(),
   section: z.string(),
-  date: z.string(), 
+  date: z.string(), // Stored as ISOString
   status: z.enum(attendanceStatuses),
 });
 export type StudentAttendanceRecord = z.infer<typeof StudentAttendanceRecordSchema>;
@@ -248,7 +248,7 @@ export const StaffAttendanceRecordSchema = z.object({
   staffId: z.string(),
   staffName: z.string(),
   department: z.string(),
-  date: z.string(), 
+  date: z.string(), // Stored as ISOString
   status: z.enum(attendanceStatuses),
 });
 export type StaffAttendanceRecord = z.infer<typeof StaffAttendanceRecordSchema>;
@@ -277,7 +277,7 @@ export type ExpenseFormValues = z.infer<typeof ExpenseFormSchema>;
 
 export const ExpenseRecordSchema = ExpenseFormSchema.extend({
   id: z.string(),
-  date: z.string(), 
+  date: z.string(), // Stored as ISOString
 });
 export type ExpenseRecord = z.infer<typeof ExpenseRecordSchema>;
 
@@ -291,7 +291,7 @@ export const AdminStaffListItemSchema = z.object({
   department: z.string(),
   email: z.string(),
   phone: z.string().optional(),
-  joiningDate: z.string(), 
+  joiningDate: z.string(), // Stored as ISOString
 });
 export type AdminStaffListItem = z.infer<typeof AdminStaffListItemSchema>;
 
@@ -313,7 +313,7 @@ export const StaffProfileSchema = z.object({
   department: z.string(),
   email: z.string(),
   phone: z.string(),
-  dateOfJoining: z.string(), 
+  dateOfJoining: z.string(), // Stored as ISOString
   qualifications: z.array(z.string()),
   avatarUrl: z.string().optional(),
 });

@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Mail, PlusCircle, Loader2, AlertCircle as AlertIcon, Eye, Trash2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 import {
   Form,
@@ -45,7 +45,7 @@ export default function AdminBulkFeeNoticesPage() {
     defaultValues: {
       noticeTitle: '',
       description: '',
-      amount: '', // Changed from undefined to empty string
+      amount: '' as any, // Initialized as string for controlled input, Zod coerces
       dueDate: undefined,
       targetClasses: '',
       additionalNotes: '',
@@ -77,7 +77,14 @@ export default function AdminBulkFeeNoticesPage() {
       await createAdminBulkFeeNotice(values);
       toast({ title: "Success", description: "Bulk fee notice generated successfully." });
       setIsFormDialogOpen(false);
-      form.reset();
+      form.reset({
+        noticeTitle: '',
+        description: '',
+        amount: '' as any,
+        dueDate: undefined,
+        targetClasses: '',
+        additionalNotes: '',
+      });
       await fetchNotices(); // Refresh list
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to generate notice.";
@@ -102,7 +109,7 @@ export default function AdminBulkFeeNoticesPage() {
         icon={Mail}
         description="Generate and manage fee notices for multiple classes or sections."
         actions={
-          <Button onClick={() => { form.reset(); setIsFormDialogOpen(true); }}>
+          <Button onClick={() => { form.reset({ noticeTitle: '', description: '', amount: '' as any, dueDate: undefined, targetClasses: '', additionalNotes: '' }); setIsFormDialogOpen(true); }}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Generate New Bulk Notice
           </Button>
@@ -177,7 +184,7 @@ export default function AdminBulkFeeNoticesPage() {
                     <TableCell className="text-sm text-muted-foreground whitespace-pre-line">{notice.targetClasses}</TableCell>
                     <TableCell className="text-right font-medium">{notice.amount.toLocaleString('en-IN')}</TableCell>
                     <TableCell>{format(new Date(notice.dueDate), "do MMM, yyyy")}</TableCell>
-                    <TableCell>{format(new Date(notice.generatedDate), "do MMM, yyyy, p")}</TableCell>
+                    <TableCell>{format(parseISO(notice.generatedDate), "do MMM, yyyy, p")}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" onClick={() => handleViewStatus(notice)}>
                         <Eye className="mr-2 h-3.5 w-3.5" />
