@@ -73,8 +73,8 @@ const MOCK_STAFF_OWN_ATTENDANCE_VIKRAM: StaffAttendanceRecord[] = [
     { id: 'S_ATT_VS_1', staffId: 'TCH102', staffName: 'Mr. Vikram Singh', department: 'Academics - Senior Secondary', date: today.toISOString(), status: 'Present' },
     { id: 'S_ATT_VS_2', staffId: 'TCH102', staffName: 'Mr. Vikram Singh', department: 'Academics - Senior Secondary', date: yesterday.toISOString(), status: 'Present' },
     { id: 'S_ATT_VS_3', staffId: 'TCH102', staffName: 'Mr. Vikram Singh', department: 'Academics - Senior Secondary', date: dayBefore.toISOString(), status: 'Late' },
-    { id: 'S_ATT_VS_4', staffId: 'TCH102', staffName: 'Mr. Vikram Singh', department: 'Academics - Senior Secondary', date: new Date(today.setDate(today.getDate() - 3)).toISOString(), status: 'Present' },
-    { id: 'S_ATT_VS_5', staffId: 'TCH102', staffName: 'Mr. Vikram Singh', department: 'Academics - Senior Secondary', date: new Date(today.setDate(today.getDate() - 4)).toISOString(), status: 'Absent' },
+    { id: 'S_ATT_VS_4', staffId: 'TCH102', staffName: 'Mr. Vikram Singh', department: 'Academics - Senior Secondary', date: new Date(new Date().setDate(new Date().getDate() - 3)).toISOString(), status: 'Present' },
+    { id: 'S_ATT_VS_5', staffId: 'TCH102', staffName: 'Mr. Vikram Singh', department: 'Academics - Senior Secondary', date: new Date(new Date().setDate(new Date().getDate() - 4)).toISOString(), status: 'Absent' },
 ];
 
 
