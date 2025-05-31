@@ -29,8 +29,8 @@ const pendingNoticesData = [
 
 export default function AdminDashboardPage() {
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-6 w-full"> {/* Ensured root div is w-full */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full"> {/* Ensured this container is w-full */}
         <PageHeader 
           title="Admin Dashboard" 
           description="Overview of school fees management" 
@@ -41,7 +41,7 @@ export default function AdminDashboardPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full"> {/* Ensured grid is w-full */}
         <MetricCard
           title="Total Fees Collected"
           value={feesCollected}
@@ -50,7 +50,7 @@ export default function AdminDashboardPage() {
           bgColorClass="bg-[hsl(var(--metric-card-green-bg))]"
           iconBgClass="bg-[hsl(var(--metric-card-green-icon-bg))]"
           iconColorClass="text-[hsl(var(--metric-card-green-icon))]"
-          valueColorClass="text-foreground" // Changed to text-foreground as per guide
+          valueColorClass="text-foreground" 
         />
         <MetricCard
           title="Pending Payments"
@@ -60,7 +60,7 @@ export default function AdminDashboardPage() {
           bgColorClass="bg-[hsl(var(--metric-card-blue-bg))]"
           iconBgClass="bg-[hsl(var(--metric-card-blue-icon-bg))]"
           iconColorClass="text-[hsl(var(--metric-card-blue-icon))]"
-          valueColorClass="text-foreground" // Changed to text-foreground
+          valueColorClass="text-foreground" 
         />
         <MetricCard
           title="Overdue Payments"
@@ -70,7 +70,7 @@ export default function AdminDashboardPage() {
           bgColorClass="bg-[hsl(var(--metric-card-red-bg))]"
           iconBgClass="bg-[hsl(var(--metric-card-red-icon-bg))]"
           iconColorClass="text-[hsl(var(--metric-card-red-icon))]"
-          valueColorClass="text-foreground" // Changed to text-foreground
+          valueColorClass="text-foreground"
         />
         <MetricCard
           title="Total Students"
@@ -80,12 +80,12 @@ export default function AdminDashboardPage() {
           bgColorClass="bg-[hsl(var(--metric-card-purple-bg))]"
           iconBgClass="bg-[hsl(var(--metric-card-purple-icon-bg))]"
           iconColorClass="text-[hsl(var(--metric-card-purple-icon))]"
-          valueColorClass="text-foreground" // Changed to text-foreground
+          valueColorClass="text-foreground"
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="shadow-md border bg-card">
+      <div className="grid gap-6 md:grid-cols-2 w-full"> {/* Ensured grid is w-full */}
+        <Card className="shadow-md border bg-card w-full"> {/* Ensured Card is w-full */}
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-card-foreground">Recent Payments</CardTitle>
           </CardHeader>
@@ -104,7 +104,7 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-md border bg-card">
+        <Card className="shadow-md border bg-card w-full"> {/* Ensured Card is w-full */}
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-card-foreground">Pending Fee Notices</CardTitle>
           </CardHeader>
