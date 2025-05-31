@@ -11,8 +11,10 @@ import {
 export const adminNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { title: 'Students', href: '/admin/students', icon: Users },
+  { title: 'Staff', href: '/admin/staff', icon: Briefcase },
   { title: 'Attendance', href: '/admin/attendance/student', icon: CalendarCheck },
   { title: 'Admissions', href: '/admin/admissions', icon: UserPlus },
+  { title: 'Timetable', href: '/admin/timetable', icon: CalendarDays },
   { title: 'Expenses', href: '/admin/expenses', icon: DollarSign },
   { title: 'Fee Notices', href: '/admin/fees/bulk-notice', icon: Receipt },
   { title: 'Circulars', href: '/admin/circulars', icon: Megaphone },
