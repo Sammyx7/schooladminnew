@@ -13,7 +13,7 @@ import type { ReportCardData, SubjectGrade } from '@/lib/types';
 import { getStudentReportCards } from '@/lib/services/studentService';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 const ReportCardSkeleton = () => (
   <Card className="border shadow-md">
@@ -66,7 +66,7 @@ export default function StudentReportCardPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getStudentReportCards("S10234");
+        const data = await getStudentReportCards("S10234"); // Using mock student ID
         setReportCards(data);
       } catch (err) {
         if (err instanceof Error) {
@@ -83,10 +83,19 @@ export default function StudentReportCardPage() {
   }, []);
 
   const handleDownload = (report: ReportCardData) => {
-    toast({
-      title: "Download Started (Demo)",
-      description: `Downloading report: ${report.termName}`,
-    });
+    if (report.downloadLink && report.downloadLink !== '#') {
+      window.open(report.downloadLink, '_blank');
+      toast({
+        title: "Download Started (Demo)",
+        description: `Downloading report: ${report.termName}`,
+      });
+    } else {
+      toast({
+        title: "Download Unavailable",
+        description: `The PDF for "${report.termName}" is not available for download at the moment.`,
+        variant: "default"
+      });
+    }
   };
 
   return (
@@ -132,7 +141,7 @@ export default function StudentReportCardPage() {
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                   <CardTitle className="text-xl font-semibold">{report.termName}</CardTitle>
                   <Badge variant="outline" className="text-xs py-1 px-2.5 w-fit">
-                    Issued: {format(new Date(report.issueDate), "do MMMM, yyyy")}
+                    Issued: {format(parseISO(report.issueDate), "do MMMM, yyyy")}
                   </Badge>
                 </div>
               </CardHeader>
@@ -201,7 +210,7 @@ export default function StudentReportCardPage() {
               </CardContent>
               {report.downloadLink && (
                 <CardFooter className="border-t pt-4">
-                  <Button onClick={() => handleDownload(report)} className="ml-auto">
+                  <Button onClick={() => handleDownload(report)} className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground">
                     <Download className="mr-2 h-4 w-4" />
                     Download PDF
                   </Button>

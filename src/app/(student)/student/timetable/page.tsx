@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/componen
 import { Skeleton } from '@/components/ui/skeleton';
 import type { TimetableEntry, DayOfWeek } from '@/lib/types';
 import { getStudentTimetable } from '@/lib/services/studentService';
-import { format } from 'date-fns';
+import { format } from 'date-fns'; // Not used here but good to keep if dates were involved
 
 const daysOfWeek: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -20,7 +20,9 @@ const groupTimetableByDay = (entries: TimetableEntry[]): Record<DayOfWeek, Timet
   daysOfWeek.forEach(day => grouped[day] = []);
 
   entries.forEach((entry) => {
-    grouped[entry.day].push(entry);
+    if (grouped[entry.day]) { // Check if day exists in grouped object
+      grouped[entry.day].push(entry);
+    }
   });
 
   for (const day in grouped) {
@@ -57,7 +59,7 @@ const TimetablePageSkeleton = () => (
     <PageHeader title="My Timetable" icon={CalendarDays} description="Your weekly class schedule." />
     <Card className="border shadow-md">
       <CardContent className="pt-6">
-        <div className="grid w-full grid-cols-3 sm:grid-cols-6 gap-2 mb-4">
+        <div className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-4">
           {daysOfWeek.map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
         </div>
         <DayTimetableSkeleton />
@@ -77,7 +79,7 @@ export default function StudentTimetablePage() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getStudentTimetable("S10234");
+        const data = await getStudentTimetable("S10234"); // Using mock student ID
         setTimetableEntries(data);
       } catch (err) {
         if (err instanceof Error) {

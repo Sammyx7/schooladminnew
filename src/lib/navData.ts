@@ -11,17 +11,16 @@ import {
 export const adminNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { title: 'Students', href: '/admin/students', icon: Users },
-  { title: 'Staff', href: '/admin/staff', icon: Briefcase }, // Corrected link
+  { title: 'Staff', href: '/admin/staff', icon: Briefcase }, 
+  { title: 'Admissions', href: '/admin/admissions', icon: UserPlus },
   { title: 'Student Attendance', href: '/admin/attendance/student', icon: CalendarCheck },
   { title: 'Staff Attendance', href: '/admin/attendance/staff', icon: UserCheck },
-  { title: 'Admissions', href: '/admin/admissions', icon: UserPlus },
   { title: 'Timetable', href: '/admin/timetable', icon: CalendarDays },
-  { title: 'Expenses', href: '/admin/expenses', icon: DollarSign },
+  { title: 'Circulars', href: '/admin/circulars', icon: Megaphone },
   { title: 'Fee Notices', href: '/admin/fees/bulk-notice', icon: Receipt },
   { title: 'Payment History', href: '/admin/payments', icon: History },
-  { title: 'Circulars', href: '/admin/circulars', icon: Megaphone },
-  // Removed AI Assistant from here as it's now a floating UI element
-  // { title: 'AI Assistant', href: '/admin/ai-assistant', icon: Sparkles }, 
+  { title: 'Expenses', href: '/admin/expenses', icon: DollarSign },
+  { title: 'Marks Entry', href: '/admin/marks', icon: ClipboardEdit }, // Placeholder page
   { title: 'Reports', href: '/admin/reports/overview', icon: BarChart3 },
 ];
 

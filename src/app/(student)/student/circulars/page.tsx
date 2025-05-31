@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { Circular } from '@/lib/types';
 import { getStudentCirculars } from '@/lib/services/studentService';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 const CircularCardSkeleton = () => (
@@ -46,7 +46,7 @@ export default function StudentCircularsPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getStudentCirculars("S10234");
+        const data = await getStudentCirculars("S10234"); // Using mock student ID
         setCirculars(data);
       } catch (err) {
         if (err instanceof Error) {
@@ -63,10 +63,13 @@ export default function StudentCircularsPage() {
   }, []);
 
   const handleViewAttachment = (circular: Circular) => {
-    if (circular.attachmentLink) {
+    if (circular.attachmentLink && circular.attachmentLink !== '#') {
+      window.open(circular.attachmentLink, '_blank');
+    } else {
       toast({
-        title: "Opening Attachment (Demo)",
-        description: `Opening attachment for: ${circular.title}`,
+        title: "No Attachment",
+        description: `The circular "${circular.title}" does not have a viewable attachment.`,
+        variant: "default" 
       });
     }
   };
@@ -135,7 +138,7 @@ export default function StudentCircularsPage() {
                       </Badge>
                     )}
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {format(new Date(circular.date), "do MMMM, yyyy")}
+                      {format(parseISO(circular.date), "do MMMM, yyyy")}
                     </span>
                   </div>
                 </div>

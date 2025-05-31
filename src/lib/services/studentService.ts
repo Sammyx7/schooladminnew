@@ -21,7 +21,7 @@ const MOCK_STUDENT_DATA: StudentDashboardData = {
   nextClass: {
     subject: "Physics",
     time: "11:00 AM", // For countdown, this should ideally be a full timestamp
-    teacher: "Ms. Kaur",
+    teacher: "Ms. B. Kaur",
     subjectIcon: Atom,
   },
   notifications: [
@@ -48,7 +48,7 @@ const MOCK_STUDENT_DATA_NO_FEES: StudentDashboardData = {
   nextClass: {
     subject: "Chemistry",
     time: "09:00 AM",
-    teacher: "Mr. Gupta",
+    teacher: "Mr. D. Gupta",
     // subjectIcon: BeakerIcon, // Example
   },
   notifications: [
@@ -71,7 +71,7 @@ const MOCK_STUDENT_DATA_OVERDUE: StudentDashboardData = {
   nextClass: {
     subject: "Accountancy",
     time: "14:30 PM",
-    teacher: "Mr. Mehta",
+    teacher: "Mr. K. Mehta",
   },
   notifications: [
     { id: 1, type: "fee", title: "Urgent: Fee payment overdue!", date: "5 days ago", href: "/student/fee-notices", read: false },
@@ -192,15 +192,15 @@ export async function getStudentReportCards(studentId: string): Promise<ReportCa
 
 // Mock Circulars Data
 const MOCK_CIRCULARS_S10234: Circular[] = [
-  { id: 'CIR001', title: 'Annual Sports Day - Schedule & Guidelines', date: new Date('2024-08-05').toISOString(), summary: 'Details about the upcoming Annual Sports Day, including event schedules, participation guidelines, and venue information.', category: 'Events', attachmentLink: '#' },
+  { id: 'CIR001', title: 'Annual Sports Day - Schedule & Guidelines', date: new Date('2024-08-05').toISOString(), summary: 'Details about the upcoming Annual Sports Day, including event schedules, participation guidelines, and venue information.', category: 'Events', attachmentLink: 'https://placehold.co/sports_day_schedule.pdf' },
   { id: 'CIR002', title: 'Holiday Declared: Independence Day', date: new Date('2024-08-01').toISOString(), summary: 'The school will remain closed on August 15th, 2024, on account of Independence Day.', category: 'Holidays' },
   { id: 'CIR003', title: 'Parent-Teacher Meeting for Class 10', date: new Date('2024-07-28').toISOString(), summary: 'A parent-teacher meeting is scheduled for all students of Class 10 to discuss academic progress and upcoming board examinations.', category: 'Academics' },
-  { id: 'CIR004', title: 'Library Books Return Reminder', date: new Date('2024-07-25').toISOString(), summary: 'All students are reminded to return any overdue library books by July 30th to avoid late fees.', category: 'General', attachmentLink: '#' },
+  { id: 'CIR004', title: 'Library Books Return Reminder', date: new Date('2024-07-25').toISOString(), summary: 'All students are reminded to return any overdue library books by July 30th to avoid late fees.', category: 'General', attachmentLink: 'https://placehold.co/library_rules.pdf' },
   { id: 'CIR005', title: 'Urgent: School Timings Change for Friday', date: new Date('2024-07-18').toISOString(), summary: 'Due to unavoidable circumstances, school will disperse at 12:00 PM on Friday, July 19th.', category: 'Urgent'},
 ];
 
 const MOCK_CIRCULARS_S10235: Circular[] = [
-  { id: 'CIR101', title: 'Science Fair Participation Announcement', date: new Date('2024-08-02').toISOString(), summary: 'Students interested in participating in the Inter-School Science Fair are requested to register by August 10th.', category: 'Academics', attachmentLink: '#' },
+  { id: 'CIR101', title: 'Science Fair Participation Announcement', date: new Date('2024-08-02').toISOString(), summary: 'Students interested in participating in the Inter-School Science Fair are requested to register by August 10th.', category: 'Academics', attachmentLink: 'https://placehold.co/science_fair_details.pdf' },
   { id: 'CIR102', title: 'Art Competition for Classes 6-9', date: new Date('2024-07-29').toISOString(), summary: 'An art competition will be held on August 5th. Theme: "Our Environment".', category: 'Events' },
 ];
 
@@ -208,7 +208,9 @@ export async function getStudentCirculars(studentId: string): Promise<Circular[]
   const circulars = studentId === "S10235" ? MOCK_CIRCULARS_S10235 : MOCK_CIRCULARS_S10234;
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(circulars);
+      // Sort by date descending before resolving
+      const sortedCirculars = circulars.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      resolve(sortedCirculars);
     }, 900); // Simulate network delay
   });
 }
