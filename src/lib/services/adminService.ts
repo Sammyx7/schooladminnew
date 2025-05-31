@@ -55,16 +55,19 @@ export async function getAdminStudentList(): Promise<StudentProfile[]> {
 }
 
 // Mock data for Admin Circulars
-const MOCK_ADMIN_CIRCULARS: Circular[] = [
-  { id: 'CIR_ADM_001', title: 'School Reopening Guidelines Post Summer Break', date: '2024-07-15', summary: 'Important guidelines and SOPs for students and parents regarding school reopening.', category: 'Academics', attachmentLink: 'https://placehold.co/circular.pdf' },
-  { id: 'CIR_ADM_002', title: 'Upcoming Teacher Training Workshop', date: '2024-07-20', summary: 'Details about the mandatory workshop for all teaching staff on new curriculum.', category: 'Events' },
-  { id: 'CIR_ADM_003', title: 'Revised Examination Schedule - Mid Terms', date: '2024-08-01', summary: 'The mid-term examination schedule has been revised. Please check the updated dates.', category: 'Urgent' },
+let MOCK_ADMIN_CIRCULARS: Circular[] = [
+  { id: 'CIR_ADM_001', title: 'School Reopening Guidelines Post Summer Break', date: '2024-07-15T00:00:00.000Z', summary: 'Important guidelines and SOPs for students and parents regarding school reopening after the long summer vacation. Please ensure all protocols are followed strictly.', category: 'Academics', attachmentLink: 'https://placehold.co/circular1.pdf' },
+  { id: 'CIR_ADM_002', title: 'Upcoming Teacher Training Workshop on AI Tools', date: '2024-07-20T00:00:00.000Z', summary: 'Details about the mandatory workshop for all teaching staff on integrating new AI-based educational tools into the curriculum.', category: 'Events' },
+  { id: 'CIR_ADM_003', title: 'Revised Examination Schedule - Mid Terms (Classes 9-12)', date: '2024-08-01T00:00:00.000Z', summary: 'The mid-term examination schedule for senior classes has been revised due to unforeseen circumstances. Please check the updated dates and timings.', category: 'Urgent', attachmentLink: 'https://placehold.co/circular2.pdf' },
+  { id: 'CIR_ADM_004', title: 'Annual Day Celebration Invitations', date: '2024-09-10T00:00:00.000Z', summary: 'We are pleased to invite all parents and guardians to our Annual Day celebrations. Event details and RSVP information are attached.', category: 'Events' },
+  { id: 'CIR_ADM_005', title: 'Holiday Notice: School Closed for Local Festival', date: '2024-09-25T00:00:00.000Z', summary: 'The school will remain closed on the specified date in observance of a local festival. Classes will resume as normal the following day.', category: 'Holidays' },
 ];
+
 
 export async function getAdminCirculars(): Promise<Circular[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve([...MOCK_ADMIN_CIRCULARS]); // Return a copy to prevent direct mutation issues
+      resolve([...MOCK_ADMIN_CIRCULARS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }, 700);
   });
 }
@@ -80,7 +83,7 @@ export async function createAdminCircular(data: CreateCircularFormValues): Promi
         attachmentLink: data.attachmentLink || undefined,
         date: new Date().toISOString(),
       };
-      MOCK_ADMIN_CIRCULARS.unshift(newCircular); // Add to the beginning of the array
+      MOCK_ADMIN_CIRCULARS.unshift(newCircular);
       resolve(newCircular);
     }, 500);
   });
@@ -89,9 +92,9 @@ export async function createAdminCircular(data: CreateCircularFormValues): Promi
 export async function deleteAdminCircular(circularId: string): Promise<void> {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      const index = MOCK_ADMIN_CIRCULARS.findIndex(c => c.id === circularId);
-      if (index !== -1) {
-        MOCK_ADMIN_CIRCULARS.splice(index, 1);
+      const initialLength = MOCK_ADMIN_CIRCULARS.length;
+      MOCK_ADMIN_CIRCULARS = MOCK_ADMIN_CIRCULARS.filter(c => c.id !== circularId);
+      if (MOCK_ADMIN_CIRCULARS.length < initialLength) {
         resolve();
       } else {
         reject(new Error("Circular not found."));
@@ -255,7 +258,7 @@ export async function getAdminStudentAttendanceRecords(filters?: StudentAttendan
 
 
 // Admin Expenses Management
-const MOCK_EXPENSE_RECORDS: ExpenseRecord[] = [
+let MOCK_EXPENSE_RECORDS: ExpenseRecord[] = [
   { id: 'EXP001', date: new Date('2024-07-15').toISOString(), category: 'Utilities', description: 'Electricity Bill - June', amount: 12500, paymentMethod: 'Online Transfer' },
   { id: 'EXP002', date: new Date('2024-07-10').toISOString(), category: 'Supplies', description: 'Stationery Purchase', amount: 3500, paymentMethod: 'Cash' },
   { id: 'EXP003', date: new Date('2024-07-01').toISOString(), category: 'Salaries', description: 'Teaching Staff Salaries - June', amount: 350000, paymentMethod: 'Bank Transfer' },
@@ -265,7 +268,7 @@ const MOCK_EXPENSE_RECORDS: ExpenseRecord[] = [
 export async function getAdminExpenseRecords(): Promise<ExpenseRecord[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve([...MOCK_EXPENSE_RECORDS]);
+      resolve([...MOCK_EXPENSE_RECORDS].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
     }, 500);
   });
 }
@@ -420,3 +423,4 @@ export async function getAdminPaymentHistory(filters?: AdminPaymentFiltersFormVa
     }, 700);
   });
 }
+
