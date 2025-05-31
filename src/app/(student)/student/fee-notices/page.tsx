@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { FeeNotice, FeeNoticeStatus } from '@/lib/types';
 import { getStudentFeeNotices } from '@/lib/services/studentService';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -180,7 +180,7 @@ export default function StudentFeeNoticesPage() {
                     <TableCell className="text-right font-medium">
                       {notice.amount.toLocaleString('en-IN')}
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">{format(new Date(notice.dueDate), "do MMMM, yyyy")}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{format(parseISO(notice.dueDate), "do MMMM, yyyy")}</TableCell>
                     <TableCell>
                       <Badge className={getStatusBadgeClassName(notice.status)}>
                         {notice.status}

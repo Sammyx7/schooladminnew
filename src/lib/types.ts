@@ -64,9 +64,9 @@ export interface FeeNotice {
   title: string;
   description?: string;
   amount: number;
-  dueDate: string;
+  dueDate: string; // ISO Date string
   status: FeeNoticeStatus;
-  paymentLink?: string;
+  paymentLink?: string; // Could be used for actual payment integration
 }
 
 // Student Report Card Types
@@ -82,7 +82,7 @@ export interface SubjectGrade {
 export interface ReportCardData {
   id: string;
   termName: string;
-  issueDate: string;
+  issueDate: string; // ISO Date string
   subjects: SubjectGrade[];
   overallPercentage?: string;
   overallGrade?: string;
@@ -98,7 +98,7 @@ export type CircularCategory = typeof circularCategories[number];
 export interface Circular {
   id: string;
   title: string;
-  date: string;
+  date: string; // ISO Date string
   summary: string;
   category?: CircularCategory;
   attachmentLink?: string;

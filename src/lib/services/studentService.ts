@@ -3,7 +3,7 @@
 // In a real application, this would involve API calls to a backend.
 'use client'; // Can be 'use server' if it were a real backend call used by server components.
 
-import type { StudentDashboardData, FeeNotice, ReportCardData, Circular, TimetableEntry, PaymentRecord } from '@/lib/types';
+import type { StudentDashboardData, FeeNotice, ReportCardData, Circular, TimetableEntry, PaymentRecord, FeeNoticeStatus } from '@/lib/types';
 import { Atom } from 'lucide-react'; // Using Atom for Physics
 
 const MOCK_STUDENT_DATA: StudentDashboardData = {
@@ -105,16 +105,16 @@ export async function getStudentDashboardDataWithError(): Promise<StudentDashboa
 
 // Mock Fee Notices Data
 const MOCK_FEE_NOTICES: FeeNotice[] = [
-  { id: 'FN001', title: 'Term 1 Fees', description: 'Tuition and activity fees for Term 1 2024-2025.', amount: 15000, dueDate: '2024-07-15', status: 'Paid', paymentLink: '#' },
-  { id: 'FN002', title: 'Term 2 Fees', description: 'Tuition and activity fees for Term 2 2024-2025.', amount: 12500, dueDate: '2024-10-15', status: 'Pending', paymentLink: '#' },
-  { id: 'FN003', title: 'Annual Sports Day Contribution', description: 'Contribution towards Annual Sports Day events.', amount: 500, dueDate: '2024-08-30', status: 'Pending', paymentLink: '#' },
-  { id: 'FN004', title: 'Library Late Fee', description: 'Late return fee for "Adventures of Tom Sawyer".', amount: 50, dueDate: '2024-06-01', status: 'Overdue', paymentLink: '#' },
-  { id: 'FN005', title: 'Bus Fees - Q1', description: 'Quarterly bus transportation charges.', amount: 3000, dueDate: '2024-07-10', status: 'Paid', paymentLink: '#' },
+  { id: 'FN001', title: 'Term 1 Fees', description: 'Tuition and activity fees for Term 1 2024-2025.', amount: 15000, dueDate: new Date('2024-07-15').toISOString(), status: 'Paid', paymentLink: '#' },
+  { id: 'FN002', title: 'Term 2 Fees', description: 'Tuition and activity fees for Term 2 2024-2025.', amount: 12500, dueDate: new Date('2024-10-15').toISOString(), status: 'Pending', paymentLink: '#' },
+  { id: 'FN003', title: 'Annual Sports Day Contribution', description: 'Contribution towards Annual Sports Day events.', amount: 500, dueDate: new Date('2024-08-30').toISOString(), status: 'Pending', paymentLink: '#' },
+  { id: 'FN004', title: 'Library Late Fee', description: 'Late return fee for "Adventures of Tom Sawyer".', amount: 50, dueDate: new Date('2024-06-01').toISOString(), status: 'Overdue', paymentLink: '#' },
+  { id: 'FN005', title: 'Bus Fees - Q1', description: 'Quarterly bus transportation charges.', amount: 3000, dueDate: new Date('2024-07-10').toISOString(), status: 'Paid', paymentLink: '#' },
 ];
 
 const MOCK_FEE_NOTICES_ALT: FeeNotice[] = [
-    { id: 'FN101', title: 'Term 1 Fees', description: 'Tuition and activity fees for Term 1 2024-2025.', amount: 14000, dueDate: '2024-07-20', status: 'Paid', paymentLink: '#' },
-    { id: 'FN102', title: 'Science Lab Contribution', description: 'Contribution for new lab equipment.', amount: 750, dueDate: '2024-09-10', status: 'Pending', paymentLink: '#' },
+    { id: 'FN101', title: 'Term 1 Fees', description: 'Tuition and activity fees for Term 1 2024-2025.', amount: 14000, dueDate: new Date('2024-07-20').toISOString(), status: 'Paid', paymentLink: '#' },
+    { id: 'FN102', title: 'Science Lab Contribution', description: 'Contribution for new lab equipment.', amount: 750, dueDate: new Date('2024-09-10').toISOString(), status: 'Pending', paymentLink: '#' },
 ];
 
 
@@ -123,7 +123,7 @@ export async function getStudentFeeNotices(studentId: string): Promise<FeeNotice
   const notices = studentId === "S10235" ? MOCK_FEE_NOTICES_ALT : MOCK_FEE_NOTICES;
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(notices);
+      resolve(JSON.parse(JSON.stringify(notices))); // Return a deep copy
     }, 1000); // Simulate network delay
   });
 }
@@ -192,16 +192,16 @@ export async function getStudentReportCards(studentId: string): Promise<ReportCa
 
 // Mock Circulars Data
 const MOCK_CIRCULARS_S10234: Circular[] = [
-  { id: 'CIR001', title: 'Annual Sports Day - Schedule & Guidelines', date: '2024-08-05', summary: 'Details about the upcoming Annual Sports Day, including event schedules, participation guidelines, and venue information.', category: 'Events', attachmentLink: '#' },
-  { id: 'CIR002', title: 'Holiday Declared: Independence Day', date: '2024-08-01', summary: 'The school will remain closed on August 15th, 2024, on account of Independence Day.', category: 'Holidays' },
-  { id: 'CIR003', title: 'Parent-Teacher Meeting for Class 10', date: '2024-07-28', summary: 'A parent-teacher meeting is scheduled for all students of Class 10 to discuss academic progress and upcoming board examinations.', category: 'Academics' },
-  { id: 'CIR004', title: 'Library Books Return Reminder', date: '2024-07-25', summary: 'All students are reminded to return any overdue library books by July 30th to avoid late fees.', category: 'General', attachmentLink: '#' },
-  { id: 'CIR005', title: 'Urgent: School Timings Change for Friday', date: '2024-07-18', summary: 'Due to unavoidable circumstances, school will disperse at 12:00 PM on Friday, July 19th.', category: 'Urgent'},
+  { id: 'CIR001', title: 'Annual Sports Day - Schedule & Guidelines', date: new Date('2024-08-05').toISOString(), summary: 'Details about the upcoming Annual Sports Day, including event schedules, participation guidelines, and venue information.', category: 'Events', attachmentLink: '#' },
+  { id: 'CIR002', title: 'Holiday Declared: Independence Day', date: new Date('2024-08-01').toISOString(), summary: 'The school will remain closed on August 15th, 2024, on account of Independence Day.', category: 'Holidays' },
+  { id: 'CIR003', title: 'Parent-Teacher Meeting for Class 10', date: new Date('2024-07-28').toISOString(), summary: 'A parent-teacher meeting is scheduled for all students of Class 10 to discuss academic progress and upcoming board examinations.', category: 'Academics' },
+  { id: 'CIR004', title: 'Library Books Return Reminder', date: new Date('2024-07-25').toISOString(), summary: 'All students are reminded to return any overdue library books by July 30th to avoid late fees.', category: 'General', attachmentLink: '#' },
+  { id: 'CIR005', title: 'Urgent: School Timings Change for Friday', date: new Date('2024-07-18').toISOString(), summary: 'Due to unavoidable circumstances, school will disperse at 12:00 PM on Friday, July 19th.', category: 'Urgent'},
 ];
 
 const MOCK_CIRCULARS_S10235: Circular[] = [
-  { id: 'CIR101', title: 'Science Fair Participation Announcement', date: '2024-08-02', summary: 'Students interested in participating in the Inter-School Science Fair are requested to register by August 10th.', category: 'Academics', attachmentLink: '#' },
-  { id: 'CIR102', title: 'Art Competition for Classes 6-9', date: '2024-07-29', summary: 'An art competition will be held on August 5th. Theme: "Our Environment".', category: 'Events' },
+  { id: 'CIR101', title: 'Science Fair Participation Announcement', date: new Date('2024-08-02').toISOString(), summary: 'Students interested in participating in the Inter-School Science Fair are requested to register by August 10th.', category: 'Academics', attachmentLink: '#' },
+  { id: 'CIR102', title: 'Art Competition for Classes 6-9', date: new Date('2024-07-29').toISOString(), summary: 'An art competition will be held on August 5th. Theme: "Our Environment".', category: 'Events' },
 ];
 
 export async function getStudentCirculars(studentId: string): Promise<Circular[]> {
@@ -247,15 +247,15 @@ export async function getStudentTimetable(studentId: string): Promise<TimetableE
 
 // Mock Payment History Data
 const MOCK_PAYMENT_HISTORY_S10234: PaymentRecord[] = [
-  { id: 'PAY001', paymentDate: '2024-07-10', description: 'Term 1 Fees - 2024-2025', amountPaid: 15000, paymentMethod: 'Net Banking - HDFC000123', transactionId: 'TXN734589201' },
-  { id: 'PAY002', paymentDate: '2024-07-08', description: 'Bus Fees - Q1 2024', amountPaid: 3000, paymentMethod: 'UPI - studentparent@okhdfc', transactionId: 'UPI987654321' },
-  { id: 'PAY003', paymentDate: '2024-04-05', description: 'Term 4 Fees - 2023-2024', amountPaid: 14500, paymentMethod: 'Credit Card **** 5678', transactionId: 'CC408723456' },
-  { id: 'PAY004', paymentDate: '2024-03-15', description: 'Annual Day Costume Contribution', amountPaid: 350, paymentMethod: 'Cash', transactionId: 'CASH00123' },
+  { id: 'PAY001', paymentDate: new Date('2024-07-10T10:00:00Z').toISOString(), description: 'Term 1 Fees - 2024-2025', amountPaid: 15000, paymentMethod: 'Net Banking - HDFC000123', transactionId: 'TXN734589201' },
+  { id: 'PAY002', paymentDate: new Date('2024-07-08T11:30:00Z').toISOString(), description: 'Bus Fees - Q1 2024', amountPaid: 3000, paymentMethod: 'UPI - studentparent@okhdfc', transactionId: 'UPI987654321' },
+  { id: 'PAY003', paymentDate: new Date('2024-04-05T09:15:00Z').toISOString(), description: 'Term 4 Fees - 2023-2024', amountPaid: 14500, paymentMethod: 'Credit Card **** 5678', transactionId: 'CC408723456' },
+  { id: 'PAY004', paymentDate: new Date('2024-03-15T14:00:00Z').toISOString(), description: 'Annual Day Costume Contribution', amountPaid: 350, paymentMethod: 'Cash', transactionId: 'CASH00123' },
 ];
 
 const MOCK_PAYMENT_HISTORY_S10235: PaymentRecord[] = [
-  { id: 'PAY101', paymentDate: '2024-07-15', description: 'Term 1 Fees - 2024-2025', amountPaid: 14000, paymentMethod: 'Credit Card **** 1122', transactionId: 'TXN982345001' },
-  { id: 'PAY102', paymentDate: '2024-04-10', description: 'Term 4 Fees - 2023-2024', amountPaid: 13500, paymentMethod: 'Net Banking - ICICI000456', transactionId: 'NB500239871' },
+  { id: 'PAY101', paymentDate: new Date('2024-07-15T10:00:00Z').toISOString(), description: 'Term 1 Fees - 2024-2025', amountPaid: 14000, paymentMethod: 'Credit Card **** 1122', transactionId: 'TXN982345001' },
+  { id: 'PAY102', paymentDate: new Date('2024-04-10T11:30:00Z').toISOString(), description: 'Term 4 Fees - 2023-2024', amountPaid: 13500, paymentMethod: 'Net Banking - ICICI000456', transactionId: 'NB500239871' },
 ];
 
 export async function getStudentPaymentHistory(studentId: string): Promise<PaymentRecord[]> {

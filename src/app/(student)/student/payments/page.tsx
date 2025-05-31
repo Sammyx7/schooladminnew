@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { PaymentRecord } from '@/lib/types';
 import { getStudentPaymentHistory } from '@/lib/services/studentService';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 
 export default function StudentPaymentsPage() {
   const [paymentHistory, setPaymentHistory] = useState<PaymentRecord[]>([]);
@@ -44,7 +44,7 @@ export default function StudentPaymentsPage() {
   const handleViewReceipt = (record: PaymentRecord) => {
     toast({
       title: "View Receipt (Demo)",
-      description: `Viewing receipt for payment of ₹${record.amountPaid} on ${format(new Date(record.paymentDate), "do MMMM, yyyy")}`,
+      description: `Viewing receipt for payment of ₹${record.amountPaid} on ${format(parseISO(record.paymentDate), "do MMMM, yyyy")}`,
     });
   };
 
@@ -117,12 +117,12 @@ export default function StudentPaymentsPage() {
                 {paymentHistory.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell className="hidden sm:table-cell">
-                      {format(new Date(record.paymentDate), "dd MMM, yyyy")}
+                      {format(parseISO(record.paymentDate), "dd MMM, yyyy, p")}
                     </TableCell>
                     <TableCell>
                       <span className="font-medium">{record.description}</span>
                       <p className="text-xs text-muted-foreground sm:hidden mt-0.5">
-                        {format(new Date(record.paymentDate), "dd MMM, yyyy")}
+                        {format(parseISO(record.paymentDate), "dd MMM, yyyy, p")}
                       </p>
                        {record.transactionId && <p className="text-xs text-muted-foreground mt-0.5 md:hidden">ID: {record.transactionId}</p>}
                     </TableCell>
