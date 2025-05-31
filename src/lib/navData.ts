@@ -4,13 +4,14 @@ import {
   LayoutDashboard, Users, UserCircle, Receipt, Briefcase, FileText, Sparkles,
   Mail, History, UserPlus, QrCode, CalendarCheck,
   CalendarDays, BookOpen, TrendingUp, ClipboardEdit, Printer,
-  Megaphone, Send, Bus, Route, BarChart3, Settings, DollarSign, FileSearch
+  Megaphone, Send, Bus, Route, BarChart3, Settings, DollarSign, FileSearch, MessageSquare
 } from 'lucide-react';
 
 // Admin Nav Items based on the new image
 export const adminNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-  { title: 'AI Assistant', href: '/admin/ai-assistant', icon: Sparkles },
+  // AI Assistant is now a floating widget, so removing from main nav
+  // { title: 'AI Assistant', href: '/admin/ai-assistant', icon: MessageSquare }, 
   { title: 'Students', href: '/admin/students', icon: Users },
   { title: 'Staff', href: '/admin/staff', icon: Briefcase },
   { title: 'Attendance', href: '/admin/attendance/student', icon: CalendarCheck },
@@ -22,8 +23,6 @@ export const adminNavItems: NavItem[] = [
   { title: 'Circulars', href: '/admin/circulars', icon: Megaphone },
   { title: 'Notice Summarizer (AI)', href: '/admin/notices/summary', icon: Sparkles },
   { title: 'Reports', href: '/admin/reports/overview', icon: BarChart3 },
-  // Settings is handled by the common footer in AppSidebar, but if it needs to be in main nav:
-  // { title: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
 // Student Nav Items (keeping existing structure, will inherit theme)
@@ -44,4 +43,3 @@ export const staffNavItems: NavItem[] = [
   { title: 'Timetable', href: '/staff/timetable', icon: CalendarDays },
   { title: 'Circulars', href: '/staff/circulars', icon: Megaphone },
 ];
-

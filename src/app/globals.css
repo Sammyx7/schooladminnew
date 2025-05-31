@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -46,6 +47,8 @@ body {
     --radius: 0.75rem; /* Updated Border radius (12px) */
 
     /* Sidebar specific theme variables */
+    --sidebar-width: 16rem; /* Default expanded width */
+    --sidebar-width-icon: 3.5rem; /* Width when collapsed to icons, matches ShadCN Sidebar common size for icon only */
     --sidebar-background: 220 16% 96%; /* hsl(220, 16%, 96%) - Light gray for sidebar */
     --sidebar-foreground: 224 12% 35%; /* hsl(224, 12%, 35%) - Gray text for sidebar items */
     --sidebar-primary: 220 85% 55%; /* Same as primary */
@@ -57,6 +60,10 @@ body {
     
     --sidebar-border: 220 10% 88%; /* Softer gray for sidebar border */
     --sidebar-ring: 220 85% 60%;
+
+    /* AI Sidebar specific */
+    --ai-sidebar-width: 360px;
+
 
     /* Metric Card specific colors - Very Light Pastels and Soft Borders */
     /* Green Card */
@@ -130,6 +137,10 @@ body {
     --sidebar-accent-foreground: 220 85% 70%;
     --sidebar-border: 217.2 32.6% 15%;
     --sidebar-ring: 220 85% 70%;
+
+    /* AI Sidebar for dark mode - can match general card/sidebar dark colors */
+    /* --ai-sidebar-width remains the same */
+
 
     --metric-card-green-bg: 145 75% 8%;
     --metric-card-green-border: 145 60% 20%;
