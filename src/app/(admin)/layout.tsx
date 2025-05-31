@@ -27,14 +27,14 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
             navItems={adminNavItems} 
             role="admin" 
             className="fixed left-0 top-16 bottom-0 z-30 hidden md:block"
-            collapsible="icon"
+            // The AppSidebar component itself handles its collapsible nature
           />
         )}
         <main 
           className={cn(
-            "flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto duration-300 ease-in-out transition-[margin-left]", // Changed from transition-all
+            "flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto duration-300 ease-in-out transition-[margin-left]",
             sidebarState === 'expanded' ? 'md:ml-[var(--sidebar-width)]' : 'md:ml-[var(--sidebar-width-icon)]',
-            isAIDocked ? "mr-[360px]" : "mr-0" 
+            isAIDocked && "mr-[360px]" // Apply margin-right only if AI sidebar is docked
           )}
         >
           {children}
