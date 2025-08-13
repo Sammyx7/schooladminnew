@@ -31,9 +31,8 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
         )}
         <main 
           className={cn(
-            "flex-1 w-full p-4 md:p-6 lg:p-8 bg-background overflow-y-auto transition-[margin-left] duration-300 ease-in-out", // Added w-full, changed overflow-auto to overflow-y-auto
+            "flex-1 w-full bg-background overflow-y-auto transition-[margin-left] duration-300 ease-in-out", 
             sidebarState === 'expanded' ? 'md:ml-[var(--sidebar-width)]' : 'md:ml-[var(--sidebar-width-icon)]'
-            // No margin-right here, AI sidebar overlays
           )}
         >
           {children}

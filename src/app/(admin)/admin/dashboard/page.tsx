@@ -29,7 +29,7 @@ const pendingNoticesData = [
 
 export default function AdminDashboardPage() {
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6 w-full p-4 md:p-6 lg:p-8">
       <PageHeader
         title="Admin Dashboard"
         description="Overview of school fees management"

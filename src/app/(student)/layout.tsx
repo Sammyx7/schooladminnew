@@ -28,7 +28,7 @@ function StudentLayoutContent({ children }: { children: ReactNode }) {
         )}
         <main 
           className={cn(
-            "flex-1 p-4 md:p-6 lg:p-8 bg-background overflow-auto transition-all duration-300 ease-in-out",
+            "flex-1 w-full bg-background overflow-y-auto transition-all duration-300 ease-in-out",
             sidebarState === 'expanded' ? 'md:ml-[var(--sidebar-width)]' : 'md:ml-[var(--sidebar-width-icon)]'
           )}
         >

@@ -155,7 +155,7 @@ export default function StudentProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 p-4 md:p-6 lg:p-8">
         {/* Welcome Skeleton */}
         <Card className="border shadow-md">
           <CardHeader className="flex flex-row items-center gap-4">
@@ -216,14 +216,16 @@ export default function StudentProfilePage() {
 
   if (error) {
     return (
-      <Alert variant="destructive" className="mt-4">
-        <AlertIcon className="h-5 w-5" />
-        <AlertMsgTitle>Error Fetching Dashboard Data</AlertMsgTitle>
-        <AlertDescription>
-          {error}
-          <Button onClick={fetchDashboardData} variant="link" className="p-0 h-auto ml-2 text-destructive-foreground underline">Try Again</Button>
-        </AlertDescription>
-      </Alert>
+      <div className="p-4 md:p-6 lg:p-8">
+        <Alert variant="destructive" className="mt-4">
+          <AlertIcon className="h-5 w-5" />
+          <AlertMsgTitle>Error Fetching Dashboard Data</AlertMsgTitle>
+          <AlertDescription>
+            {error}
+            <Button onClick={fetchDashboardData} variant="link" className="p-0 h-auto ml-2 text-destructive-foreground underline">Try Again</Button>
+          </AlertDescription>
+        </Alert>
+      </div>
     );
   }
 
@@ -237,7 +239,7 @@ export default function StudentProfilePage() {
 
   return (
     <TooltipProvider>
-      <div className="space-y-8">
+      <div className="space-y-8 p-4 md:p-6 lg:p-8">
         {/* Welcome Section */}
         <Card className="border shadow-md bg-card overflow-hidden">
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-6 bg-muted/30">
@@ -400,5 +402,3 @@ export default function StudentProfilePage() {
     </TooltipProvider>
   );
 }
-
-    
