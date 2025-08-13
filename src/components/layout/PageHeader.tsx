@@ -1,4 +1,3 @@
-
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -11,19 +10,21 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, icon: Icon, actions }: PageHeaderProps) {
   return (
-    <div className={cn("mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full")}> {/* Added w-full */}
-      <div className="flex-1"> {/* Added flex-1 to allow this block to grow */}
+    <div className={cn("mb-6 flex w-full flex-col items-start justify-between gap-4 sm:flex-row sm:items-center")}>
+      <div className="flex flex-1 items-center gap-3">
         {Icon && ( 
-          <div className="mb-1">
-            <Icon className="h-6 w-6 text-primary" />
+          <div className="hidden sm:block">
+            <Icon className="h-7 w-7 text-primary" />
           </div>
         )}
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-        {description && (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-        )}
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{title}</h1>
+          {description && (
+            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          )}
+        </div>
       </div>
-      {actions && <div className="flex items-center gap-2 shrink-0">{actions}</div>} {/* Added shrink-0 to actions */}
+      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </div>
   );
 }
