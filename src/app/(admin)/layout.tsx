@@ -32,7 +32,7 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
         <main 
           className={cn(
             "flex-1 w-full bg-background overflow-y-auto transition-[margin-left] duration-300 ease-in-out p-4 md:p-6 lg:p-8", 
-            sidebarState === 'expanded' ? 'md:ml-[var(--sidebar-width)]' : 'md:ml-[var(--sidebar-width-icon)]',
+            sidebarState === 'expanded' ? 'md:ml-[var(--sidebar-width)]' : 'md:ml-[var(--sidebar-width-icon)]'
           )}
         >
           {children}
