@@ -29,7 +29,7 @@ const pendingNoticesData = [
 
 export default function AdminDashboardPage() {
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6">
       <PageHeader
         title="Admin Dashboard"
         description="Overview of school fees management"
@@ -41,7 +41,7 @@ export default function AdminDashboardPage() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 w-full">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Total Fees Collected"
           value={feesCollected}
@@ -84,8 +84,8 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 w-full">
-        <Card className="shadow-md border bg-card w-full">
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="shadow-md border bg-card">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-card-foreground">Recent Payments</CardTitle>
           </CardHeader>
@@ -104,7 +104,7 @@ export default function AdminDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-md border bg-card w-full">
+        <Card className="shadow-md border bg-card">
           <CardHeader>
             <CardTitle className="text-lg font-semibold text-card-foreground">Pending Fee Notices</CardTitle>
           </CardHeader>

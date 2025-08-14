@@ -73,14 +73,14 @@ export default function AdminStudentsPage() {
 
 
   return (
-    <div className="space-y-6 w-full">
+    <div className="space-y-6">
       <PageHeader
         title="Student Management"
         icon={Users}
         description="View, search, and manage student profiles and details."
       />
 
-      <Card className="border shadow-md w-full">
+      <Card className="border shadow-md">
         <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <CardTitle className="text-xl font-semibold">Student List</CardTitle>
           <div className="relative w-full sm:w-auto sm:max-w-xs">
