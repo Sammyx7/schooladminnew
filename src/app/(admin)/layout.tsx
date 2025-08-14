@@ -12,16 +12,18 @@ import { AISidebarProvider, useAISidebar } from '@/contexts/AISidebarContext';
 import { AISidebar } from '@/components/admin/AISidebar';
 import { FloatingAIButton } from '@/components/admin/FloatingAIButton';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 function AdminLayoutContent({ children }: { children: ReactNode }) {
   const { userRole } = useAuth();
   const { isAIDocked } = useAISidebar();
   const { state: sidebarState } = useSidebar();
+  const isMobile = useIsMobile();
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <TopHeader />
-      <div className="flex flex-1 pt-16">
+      <div className="flex flex-1 pt-16 min-w-0">
         {userRole === 'admin' && (
           <AppSidebar 
             navItems={adminNavItems} 
@@ -31,9 +33,13 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
         )}
         <main 
           className={cn(
-            "flex flex-1 flex-col items-stretch bg-background overflow-y-auto transition-[margin-left] duration-300 ease-in-out p-4 md:p-6 lg:p-8", 
-            sidebarState === 'expanded' ? 'md:ml-[var(--sidebar-width)]' : 'md:ml-[var(--sidebar-width-icon)]'
+            "flex flex-1 flex-col items-stretch bg-background overflow-y-auto overflow-x-hidden min-w-0 box-border px-4 sm:px-6 lg:px-8 pb-4 pt-[5px]"
           )}
+          style={{
+            width: isMobile
+              ? '100vw'
+              : `calc(100vw - ${sidebarState === 'collapsed' ? 'var(--sidebar-width-icon)' : 'var(--sidebar-width)'}${isAIDocked ? ' - var(--ai-sidebar-width)' : ''})`
+          }}
         >
           {children}
         </main>

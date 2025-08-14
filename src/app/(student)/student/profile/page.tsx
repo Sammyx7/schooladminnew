@@ -155,7 +155,7 @@ export default function StudentProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 p-4 md:p-6 lg:p-8">
+      <div className="space-y-6 py-4 md:py-6 lg:py-8">
         {/* Welcome Skeleton */}
         <Card className="border shadow-md">
           <CardHeader className="flex flex-row items-center gap-4">
@@ -216,7 +216,7 @@ export default function StudentProfilePage() {
 
   if (error) {
     return (
-      <div className="p-4 md:p-6 lg:p-8">
+      <div className="py-4 md:py-6 lg:py-8">
         <Alert variant="destructive" className="mt-4">
           <AlertIcon className="h-5 w-5" />
           <AlertMsgTitle>Error Fetching Dashboard Data</AlertMsgTitle>
@@ -239,7 +239,7 @@ export default function StudentProfilePage() {
 
   return (
     <TooltipProvider>
-      <div className="space-y-8 p-4 md:p-6 lg:p-8">
+      <div className="space-y-8 py-4 md:py-6 lg:py-8">
         {/* Welcome Section */}
         <Card className="border shadow-md bg-card overflow-hidden">
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-6 bg-muted/30">

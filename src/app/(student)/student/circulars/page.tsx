@@ -91,7 +91,7 @@ export default function StudentCircularsPage() {
 
 
   return (
-    <div className="space-y-6 p-4 md:p-6 lg:p-8">
+    <div className="space-y-6 py-4 md:py-6 lg:py-8">
       <PageHeader
         title="School Circulars & Notices"
         icon={Megaphone}
