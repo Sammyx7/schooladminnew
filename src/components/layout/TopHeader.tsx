@@ -21,13 +21,13 @@ export function TopHeader() {
   const { userRole, logout } = useAuth();
   const router = useRouter(); // Initialized router
   // Mock user data - in a real app, this would come from auth context or API
-  const userName = "Dr. Priya Nair"; 
-  const userEmail = "dr.priya.nair@example.com";
+  const userName = userRole === 'admin' ? "Dr. Priya Nair" : "Mr. Vikram Singh";
+  const userEmail = userRole === 'admin' ? "dr.priya.nair@example.com" : "vikram.singh@example.com";
 
   return (
     <header className="bg-card text-card-foreground h-16 flex items-center justify-between px-4 md:px-6 border-b fixed top-0 left-0 right-0 z-40">
       <div className="flex items-center gap-3">
-        <Link href={`/${userRole === 'admin' ? 'admin/dashboard' : userRole === 'student' ? 'student/profile' : 'staff/profile' }`} className="flex items-center gap-2">
+        <Link href={`/${userRole === 'admin' ? 'admin/dashboard' : 'staff/profile' }`} className="flex items-center gap-2">
           <div className="bg-primary text-primary-foreground p-2 rounded-md w-10 h-10 flex items-center justify-center">
             <span className="font-bold text-sm">LOGO</span>
           </div>
@@ -100,9 +100,7 @@ export function TopHeader() {
 const getDefaultDashboardPath = (role: string | null) => {
   switch (role) {
     case 'admin': return '/admin/dashboard';
-    case 'student': return '/student/profile';
     case 'staff': return '/staff/profile';
     default: return '/login';
   }
 };
-
