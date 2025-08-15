@@ -3,10 +3,6 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: var(--font-inter), Arial, Helvetica, sans-serif; /* Changed from --font-geist-sans */
-}
-
 @layer base {
   :root {
     /* Theme based on the provided image */
