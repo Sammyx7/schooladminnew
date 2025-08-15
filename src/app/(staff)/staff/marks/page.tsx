@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -25,9 +25,18 @@ const MOCK_SECTIONS = ['Section A', 'Section B'];
 const MOCK_SUBJECTS = ['Mathematics', 'Physics', 'Computer Science'];
 const MOCK_EXAMS = ['Mid-Term Exam', 'Annual Exam'];
 
+interface StudentMarks {
+  [studentId: string]: {
+    obtained?: number | string;
+    max?: number | string;
+  };
+}
+
 export default function StaffMarksEntryPage() {
   const [students, setStudents] = useState<StudentProfile[]>([]);
+  const [marks, setMarks] = useState<StudentMarks>({});
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [isSearched, setIsSearched] = useState(false);
   const { toast } = useToast();
 
@@ -40,6 +49,7 @@ export default function StaffMarksEntryPage() {
     setIsLoading(true);
     setIsSearched(true);
     setStudents([]);
+    setMarks({}); // Reset marks on new search
     try {
       // Simulate API call
       const fetchedStudents = await getStudentsForClassSection(values.class, values.section);
@@ -53,12 +63,32 @@ export default function StaffMarksEntryPage() {
       setIsLoading(false);
     }
   };
+  
+  const handleMarksChange = (studentId: string, field: 'obtained' | 'max', value: string) => {
+    setMarks(prev => ({
+      ...prev,
+      [studentId]: {
+        ...prev[studentId],
+        [field]: value === '' ? '' : Number(value),
+      }
+    }));
+  };
 
-  const handleSaveMarks = () => {
-    toast({
-        title: "Marks Saved (Demo)",
-        description: "The student marks have been saved successfully."
+  const handleSaveMarks = async () => {
+    setIsSaving(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    
+    console.log("Saving marks data:", {
+      criteria: form.getValues(),
+      marks: marks,
     });
+
+    toast({
+        title: "Marks Saved Successfully",
+        description: "The student marks have been recorded."
+    });
+    setIsSaving(false);
   };
 
   return (
@@ -198,10 +228,22 @@ export default function StaffMarksEntryPage() {
                       <TableCell className="font-mono text-sm">{student.studentId}</TableCell>
                       <TableCell className="font-medium">{student.name}</TableCell>
                       <TableCell>
-                        <Input type="number" placeholder="Enter marks" className="max-w-xs" />
+                        <Input 
+                          type="number" 
+                          placeholder="Enter marks" 
+                          className="max-w-xs" 
+                          value={marks[student.studentId]?.obtained ?? ''}
+                          onChange={(e) => handleMarksChange(student.studentId, 'obtained', e.target.value)}
+                        />
                       </TableCell>
                        <TableCell>
-                        <Input type="number" placeholder="e.g., 100" className="max-w-xs" />
+                        <Input 
+                          type="number" 
+                          placeholder="e.g., 100" 
+                          className="max-w-xs" 
+                          value={marks[student.studentId]?.max ?? ''}
+                          onChange={(e) => handleMarksChange(student.studentId, 'max', e.target.value)}
+                        />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -209,10 +251,10 @@ export default function StaffMarksEntryPage() {
               </Table>
             )}
           </CardContent>
-           {students.length > 0 && (
+           {!isLoading && students.length > 0 && (
             <CardFooter>
-                <Button onClick={handleSaveMarks} className="ml-auto">
-                    <Save className="mr-2 h-4 w-4" />
+                <Button onClick={handleSaveMarks} className="ml-auto" disabled={isSaving}>
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     Save Marks
                 </Button>
             </CardFooter>
@@ -222,3 +264,5 @@ export default function StaffMarksEntryPage() {
     </div>
   );
 }
+
+    
