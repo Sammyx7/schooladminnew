@@ -324,3 +324,19 @@ export async function createAdminExpenseRecord(data: ExpenseFormValues): Promise
         }, 500);
     });
 }
+
+// Mock staff list for admin view
+const MOCK_STAFF_LIST = [
+  { id: 'STF001', staffId: 'TCH101', name: 'Dr. Priya Nair', role: 'Principal', department: 'Administration', email: 'priya.nair@example.com' },
+  { id: 'STF002', staffId: 'TCH102', name: 'Mr. Vikram Singh', role: 'Mathematics Teacher', department: 'Academics - Senior Secondary', email: 'vikram.singh@example.com' },
+  { id: 'STF003', staffId: 'TCH103', name: 'Ms. Anjali Sharma', role: 'Science Teacher', department: 'Academics - Primary', email: 'anjali.sharma@example.com' },
+  { id: 'STF004', staffId: 'ADM001', name: 'Mr. Rajesh Kumar', role: 'Accountant', department: 'Accounts', email: 'rajesh.kumar@example.com' },
+];
+
+export async function getAdminStaffList() {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(MOCK_STAFF_LIST);
+        }, 800);
+    });
+}
