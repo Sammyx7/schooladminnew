@@ -130,7 +130,7 @@ export type ExpenseRecord = z.infer<typeof ExpenseRecordSchema>;
 
 export const ExpenseFormSchema = z.object({
   date: z.date(),
-  category: z.enum(expenseCategories),
+  category: z.enum(expenseCategories, { errorMap: () => ({ message: "Please select a category." }) }),
   description: z.string().min(3, "Description is required."),
   amount: z.coerce.number().positive("Amount must be a positive number."),
   paymentMethod: z.string().optional(),
