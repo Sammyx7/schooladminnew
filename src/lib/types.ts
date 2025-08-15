@@ -2,7 +2,7 @@
 import type { LucideIcon } from 'lucide-react';
 import { z } from 'zod';
 
-export type UserRole = 'admin' | 'student' | 'staff';
+export type UserRole = 'admin' | 'staff';
 
 export interface NavItem {
   title: string;
@@ -12,7 +12,6 @@ export interface NavItem {
   children?: NavItem[];
 }
 
-// Student Dashboard Specific Types
 export const StudentProfileSchema = z.object({
   name: z.string(),
   avatarUrl: z.string().optional(),
@@ -20,84 +19,6 @@ export const StudentProfileSchema = z.object({
   classSection: z.string(),
 });
 export type StudentProfile = z.infer<typeof StudentProfileSchema>;
-
-
-export interface PendingFee {
-  amount: string;
-  dueDate: string;
-  status: 'pending' | 'none' | 'overdue';
-}
-
-export interface NextClass {
-  subject: string;
-  time: string;
-  teacher: string;
-  subjectIcon?: LucideIcon;
-}
-
-export interface StudentNotification {
-  id: number;
-  type: 'circular' | 'fee' | 'report' | 'event' | 'general';
-  title: string;
-  date: string;
-  href: string;
-  read?: boolean;
-}
-
-export interface QuickLink {
-  title: string;
-  href: string;
-  icon: React.ElementType;
-  description: string;
-}
-
-export interface StudentDashboardData {
-  profile: StudentProfile;
-  pendingFees: PendingFee;
-  nextClass: NextClass;
-  notifications: StudentNotification[];
-}
-
-// Student Fee Notices Types
-export const feeNoticeStatuses = ['Pending', 'Paid', 'Overdue'] as const;
-export type FeeNoticeStatus = typeof feeNoticeStatuses[number];
-
-export const FeeNoticeSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  description: z.string().optional(),
-  amount: z.number(),
-  dueDate: z.string(), 
-  status: z.enum(feeNoticeStatuses),
-  paymentLink: z.string().optional(),
-});
-export type FeeNotice = z.infer<typeof FeeNoticeSchema>;
-
-
-// Student Report Card Types
-export const SubjectGradeSchema = z.object({
-  id: z.string(),
-  subjectName: z.string(),
-  grade: z.string(),
-  marks: z.number().optional(),
-  maxMarks: z.number().optional(),
-  remarks: z.string().optional(),
-});
-export type SubjectGrade = z.infer<typeof SubjectGradeSchema>;
-
-export const ReportCardDataSchema = z.object({
-  id: z.string(),
-  termName: z.string(),
-  issueDate: z.string(), 
-  subjects: z.array(SubjectGradeSchema),
-  overallPercentage: z.string().optional(),
-  overallGrade: z.string().optional(),
-  classRank: z.string().optional(),
-  teacherComments: z.string().optional(),
-  downloadLink: z.string().optional(),
-});
-export type ReportCardData = z.infer<typeof ReportCardDataSchema>;
-
 
 // Circulars Types (Used by both Student and Admin)
 export const circularCategories = ["Academics", "Events", "Holidays", "Urgent", "General"] as const;
@@ -337,4 +258,3 @@ export interface ChatMessage {
   sender: 'user' | 'ai';
   timestamp: Date;
 }
-

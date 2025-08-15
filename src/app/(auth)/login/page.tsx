@@ -79,7 +79,6 @@ export default function LoginPage() {
                 </SelectTrigger>
                 <SelectContent className="bg-popover text-popover-foreground">
                   <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="student">Student</SelectItem>
                   <SelectItem value="staff">Staff</SelectItem>
                 </SelectContent>
               </Select>

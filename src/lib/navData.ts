@@ -24,16 +24,6 @@ export const adminNavItems: NavItem[] = [
   { title: 'Reports', href: '/admin/reports/overview', icon: BarChart3 },
 ];
 
-// Student Nav Items (keeping existing structure, will inherit theme)
-export const studentNavItems: NavItem[] = [
-  { title: 'Profile', href: '/student/profile', icon: UserCircle },
-  { title: 'Fee Notices', href: '/student/fee-notices', icon: Receipt },
-  { title: 'Payment History', href: '/student/payments', icon: History },
-  { title: 'Report Card', href: '/student/report-card', icon: FileSearch },
-  { title: 'Timetable', href: '/student/timetable', icon: CalendarDays },
-  { title: 'Circulars', href: '/student/circulars', icon: Megaphone },
-];
-
 // Staff Nav Items (keeping existing structure, will inherit theme)
 export const staffNavItems: NavItem[] = [
   { title: 'Profile', href: '/staff/profile', icon: Briefcase },
