@@ -258,3 +258,13 @@ export interface ChatMessage {
   sender: 'user' | 'ai';
   timestamp: Date;
 }
+
+
+// Staff Marks Entry
+export const MarksEntryFilterSchema = z.object({
+  class: z.string().min(1, "Please select a class."),
+  section: z.string().min(1, "Please select a section."),
+  subject: z.string().min(1, "Please select a subject."),
+  exam: z.string().min(1, "Please select an exam/term."),
+});
+export type MarksEntryFilterFormValues = z.infer<typeof MarksEntryFilterSchema>;

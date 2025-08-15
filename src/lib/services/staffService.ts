@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { StaffProfile, Circular, TimetableEntry, StaffAttendanceRecord, AttendanceStatus, DayOfWeek } from '@/lib/types';
+import type { StaffProfile, Circular, TimetableEntry, StaffAttendanceRecord, AttendanceStatus, DayOfWeek, StudentProfile } from '@/lib/types';
 import { format, parseISO, isEqual, startOfDay } from 'date-fns';
 
 
@@ -90,4 +90,31 @@ export async function getStaffOwnAttendanceHistory(staffId: string): Promise<Sta
         });
     }
     return Promise.resolve([]);
+}
+
+
+// Mock Data for Students in a class
+const MOCK_STUDENTS_CLASS_10A: StudentProfile[] = [
+  { studentId: "S10234", name: "Aisha Sharma", classSection: "Class 10 - Section A" },
+  { studentId: "S10237", name: "Karan Mehta", classSection: "Class 10 - Section A" },
+  { studentId: "S10241", name: "Rina Kapoor", classSection: "Class 10 - Section A" },
+];
+
+const MOCK_STUDENTS_CLASS_9B: StudentProfile[] = [
+  { studentId: "S10235", name: "Rohan Verma", classSection: "Class 9 - Section B" },
+  { studentId: "S10242", name: "Sameer Ali", classSection: "Class 9 - Section B" },
+];
+
+export async function getStudentsForClassSection(className: string, section: string): Promise<StudentProfile[]> {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            if (className === 'Class 10' && section === 'Section A') {
+                resolve(MOCK_STUDENTS_CLASS_10A);
+            } else if (className === 'Class 9' && section === 'Section B') {
+                resolve(MOCK_STUDENTS_CLASS_9B);
+            } else {
+                resolve([]);
+            }
+        }, 800);
+    });
 }
