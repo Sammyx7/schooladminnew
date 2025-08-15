@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent, lazy } from 'react';
 import Image from 'next/image';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Receipt, Loader2, AlertCircle as AlertIcon, CreditCard, CheckCircle, Info } from 'lucide-react';
@@ -287,4 +287,3 @@ export default function StudentFeeNoticesPage() {
     </div>
   );
 }
-

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent, lazy } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -138,7 +138,7 @@ export default function AdminAdmissionsPage() {
 
 
   return (
-    <div className="space-y-6">
+    <div className="w-full space-y-6">
       <PageHeader
         title="Admission Management"
         icon={UserPlus}
@@ -151,7 +151,7 @@ export default function AdminAdmissionsPage() {
         }
       />
 
-      <Card className="border shadow-md">
+      <Card className="w-full border shadow-md">
         <CardHeader>
           <CardTitle>Student Applications</CardTitle>
           <CardDescription>Overview of all submitted student applications.</CardDescription>

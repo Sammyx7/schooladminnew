@@ -2,6 +2,7 @@
 import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { memo } from 'react';
 
 interface MetricCardProps {
   title: string;
@@ -15,7 +16,7 @@ interface MetricCardProps {
   className?: string;
 }
 
-export function MetricCard({ 
+const MetricCardComponent = ({ 
   title, 
   value, 
   icon: Icon, 
@@ -25,7 +26,7 @@ export function MetricCard({
   iconBgClass,
   valueColorClass,
   className 
-}: MetricCardProps) {
+}: MetricCardProps) => {
   return (
     <Card className={cn("shadow-md border-none rounded-lg", bgColorClass, className)}>
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2 pt-4 px-4">
@@ -41,3 +42,5 @@ export function MetricCard({
     </Card>
   );
 }
+
+export const MetricCard = memo(MetricCardComponent);
