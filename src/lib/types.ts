@@ -235,6 +235,14 @@ export type ReportListItem = {
     isImplemented: boolean;
 };
 
+export type FeeReportData = {
+  name: string; // e.g., 'Class 1'
+  paid: number;
+  pending: number;
+  overdue: number;
+};
+
+
 // AI Assistant Chat
 export type ChatMessage = {
   id: string;

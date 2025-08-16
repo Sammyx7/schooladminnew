@@ -21,8 +21,18 @@ export const adminNavItems: NavItem[] = [
   { title: 'Fee Notices', href: '/admin/fees/bulk-notice', icon: Receipt },
   { title: 'Payment History', href: '/admin/payments', icon: History },
   { title: 'Expenses', href: '/admin/expenses', icon: DollarSign },
-  { title: 'Marks Entry', href: '/admin/marks', icon: ClipboardEdit }, // Placeholder page
-  { title: 'Reports', href: '/admin/reports/overview', icon: BarChart3 },
+  { title: 'Marks Entry', href: '/admin/marks', icon: ClipboardEdit }, 
+  { 
+    title: 'Reports', 
+    href: '/admin/reports/overview', 
+    icon: BarChart3,
+    children: [
+      { title: 'Overview', href: '/admin/reports/overview', icon: BarChart3 },
+      { title: 'Report Cards', href: '/admin/reports/report-cards', icon: FileText },
+      { title: 'Fee Summary', href: '/admin/reports/fee-summary', icon: DollarSign },
+      { title: 'Demographics', href: '/admin/reports/demographics', icon: Users },
+    ]
+  },
 ];
 
 // Staff Nav Items (keeping existing structure, will inherit theme)

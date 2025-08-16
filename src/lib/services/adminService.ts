@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, AdminPaymentRecord, AdminPaymentFiltersFormValues, StudentAttendanceRecord, StudentAttendanceFilterFormValues, StaffAttendanceRecord, StaffAttendanceFilterFormValues, ExpenseRecord, ExpenseFormValues, TimetableEntry, AdminTimetableFilterFormValues } from '@/lib/types';
+import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, AdminPaymentRecord, AdminPaymentFiltersFormValues, StudentAttendanceRecord, StudentAttendanceFilterFormValues, StaffAttendanceRecord, StaffAttendanceFilterFormValues, ExpenseRecord, ExpenseFormValues, TimetableEntry, AdminTimetableFilterFormValues, FeeReportData } from '@/lib/types';
 import { format, parseISO, isEqual, startOfDay } from 'date-fns';
 
 // Mock data for a list of students for the admin view
@@ -362,3 +362,27 @@ export async function getAdminTimetable(filters?: AdminTimetableFilterFormValues
         }, 700);
     });
 }
+
+// MOCK DATA FOR REPORTS
+export const MOCK_FEE_REPORT_DATA: FeeReportData[] = [
+  { name: 'Class 1', paid: 150000, pending: 30000, overdue: 5000 },
+  { name: 'Class 2', paid: 180000, pending: 20000, overdue: 10000 },
+  { name: 'Class 3', paid: 175000, pending: 25000, overdue: 0 },
+  { name: 'Class 4', paid: 200000, pending: 15000, overdue: 12000 },
+  { name: 'Class 5', paid: 190000, pending: 10000, overdue: 8000 },
+];
+
+export const MOCK_STUDENT_LIST_FOR_REPORTS: StudentProfile[] = [
+    ...MOCK_STUDENT_LIST,
+    { studentId: "S10241", name: "Rina Kapoor", classSection: "Class 10 - Section A" },
+    { studentId: "S10242", name: "Sameer Ali", classSection: "Class 9 - Section B" },
+    { studentId: "S10243", name: "Geeta Desai", classSection: "Class 8 - Section A" },
+    { studentId: "S10244", name: "Mohit Kumar", classSection: "Class 8 - Section B" },
+    { studentId: "S10245", name: "Sunita Gupta", classSection: "Class 7 - Section A" },
+    { studentId: "S10246", name: "Alok Nath", classSection: "Class 1 - Section A" },
+    { studentId: "S10247", name: "Bhavna Shah", classSection: "Class 1 - Section B" },
+    { studentId: "S10248", name: "Chetan Parekh", classSection: "Class 2 - Section A" },
+    { studentId: "S10249", name: "Divya Singh", classSection: "Class 3 - Section A" },
+    { studentId: "S10250", name: "Farhan Akhtar", classSection: "Class 4 - Section A" },
+    { studentId: "S10251", name: "Ishaan Reddy", classSection: "Class 5 - Section B" },
+];
