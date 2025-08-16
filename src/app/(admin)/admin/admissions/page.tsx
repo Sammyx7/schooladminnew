@@ -1,6 +1,6 @@
 
 "use client";
-
+ 
 import { useState, useEffect, type FormEvent, lazy } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/form";
 import { DatePicker } from '@/components/ui/date-picker';
 import type { StudentApplication, StudentApplicationFormValues, ApplicationStatus } from '@/lib/types';
-import { StudentApplicationFormSchema, applicationStatuses } from '@/lib/types';
 import { getAdminStudentApplications, createAdminStudentApplication, updateAdminStudentApplicationStatus } from '@/lib/services/adminService';
 import {
   DropdownMenu,
@@ -45,6 +44,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
 
+import { StudentApplicationFormSchema, applicationStatuses } from '@/lib/types';
 
 export default function AdminAdmissionsPage() {
   const [applications, setApplications] = useState<StudentApplication[]>([]);
@@ -136,7 +136,6 @@ export default function AdminAdmissionsPage() {
     }
   };
 
-
   return (
     <div className="w-full space-y-6">
       <PageHeader
@@ -157,7 +156,7 @@ export default function AdminAdmissionsPage() {
           <CardDescription>Overview of all submitted student applications.</CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading && (
+          {isLoading ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -180,25 +179,18 @@ export default function AdminAdmissionsPage() {
                 ))}
               </TableBody>
             </Table>
-          )}
-
-          {!isLoading && error && (
+          ) : error ? (
             <Alert variant="destructive">
-              <AlertIcon className="h-5 w-5" />
               <AlertMsgTitle>Error Loading Applications</AlertMsgTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-          )}
-
-          {!isLoading && !error && applications.length === 0 && (
+          ) : applications.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <UserPlus className="h-16 w-16 mx-auto mb-4 opacity-50" />
               <p className="text-lg font-medium">No Applications Yet</p>
               <p>Click "Add New Application" to create the first one.</p>
             </div>
-          )}
-
-          {!isLoading && !error && applications.length > 0 && (
+          ) : (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -264,7 +256,7 @@ export default function AdminAdmissionsPage() {
               Fill in the details below to record a new application.
             </DialogDescription>
           </DialogHeader>
-          <Form {...form}>
+          <Form {...form} >
             <form onSubmit={form.handleSubmit(handleAddApplication)} className="space-y-4 py-2 max-h-[70vh] overflow-y-auto pr-2">
               <FormField
                 control={form.control}
