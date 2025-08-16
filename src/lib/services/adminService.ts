@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, AdminPaymentRecord, AdminPaymentFiltersFormValues, StudentAttendanceRecord, StudentAttendanceFilterFormValues, StaffAttendanceRecord, StaffAttendanceFilterFormValues, ExpenseRecord, ExpenseFormValues, TimetableEntry, AdminTimetableFilterFormValues, FeeReportData, TransportRoute, TransportRouteFormValues } from '@/lib/types';
+import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, AdminPaymentRecord, AdminPaymentFiltersFormValues, StudentAttendanceRecord, StudentAttendanceFilterFormValues, StaffAttendanceRecord, StaffAttendanceFilterFormValues, ExpenseRecord, ExpenseFormValues, TimetableEntry, AdminTimetableFilterFormValues, FeeReportData, TransportRoute, TransportRouteFormValues, AdminStaffListItem, StaffOnboardingFormValues } from '@/lib/types';
 import { format, parseISO, isEqual, startOfDay } from 'date-fns';
 
 // Mock data for a list of students for the admin view
@@ -328,7 +328,7 @@ export async function createAdminExpenseRecord(data: ExpenseFormValues): Promise
 }
 
 // Mock staff list for admin view
-const MOCK_STAFF_LIST = [
+let MOCK_STAFF_LIST: AdminStaffListItem[] = [
   { id: 'STF001', staffId: 'TCH101', name: 'Dr. Priya Nair', role: 'Principal', department: 'Administration', email: 'priya.nair@example.com' },
   { id: 'STF002', staffId: 'TCH102', name: 'Mr. Vikram Singh', role: 'Mathematics Teacher', department: 'Academics - Senior Secondary', email: 'vikram.singh@example.com' },
   { id: 'STF003', staffId: 'TCH103', name: 'Ms. Anjali Sharma', role: 'Science Teacher', department: 'Academics - Primary', email: 'anjali.sharma@example.com' },
@@ -336,12 +336,40 @@ const MOCK_STAFF_LIST = [
 ];
 
 export async function getAdminStaffList() {
-    return new Promise(resolve => {
+    return new Promise<AdminStaffListItem[]>(resolve => {
         setTimeout(() => {
             resolve(MOCK_STAFF_LIST);
         }, 800);
     });
 }
+
+export async function createAdminStaffMember(data: StaffOnboardingFormValues): Promise<AdminStaffListItem> {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const lastStaffIdNum = MOCK_STAFF_LIST.reduce((max, staff) => {
+                const match = staff.staffId.match(/^(TCH|ADM)(\d+)$/);
+                if (match) {
+                    return Math.max(max, parseInt(match[2], 10));
+                }
+                return max;
+            }, 100);
+
+            const newStaffId = `TCH${lastStaffIdNum + 1}`;
+
+            const newStaffMember: AdminStaffListItem = {
+                id: `STF${Date.now()}`,
+                staffId: newStaffId,
+                name: data.fullName,
+                email: data.email,
+                role: data.role,
+                department: data.department,
+            };
+            MOCK_STAFF_LIST.unshift(newStaffMember);
+            resolve(newStaffMember);
+        }, 600);
+    });
+}
+
 
 // Mock Data for Admin Timetable
 const MOCK_ADMIN_TIMETABLE: TimetableEntry[] = [

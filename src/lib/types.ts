@@ -32,6 +32,21 @@ export const AdminStaffListItemSchema = z.object({
 });
 export type AdminStaffListItem = z.infer<typeof AdminStaffListItemSchema>;
 
+// Staff Onboarding
+export const staffRoles = ['Principal', 'Vice Principal', 'Teacher', 'Science Teacher', 'Mathematics Teacher', 'Librarian', 'Accountant', 'Admin Staff', 'Sports Coach'] as const;
+export const staffDepartments = ['Administration', 'Academics - Primary', 'Academics - Senior Secondary', 'Accounts', 'Sports', 'Library', 'Other'] as const;
+
+export const StaffOnboardingFormSchema = z.object({
+  fullName: z.string().min(3, { message: "Full name must be at least 3 characters." }),
+  email: z.string().email({ message: "Please enter a valid email address." }),
+  phone: z.string().min(10, { message: "Please enter a valid phone number." }),
+  role: z.enum(staffRoles, { errorMap: () => ({ message: "Please select a role." }) }),
+  department: z.enum(staffDepartments, { errorMap: () => ({ message: "Please select a department." }) }),
+  qualifications: z.string().optional(),
+});
+export type StaffOnboardingFormValues = z.infer<typeof StaffOnboardingFormSchema>;
+
+
 // Payment Record Schema (for admin view)
 export const AdminPaymentRecordSchema = z.object({
   id: z.string(),

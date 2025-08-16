@@ -2,9 +2,9 @@
 "use client";
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,63 +15,56 @@ import { useToast } from '@/hooks/use-toast';
 import { UserPlus, Loader2, Save, Upload } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Separator } from '@/components/ui/separator';
-
-const OnboardingFormSchema = z.object({
-  // Personal Details
-  fullName: z.string().min(3, { message: "Full name must be at least 3 characters." }),
-  email: z.string().email({ message: "Please enter a valid email address." }),
-  phone: z.string().min(10, { message: "Please enter a valid phone number." }),
-  
-  // Professional Details
-  role: z.string().min(2, { message: "Role is required." }),
-  department: z.string().min(2, { message: "Department is required." }),
-  qualifications: z.string().min(2, { message: "Please list at least one qualification." }),
-
-  // Document Upload (Placeholder)
-  // In a real app, this would use a file upload schema
-  resume: z.any().optional(),
-  certificates: z.any().optional(),
-});
-
-type OnboardingFormValues = z.infer<typeof OnboardingFormSchema>;
+import type { StaffOnboardingFormValues } from '@/lib/types';
+import { StaffOnboardingFormSchema, staffRoles, staffDepartments } from '@/lib/types';
+import { createAdminStaffMember } from '@/lib/services/adminService';
 
 export default function AdminTeacherOnboardingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
-  const form = useForm<OnboardingFormValues>({
-    resolver: zodResolver(OnboardingFormSchema),
+  const form = useForm<StaffOnboardingFormValues>({
+    resolver: zodResolver(StaffOnboardingFormSchema),
     defaultValues: {
       fullName: '',
       email: '',
       phone: '',
-      role: '',
-      department: '',
+      role: undefined,
+      department: undefined,
       qualifications: '',
     },
   });
 
-  const handleOnboardTeacher = async (values: OnboardingFormValues) => {
+  const handleOnboardTeacher = async (values: StaffOnboardingFormValues) => {
     setIsSubmitting(true);
-    // Simulate API call to onboard the new teacher
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    console.log("Onboarding Data:", values);
-
-    toast({
-      title: "Teacher Onboarded Successfully",
-      description: `${values.fullName} has been added to the staff list.`,
-    });
-    form.reset();
-    setIsSubmitting(false);
+    try {
+      await createAdminStaffMember(values);
+      toast({
+        title: "Staff Member Onboarded",
+        description: `${values.fullName} has been successfully added to the staff list.`,
+      });
+      form.reset();
+      // Optional: redirect to staff list after successful onboarding
+      // router.push('/admin/staff'); 
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+      toast({
+        title: "Onboarding Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Teacher Onboarding"
+        title="Staff Onboarding"
         icon={UserPlus}
-        description="Onboard new teachers, collect information, and manage qualifications."
+        description="Onboard new staff members, collect information, and manage qualifications."
       />
 
       <Form {...form}>
@@ -79,7 +72,7 @@ export default function AdminTeacherOnboardingPage() {
           <Card className="border shadow-md">
             <CardHeader>
               <CardTitle>Personal Details</CardTitle>
-              <CardDescription>Enter the new teacher's personal contact information.</CardDescription>
+              <CardDescription>Enter the new staff member's personal contact information.</CardDescription>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
@@ -121,7 +114,7 @@ export default function AdminTeacherOnboardingPage() {
           <Card className="border shadow-md">
             <CardHeader>
               <CardTitle>Professional Information</CardTitle>
-              <CardDescription>Enter the new teacher's role, department, and qualifications.</CardDescription>
+              <CardDescription>Enter the new staff member's role, department, and qualifications.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -131,7 +124,14 @@ export default function AdminTeacherOnboardingPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Role / Position</FormLabel>
-                      <FormControl><Input placeholder="e.g., Science Teacher" {...field} /></FormControl>
+                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger><SelectValue placeholder="Select a role" /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {staffRoles.map(role => <SelectItem key={role} value={role}>{role}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -147,11 +147,7 @@ export default function AdminTeacherOnboardingPage() {
                           <SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Academics - Primary">Academics - Primary</SelectItem>
-                          <SelectItem value="Academics - Senior Secondary">Academics - Senior Secondary</SelectItem>
-                          <SelectItem value="Administration">Administration</SelectItem>
-                          <SelectItem value="Sports">Sports</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
+                           {staffDepartments.map(dept => <SelectItem key={dept} value={dept}>{dept}</SelectItem>)}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -164,7 +160,7 @@ export default function AdminTeacherOnboardingPage() {
                 name="qualifications"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Qualifications</FormLabel>
+                    <FormLabel>Qualifications (Optional)</FormLabel>
                     <FormControl><Textarea placeholder="List qualifications, separated by commas (e.g., M.Sc. Physics, B.Ed.)" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
@@ -202,7 +198,7 @@ export default function AdminTeacherOnboardingPage() {
           <div className="flex justify-end">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              Onboard Teacher
+              Onboard Staff Member
             </Button>
           </div>
         </form>
