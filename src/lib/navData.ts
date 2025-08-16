@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, UserCircle, Receipt, Briefcase, FileText, Sparkles,
   Mail, History, UserPlus, QrCode, CalendarCheck, UserCheck, 
   CalendarDays, BookOpen, TrendingUp, ClipboardEdit, Printer,
-  Megaphone, Send, Bus, Route, BarChart3, Settings, DollarSign, FileSearch, MessageSquare
+  Megaphone, Send, Bus, Route, BarChart3, Settings, DollarSign, FileSearch, MessageSquare, GraduationCap
 } from 'lucide-react';
 
 // Admin Nav Items based on the new image
@@ -43,4 +43,15 @@ export const staffNavItems: NavItem[] = [
   { title: 'Marks Entry', href: '/staff/marks', icon: ClipboardEdit },
   { title: 'Timetable', href: '/staff/timetable', icon: CalendarDays },
   { title: 'Circulars', href: '/staff/circulars', icon: Megaphone },
+];
+
+
+// Student Nav Items
+export const studentNavItems: NavItem[] = [
+  { title: 'Dashboard', href: '/student/dashboard', icon: LayoutDashboard },
+  { title: 'Fee Notices', href: '/student/fees', icon: Receipt },
+  { title: 'Payment History', href: '/student/payments', icon: History },
+  { title: 'Report Card', href: '/student/report-card', icon: GraduationCap },
+  { title: 'Timetable', href: '/student/timetable', icon: CalendarDays },
+  { title: 'Circulars', href: '/student/circulars', icon: Megaphone },
 ];

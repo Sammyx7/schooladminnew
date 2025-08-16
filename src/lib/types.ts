@@ -2,7 +2,7 @@
 import type { LucideIcon } from 'lucide-react';
 import { z } from 'zod';
 
-export type UserRole = 'admin' | 'staff';
+export type UserRole = 'admin' | 'staff' | 'student';
 
 export interface NavItem {
   title: string;
@@ -285,4 +285,46 @@ export type TransportRouteFormValues = z.infer<typeof TransportRouteFormSchema>;
 
 export type TransportRoute = TransportRouteFormValues & {
   id: string;
+};
+
+// Student Portal Specific Types
+export type StudentDashboardData = {
+  profile: StudentProfile;
+  attendancePercentage: number;
+  feesDue: number;
+  recentCirculars: Circular[];
+};
+
+export type FeeNotice = {
+    id: string;
+    title: string;
+    amount: number;
+    dueDate: string; // ISO String
+    status: 'Paid' | 'Due' | 'Overdue';
+    paidDate?: string; // ISO String
+};
+
+export type PaymentRecord = {
+    id: string;
+    date: string; // ISO String
+    description: string;
+    amount: number;
+    transactionId: string;
+};
+
+export type ReportCardSubject = {
+    name: string;
+    marksObtained: number;
+    maxMarks: number;
+    grade: string;
+};
+
+export type ReportCardData = {
+    examName: string;
+    subjects: ReportCardSubject[];
+    totalMarks: number;
+    maxTotalMarks: number;
+    percentage: number;
+    overallGrade: string;
+    teacherRemarks: string;
 };

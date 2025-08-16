@@ -20,6 +20,9 @@ export default function HomePage() {
           case 'staff':
             router.replace('/staff/profile');
             break;
+          case 'student':
+            router.replace('/student/dashboard');
+            break;
           default:
             router.replace('/login');
         }

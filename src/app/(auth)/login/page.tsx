@@ -80,6 +80,7 @@ export default function LoginPage() {
                 <SelectContent className="bg-popover text-popover-foreground">
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="staff">Staff</SelectItem>
+                  <SelectItem value="student">Student</SelectItem>
                 </SelectContent>
               </Select>
             </div>

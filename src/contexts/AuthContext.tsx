@@ -49,6 +49,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       case 'staff':
         router.push('/staff/profile');
         break;
+      case 'student':
+        router.push('/student/dashboard');
+        break;
       default:
         router.push('/login');
     }
