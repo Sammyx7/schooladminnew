@@ -3,41 +3,32 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Megaphone, PlusCircle, Loader2, AlertCircle as AlertIcon, Edit, Trash2, Send } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Megaphone, PlusCircle, AlertCircle as AlertIcon, Trash2, Send } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
-import type { Circular, CreateCircularFormValues, CircularCategory } from '@/lib/types';
-import { CreateCircularSchema, circularCategories } from '@/lib/types';
-import { getAdminCirculars, createAdminCircular, deleteAdminCircular } from '@/lib/services/adminService';
+import type { Circular, CircularCategory } from '@/lib/types';
+import { getAdminCirculars, deleteAdminCircular } from '@/lib/services/adminService';
 import { cn } from '@/lib/utils';
+import dynamic from 'next/dynamic';
+
+const AddCircularDialog = dynamic(() => import('@/components/admin/circulars/AddCircularDialog'), {
+  ssr: false,
+});
 
 export default function AdminCircularsPage() {
   const [circulars, setCirculars] = useState<Circular[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [circularToDelete, setCircularToDelete] = useState<Circular | null>(null);
   const { toast } = useToast();
-
-  const form = useForm<CreateCircularFormValues>({
-    resolver: zodResolver(CreateCircularSchema),
-    defaultValues: { title: '', summary: '', category: undefined, attachmentLink: '' },
-  });
 
   const fetchCirculars = async () => {
     setIsLoading(true);
@@ -57,22 +48,6 @@ export default function AdminCircularsPage() {
   useEffect(() => {
     fetchCirculars();
   }, []);
-
-  const handleCreateCircular = async (values: CreateCircularFormValues) => {
-    setIsSubmitting(true);
-    try {
-      await createAdminCircular(values);
-      toast({ title: "Success", description: "New circular has been published." });
-      setIsFormDialogOpen(false);
-      form.reset();
-      await fetchCirculars();
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to create circular.";
-      toast({ title: "Error", description: msg, variant: "destructive" });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleDeleteCircular = async () => {
     if (!circularToDelete) return;
@@ -108,7 +83,7 @@ export default function AdminCircularsPage() {
         icon={Megaphone}
         description="Manage and distribute school-wide announcements."
         actions={
-          <Button onClick={() => { form.reset(); setIsFormDialogOpen(true); }}>
+          <Button onClick={() => setIsFormDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Create New Circular
           </Button>
@@ -170,27 +145,14 @@ export default function AdminCircularsPage() {
           )}
         </CardContent>
       </Card>
-
-      <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
-        <DialogContent className="sm:max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Create New Circular</DialogTitle>
-            <DialogDescription>Compose and publish a new announcement.</DialogDescription>
-          </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleCreateCircular)} className="space-y-4 py-2 max-h-[70vh] overflow-y-auto pr-2">
-              <FormField control={form.control} name="title" render={({ field }) => (<FormItem><FormLabel>Title</FormLabel><FormControl><Input placeholder="e.g., Annual Sports Day Announcement" {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="summary" render={({ field }) => (<FormItem><FormLabel>Summary / Content</FormLabel><FormControl><Textarea placeholder="Enter the full content of the circular here..." rows={6} {...field} /></FormControl><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="category" render={({ field }) => (<FormItem><FormLabel>Category</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a category" /></SelectTrigger></FormControl><SelectContent>{circularCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
-              <FormField control={form.control} name="attachmentLink" render={({ field }) => (<FormItem><FormLabel>Attachment URL (Optional)</FormLabel><FormControl><Input placeholder="https://example.com/document.pdf" {...field} /></FormControl><FormDescription>Provide a link to a PDF or other document if needed.</FormDescription><FormMessage /></FormItem>)} />
-              <DialogFooter className="pt-4">
-                <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Cancel</Button></DialogClose>
-                <Button type="submit" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Publish Circular</Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+      
+      {isFormDialogOpen && (
+        <AddCircularDialog 
+            isOpen={isFormDialogOpen}
+            onClose={() => setIsFormDialogOpen(false)}
+            onCircularAdded={fetchCirculars}
+        />
+      )}
       
       <AlertDialog open={!!circularToDelete} onOpenChange={() => setCircularToDelete(null)}>
         <AlertDialogContent>
