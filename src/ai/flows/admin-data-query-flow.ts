@@ -288,7 +288,7 @@ const adminDataQueryFlow = ai.defineFlow(
   },
   async (input) => {
     const llmResponse = await dataQueryPrompt(input); // Pass the whole input object
-    const output = llmResponse.output();
+    const output = llmResponse.output;
     if (!output) {
         // Fallback or error handling if output is null
         return { answer: "I couldn't generate a response. Please try again." };
