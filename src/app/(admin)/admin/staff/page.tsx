@@ -2,9 +2,11 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Briefcase, MoreHorizontal, AlertCircle as AlertIcon, Loader2, Search, UserPlus, Eye, Edit, Trash2 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Briefcase, MoreHorizontal, AlertCircle as AlertIcon, Search, UserPlus, Eye, Edit, Trash2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
@@ -17,10 +19,19 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { AdminStaffListItem } from '@/lib/types';
 import { getAdminStaffList } from '@/lib/services/adminService';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
 
 export default function AdminStaffPage() {
   const [staffList, setStaffList] = useState<AdminStaffListItem[]>([]);
@@ -28,7 +39,9 @@ export default function AdminStaffPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [staffToDelete, setStaffToDelete] = useState<AdminStaffListItem | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchData() {
@@ -61,20 +74,26 @@ export default function AdminStaffPage() {
     setFilteredStaff(filteredData);
   }, [searchTerm, staffList]);
 
-  const handleViewDetails = (staff: AdminStaffListItem) => {
-    toast({ title: "View Details (Placeholder)", description: `Viewing details for ${staff.name} (${staff.staffId}).` });
+  const handleViewDetails = (staffId: string) => {
+    router.push(`/admin/staff/view/${staffId}`);
   };
 
-  const handleEditStaff = (staff: AdminStaffListItem) => {
-    toast({ title: "Edit Staff (Placeholder)", description: `Editing details for ${staff.name} (${staff.staffId}).` });
-  };
-  
-  const handleDeleteStaff = (staff: AdminStaffListItem) => {
-     toast({ title: "Delete Staff (Placeholder)", description: `Deleting ${staff.name} (${staff.staffId}).`, variant: "destructive" });
+  const handleEditStaff = (staffId: string) => {
+    router.push(`/admin/staff/edit/${staffId}`);
   };
 
-  const handleAddNewStaff = () => {
-    toast({ title: "Add New Staff (Placeholder)", description: "This would open a form to add a new staff member." });
+  const handleDeleteStaff = () => {
+    if (!staffToDelete) return;
+    
+    // Simulate API call for deletion - for now, just remove from local state
+    setStaffList(prevList => prevList.filter(s => s.id !== staffToDelete.id));
+
+    toast({
+      title: "Staff Deleted",
+      description: `Successfully removed ${staffToDelete.name} (${staffToDelete.staffId}).`,
+      variant: "destructive"
+    });
+    setStaffToDelete(null);
   };
 
   return (
@@ -84,9 +103,11 @@ export default function AdminStaffPage() {
         icon={Briefcase}
         description="View, search, and manage staff profiles and details."
         actions={
-          <Button onClick={handleAddNewStaff}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            Add New Staff
+          <Button asChild>
+            <Link href="/admin/staff/onboard">
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add New Staff
+            </Link>
           </Button>
         }
       />
@@ -178,14 +199,14 @@ export default function AdminStaffPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewDetails(staff)}>
+                          <DropdownMenuItem onClick={() => handleViewDetails(staff.id)}>
                             <Eye className="mr-2 h-4 w-4" /> View Details
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditStaff(staff)}>
+                          <DropdownMenuItem onClick={() => handleEditStaff(staff.id)}>
                             <Edit className="mr-2 h-4 w-4" /> Edit Staff
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleDeleteStaff(staff)} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                          <DropdownMenuItem onClick={() => setStaffToDelete(staff)} className="text-destructive focus:text-destructive focus:bg-destructive/10">
                              <Trash2 className="mr-2 h-4 w-4" /> Delete Staff
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -198,6 +219,23 @@ export default function AdminStaffPage() {
           )}
         </CardContent>
       </Card>
+      
+       <AlertDialog open={!!staffToDelete} onOpenChange={() => setStaffToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the staff member's record for "{staffToDelete?.name}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteStaff} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
