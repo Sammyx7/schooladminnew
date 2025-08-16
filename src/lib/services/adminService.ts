@@ -1,7 +1,7 @@
 
 'use client';
 
-import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, AdminPaymentRecord, AdminPaymentFiltersFormValues, StudentAttendanceRecord, StudentAttendanceFilterFormValues, StaffAttendanceRecord, StaffAttendanceFilterFormValues, ExpenseRecord, ExpenseFormValues } from '@/lib/types';
+import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, AdminPaymentRecord, AdminPaymentFiltersFormValues, StudentAttendanceRecord, StudentAttendanceFilterFormValues, StaffAttendanceRecord, StaffAttendanceFilterFormValues, ExpenseRecord, ExpenseFormValues, TimetableEntry, AdminTimetableFilterFormValues } from '@/lib/types';
 import { format, parseISO, isEqual, startOfDay } from 'date-fns';
 
 // Mock data for a list of students for the admin view
@@ -338,5 +338,27 @@ export async function getAdminStaffList() {
         setTimeout(() => {
             resolve(MOCK_STAFF_LIST);
         }, 800);
+    });
+}
+
+// Mock Data for Admin Timetable
+const MOCK_ADMIN_TIMETABLE: TimetableEntry[] = [
+    { id: 'TT_ADM_1', day: 'Monday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Mathematics', teacher: 'Mr. Vikram Singh', class: '10', section: 'A' },
+    { id: 'TT_ADM_2', day: 'Monday', period: 1, timeSlot: '09:00 - 09:45', subject: 'Physics', teacher: 'Ms. Geeta Rao', class: '12', section: 'Science' },
+    { id: 'TT_ADM_3', day: 'Tuesday', period: 2, timeSlot: '09:45 - 10:30', subject: 'English', teacher: 'Ms. Anjali Sharma', class: '5', section: 'C' },
+    { id: 'TT_ADM_4', day: 'Tuesday', period: 3, timeSlot: '10:45 - 11:30', subject: 'Mathematics', teacher: 'Mr. Vikram Singh', class: '10', section: 'B' },
+];
+
+export async function getAdminTimetable(filters?: AdminTimetableFilterFormValues): Promise<TimetableEntry[]> {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            let entries = MOCK_ADMIN_TIMETABLE;
+            if (filters) {
+                if (filters.classFilter) entries = entries.filter(e => e.class?.toLowerCase().includes(filters.classFilter!.toLowerCase()));
+                if (filters.sectionFilter) entries = entries.filter(e => e.section?.toLowerCase().includes(filters.sectionFilter!.toLowerCase()));
+                if (filters.teacherFilter) entries = entries.filter(e => e.teacher.toLowerCase().includes(filters.teacherFilter!.toLowerCase()));
+            }
+            resolve(entries);
+        }, 700);
     });
 }

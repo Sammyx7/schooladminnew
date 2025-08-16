@@ -270,6 +270,3 @@ export default function AdminReportCardsPage() {
     </div>
   );
 }
-
-
-    
