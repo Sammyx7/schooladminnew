@@ -371,7 +371,7 @@ export const MOCK_FEE_REPORT_DATA: FeeReportData[] = [
   { name: 'Class 2', paid: 180000, pending: 20000, overdue: 10000 },
   { name: 'Class 3', paid: 175000, pending: 25000, overdue: 0 },
   { name: 'Class 4', paid: 200000, pending: 15000, overdue: 12000 },
-  { name 'Class 5', paid: 190000, pending: 10000, overdue: 8000 },
+  { name: 'Class 5', paid: 190000, pending: 10000, overdue: 8000 },
 ];
 
 export const MOCK_STUDENT_LIST_FOR_REPORTS: StudentProfile[] = [
