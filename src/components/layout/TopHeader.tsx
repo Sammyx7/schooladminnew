@@ -32,8 +32,8 @@ export function TopHeader() {
             <span className="font-bold text-sm">LOGO</span>
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Greenwood International School</h1>
-            <p className="text-xs text-muted-foreground">Fee Management System</p>
+            <h1 className="text-lg font-semibold text-foreground">Elite Minds International</h1>
+            <p className="text-xs text-muted-foreground">School Management System</p>
           </div>
         </Link>
       </div>

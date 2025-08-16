@@ -16,7 +16,7 @@ export default function AdminSettingsPage() {
   const { toast } = useToast();
 
   // Mock settings - in a real app, these would be fetched and updated via a service
-  const [schoolName, setSchoolName] = useState("Greenwood International School");
+  const [schoolName, setSchoolName] = useState("Elite Minds International");
   const [academicYear, setAcademicYear] = useState("2024-2025");
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   
@@ -148,7 +148,7 @@ export default function AdminSettingsPage() {
         
         <div className="mt-6 flex justify-end">
           <Button type="submit" disabled={isSaving}>
-            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />
             Save All Changes
           </Button>
         </div>

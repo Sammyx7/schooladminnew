@@ -32,7 +32,7 @@ export default function AdminDashboardPage() {
     <div className="space-y-6">
       <PageHeader
         title="Admin Dashboard"
-        description="Overview of school fees management"
+        description="Overview of school operations and key metrics"
         actions={
           <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/5 hover:text-primary">
             <Eye className="mr-2 h-4 w-4" />

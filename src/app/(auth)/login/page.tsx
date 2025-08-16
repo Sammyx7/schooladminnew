@@ -40,7 +40,7 @@ export default function LoginPage() {
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg">
             <span className="font-bold text-xl">LOGO</span> 
           </div>
-          <CardTitle className="text-2xl font-bold text-foreground">School Management System</CardTitle>
+          <CardTitle className="text-2xl font-bold text-foreground">Elite Minds International</CardTitle>
           <CardDescription className="text-muted-foreground px-4">
             A comprehensive portal for admins, students, and staff. Sign in to access your dashboard.
           </CardDescription>
