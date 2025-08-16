@@ -13,6 +13,7 @@ export const adminNavItems: NavItem[] = [
   { title: 'Students', href: '/admin/students', icon: Users },
   { title: 'Staff', href: '/admin/staff', icon: Briefcase }, 
   { title: 'Admissions', href: '/admin/admissions', icon: UserPlus },
+  { title: 'Teacher Onboarding', href: '/admin/staff/onboard', icon: UserPlus },
   { title: 'Student Attendance', href: '/admin/attendance/student', icon: CalendarCheck },
   { title: 'Staff Attendance', href: '/admin/attendance/staff', icon: UserCheck },
   { title: 'Timetable', href: '/admin/timetable', icon: CalendarDays },
