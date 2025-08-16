@@ -1,17 +1,14 @@
 
-"use client";
-
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { CalendarDays, Loader2, AlertCircle as AlertIcon, Info, ClipboardList } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card'; // Removed CardHeader, CardTitle
+import { CalendarDays, AlertCircle as AlertIcon, Info, ClipboardList } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card'; 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
 import type { TimetableEntry, DayOfWeek } from '@/lib/types';
-import { getStaffTimetable } from '@/lib/services/staffService'; // Updated service
-import { useAuth } from '@/contexts/AuthContext'; // To get staffId if needed, or use a mock
+import { getStaffTimetable } from '@/lib/services/staffService';
+
 
 const daysOfWeek: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -25,57 +22,18 @@ const groupTimetableByDay = (entries: TimetableEntry[]): Record<DayOfWeek, Timet
   return grouped;
 };
 
-const DayTimetableSkeleton = () => (
-  <Table>
-    <TableHeader>
-      <TableRow>
-        <TableHead className="w-[10%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-12" /></TableHead>
-        <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-24" /></TableHead>
-        <TableHead className="w-[30%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-32" /></TableHead>
-        <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-24" /></TableHead>
-        <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-24" /></TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {[...Array(3)].map((_, i) => (
-        <TableRow key={i}>
-          <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
-  </Table>
-);
+export default async function StaffTimetablePage() {
+  let timetableEntries: TimetableEntry[] = [];
+  let error: string | null = null;
 
-export default function StaffTimetablePage() {
-  const [timetableEntries, setTimetableEntries] = useState<TimetableEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  // const { user } = useAuth(); // If you have user object with staffId
+  const MOCK_STAFF_ID = "TCH102"; 
 
-  const MOCK_STAFF_ID = "TCH102"; // Using Mr. Vikram Singh's ID as per staffService mock
-
-  useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
-      setError(null);
-      try {
-        // const staffIdToFetch = user?.staffId || MOCK_STAFF_ID; // Or however you get staffId
-        const data = await getStaffTimetable(MOCK_STAFF_ID);
-        setTimetableEntries(data);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Unknown error fetching timetable.";
-        setError(msg);
-        console.error("Failed to fetch staff timetable:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
+  try {
+    timetableEntries = await getStaffTimetable(MOCK_STAFF_ID);
+  } catch (err) {
+    error = err instanceof Error ? err.message : "Unknown error fetching timetable.";
+    console.error("Failed to fetch staff timetable:", err);
+  }
 
   const groupedTimetable = useMemo(() => groupTimetableByDay(timetableEntries), [timetableEntries]);
   const firstDayWithEntries = useMemo(() => 
@@ -93,15 +51,14 @@ export default function StaffTimetablePage() {
 
       <Card className="border shadow-md">
         <CardContent className="pt-6">
-          {isLoading && <DayTimetableSkeleton />}
-          {!isLoading && error && (
+          {error && (
             <Alert variant="destructive">
               <AlertIcon className="h-5 w-5" />
               <AlertMsgTitle>Error Loading Timetable</AlertMsgTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          {!isLoading && !error && (
+          {!error && (
             timetableEntries.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <ClipboardList className="h-16 w-16 mx-auto mb-4 opacity-50" />

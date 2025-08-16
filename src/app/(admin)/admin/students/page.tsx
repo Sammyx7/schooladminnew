@@ -1,55 +1,21 @@
 
-"use client";
-
-import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Users, AlertCircle as AlertIcon, Search } from 'lucide-react';
+import { Users, AlertCircle as AlertIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Input } from '@/components/ui/input';
 import type { StudentProfile } from '@/lib/types';
 import { getAdminStudentList } from '@/lib/services/adminService'; 
-import { useToast } from '@/hooks/use-toast';
-import StudentListClient from './StudentListClient'; // Import the new client component
+import StudentListClient from './StudentListClient';
 
-export default function AdminStudentsPage() {
-  const [students, setStudents] = useState<StudentProfile[]>([]);
-  const [filteredStudents, setFilteredStudents] = useState<StudentProfile[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const { toast } = useToast();
+export default async function AdminStudentsPage() {
+  let students: StudentProfile[] = [];
+  let error: string | null = null;
 
-  useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await getAdminStudentList();
-        setStudents(data);
-        setFilteredStudents(data);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "An unknown error occurred fetching student data.";
-        setError(errorMessage);
-        toast({ title: "Error Fetching Students", description: errorMessage, variant: "destructive" });
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    fetchData();
-  }, [toast]);
-
-  useEffect(() => {
-    const lowercasedFilter = searchTerm.toLowerCase();
-    const filteredData = students.filter(student =>
-      student.name.toLowerCase().includes(lowercasedFilter) ||
-      student.studentId.toLowerCase().includes(lowercasedFilter) ||
-      (student.classSection && student.classSection.toLowerCase().includes(lowercasedFilter))
-    );
-    setFilteredStudents(filteredData);
-  }, [searchTerm, students]);
+  try {
+    students = await getAdminStudentList();
+  } catch (err) {
+    error = err instanceof Error ? err.message : "An unknown error occurred fetching student data.";
+  }
 
   return (
     <div className="w-full space-y-6">
@@ -60,46 +26,11 @@ export default function AdminStudentsPage() {
       />
 
       <Card className="w-full border shadow-md">
-        <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <CardHeader>
           <CardTitle className="text-xl font-semibold">Student List</CardTitle>
-          <div className="relative w-full sm:w-auto sm:max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search students..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 w-full bg-input"
-            />
-          </div>
         </CardHeader>
         <CardContent>
-          {isLoading && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[15%] text-xs uppercase font-medium text-muted-foreground">Student ID</TableHead>
-                  <TableHead className="w-[30%] text-xs uppercase font-medium text-muted-foreground">Name</TableHead>
-                  <TableHead className="w-[25%] text-xs uppercase font-medium text-muted-foreground">Class & Section</TableHead>
-                  <TableHead className="w-[15%] hidden md:table-cell text-xs uppercase font-medium text-muted-foreground">Contact (Demo)</TableHead>
-                  <TableHead className="w-[15%] text-right text-xs uppercase font-medium text-muted-foreground">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {[...Array(5)].map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-28" /></TableCell>
-                    <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded-full" /></TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-
-          {!isLoading && error && (
+          {error && (
             <Alert variant="destructive" className="mt-4">
               <AlertIcon className="h-5 w-5" />
               <AlertMsgTitle>Error Fetching Students</AlertMsgTitle>
@@ -107,17 +38,7 @@ export default function AdminStudentsPage() {
             </Alert>
           )}
 
-          {!isLoading && !error && filteredStudents.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">No Students Found</p>
-              <p>{searchTerm ? "No students match your search criteria." : "There are no student records to display."}</p>
-            </div>
-          )}
-
-          {!isLoading && !error && filteredStudents.length > 0 && (
-            <StudentListClient initialStudents={filteredStudents} />
-          )}
+          {!error && <StudentListClient initialStudents={students} />}
         </CardContent>
       </Card>
     </div>

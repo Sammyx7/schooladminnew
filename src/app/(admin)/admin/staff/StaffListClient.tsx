@@ -2,9 +2,10 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { MoreHorizontal, Eye, Edit, Trash2, UserPlus, GraduationCap, FileArchive } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, Trash2, UserPlus, GraduationCap, FileArchive, Search } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,9 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-// Note: Real-time functionality is commented out as we are using mock data.
-// It can be re-enabled if Supabase is integrated.
-// import { app } from '@/lib/firebase'; // Example of how to import
+
 
 interface StaffListClientProps {
   initialStaff: AdminStaffListItem[];
@@ -34,63 +33,60 @@ interface StaffListClientProps {
 
 export default function StaffListClient({ initialStaff }: StaffListClientProps) {
   const [staffList, setStaffList] = useState<AdminStaffListItem[]>(initialStaff);
+  const [filteredStaff, setFilteredStaff] = useState<AdminStaffListItem[]>(initialStaff);
+  const [searchTerm, setSearchTerm] = useState('');
   const [staffToDelete, setStaffToDelete] = useState<AdminStaffListItem | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
-  /*
-  // Example of real-time subscription logic for Supabase
   useEffect(() => {
-    // Ensure you have a Supabase client initialized, e.g., in '@/lib/supabaseClient'
-    const channel = supabase
-      .channel('staff-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'staff' },
-        (payload) => {
-          console.log('Change received!', payload);
-          // Simple refetch for demonstration. You could also update state directly.
-          // In a real app, you would call your service function to get the latest list.
-          // e.g., getAdminStaffList().then(setStaffList);
-          toast({ title: "Staff Data Updated", description: "The staff list has been updated in real-time."});
-        }
-      )
-      .subscribe();
+    const lowercasedFilter = searchTerm.toLowerCase();
+    const filteredData = staffList.filter(staff =>
+      staff.name.toLowerCase().includes(lowercasedFilter) ||
+      staff.staffId.toLowerCase().includes(lowercasedFilter) ||
+      staff.role.toLowerCase().includes(lowercasedFilter) ||
+      staff.department.toLowerCase().includes(lowercasedFilter) ||
+      staff.email.toLowerCase().includes(lowercasedFilter)
+    );
+    setFilteredStaff(filteredData);
+  }, [searchTerm, staffList]);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [toast]);
-  */
-
-  const handleViewDetails = (staff: AdminStaffListItem) => {
-    // Navigate to a dedicated view page (currently a placeholder)
-    router.push(`/admin/staff/${staff.id}`);
+  const handleViewDetails = (staffId: string) => {
+    router.push(`/admin/staff/view/${staffId}`);
   };
 
-  const handleEditStaff = (staff: AdminStaffListItem) => {
-    router.push(`/admin/staff/edit/${staff.id}`);
+  const handleEditStaff = (staffId: string) => {
+    router.push(`/admin/staff/edit/${staffId}`);
   };
-  
+
   const handleDeleteStaff = () => {
     if (!staffToDelete) return;
     
-    // Simulate API call for deletion
+    // Simulate API call for deletion - for now, just remove from local state
+    setStaffList(prevList => prevList.filter(s => s.id !== staffToDelete.id));
+
     toast({
-      title: "Staff Deleted (Demo)",
-      description: `Successfully deleted ${staffToDelete.name} (${staffToDelete.staffId}).`,
+      title: "Staff Deleted",
+      description: `Successfully removed ${staffToDelete.name} (${staffToDelete.staffId}).`,
       variant: "destructive"
     });
-    setStaffList(prevList => prevList.filter(s => s.id !== staffToDelete.id));
     setStaffToDelete(null);
   };
   
-  const handleAddNewStaff = () => {
-    router.push('/admin/staff/add');
-  };
-
   return (
     <>
+      <div className="flex justify-end mb-4">
+        <div className="relative w-full sm:w-auto sm:max-w-sm">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search staff..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8 w-full bg-input"
+          />
+        </div>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -103,7 +99,7 @@ export default function StaffListClient({ initialStaff }: StaffListClientProps) 
           </TableRow>
         </TableHeader>
         <TableBody>
-          {staffList.map((staff) => (
+          {filteredStaff.map((staff) => (
             <TableRow key={staff.id}>
               <TableCell className="font-mono text-sm">{staff.staffId}</TableCell>
               <TableCell className="font-medium">{staff.name}</TableCell>
@@ -119,10 +115,10 @@ export default function StaffListClient({ initialStaff }: StaffListClientProps) 
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleViewDetails(staff)}>
+                    <DropdownMenuItem onClick={() => handleViewDetails(staff.id)}>
                       <Eye className="mr-2 h-4 w-4" /> View Details
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleEditStaff(staff)}>
+                    <DropdownMenuItem onClick={() => handleEditStaff(staff.id)}>
                       <Edit className="mr-2 h-4 w-4" /> Edit Staff
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
@@ -142,7 +138,7 @@ export default function StaffListClient({ initialStaff }: StaffListClientProps) 
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the staff member's record.
+              This action cannot be undone. This will permanently delete the staff member's record for "{staffToDelete?.name}".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

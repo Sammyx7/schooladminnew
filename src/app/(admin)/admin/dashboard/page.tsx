@@ -1,16 +1,16 @@
 
-"use client";
 import { PageHeader } from '@/components/layout/PageHeader';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, TrendingUp, AlertTriangle, Users, Eye, LayoutDashboard } from 'lucide-react';
+import { DollarSign, TrendingUp, AlertTriangle, Users, Eye } from 'lucide-react';
+import { getAdminStudentList } from '@/lib/services/adminService'; // Assuming this can be used on server
 
 // Mock data - replace with actual data fetching
 const feesCollected = "₹1,250,000";
 const pendingPayments = "₹180,000";
 const overduePayments = "₹45,000";
-const totalStudents = "450";
+
 
 const recentPaymentsData = [
   { name: "Arjun Sharma", time: "2 hours ago", amount: "₹15,000", amountColor: "text-green-600" },
@@ -27,7 +27,12 @@ const pendingNoticesData = [
 ];
 
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+
+  // Fetching data on the server
+  const students = await getAdminStudentList();
+  const totalStudents = students.length.toString();
+
   return (
     <div className="space-y-6">
       <PageHeader

@@ -1,19 +1,14 @@
 
-"use client";
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
 import { BarChart, CheckCircle, Clock, ArrowRight, Hand, CalendarDays, Receipt, GraduationCap, History, Megaphone, AlertCircle as AlertIcon } from 'lucide-react';
 import type { StudentDashboardData, Circular } from '@/lib/types';
 import { getStudentDashboardData } from '@/lib/services/studentService';
-import { useToast } from '@/hooks/use-toast';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -24,56 +19,19 @@ const quickLinks = [
     { title: "Payment History", href: "/student/payments", icon: History },
 ];
 
-const DashboardSkeleton = () => (
-    <div className="space-y-6">
-        <div className="flex items-center gap-4">
-            <Skeleton className="h-16 w-16 rounded-full" />
-            <div className="space-y-2">
-                <Skeleton className="h-7 w-48" />
-                <Skeleton className="h-5 w-32" />
-            </div>
-        </div>
-        <div className="grid gap-4 md:grid-cols-3">
-            <Skeleton className="h-32" />
-            <Skeleton className="h-32" />
-            <Skeleton className="h-32" />
-        </div>
-        <div className="grid gap-6 md:grid-cols-2">
-            <Skeleton className="h-48" />
-            <Skeleton className="h-48" />
-        </div>
-    </div>
-);
 
-export default function StudentDashboardPage() {
-    const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const { toast } = useToast();
+export default async function StudentDashboardPage() {
+    let dashboardData: StudentDashboardData | null = null;
+    let error: string | null = null;
 
     const MOCK_STUDENT_ID = "S10234";
 
-    useEffect(() => {
-        async function fetchData() {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const data = await getStudentDashboardData(MOCK_STUDENT_ID);
-                setDashboardData(data);
-            } catch (err) {
-                const msg = err instanceof Error ? err.message : "An unknown error occurred.";
-                setError(msg);
-                toast({ title: "Error", description: `Failed to load dashboard: ${msg}`, variant: "destructive" });
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        fetchData();
-    }, [toast]);
-
-    if (isLoading) {
-        return <DashboardSkeleton />;
+    try {
+        dashboardData = await getStudentDashboardData(MOCK_STUDENT_ID);
+    } catch (err) {
+        error = err instanceof Error ? err.message : "An unknown error occurred.";
     }
+
 
     if (error || !dashboardData) {
         return (
