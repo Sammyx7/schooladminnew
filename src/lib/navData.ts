@@ -7,7 +7,7 @@ import {
   Megaphone, Send, Bus, Route, BarChart3, Settings, DollarSign, FileSearch, MessageSquare, GraduationCap
 } from 'lucide-react';
 
-// Admin Nav Items based on the new image
+// Admin Nav Items
 export const adminNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { title: 'Students', href: '/admin/students', icon: Users },
@@ -36,7 +36,7 @@ export const adminNavItems: NavItem[] = [
   },
 ];
 
-// Staff Nav Items (keeping existing structure, will inherit theme)
+// Staff Nav Items
 export const staffNavItems: NavItem[] = [
   { title: 'Profile', href: '/staff/profile', icon: Briefcase },
   { title: 'Attendance', href: '/staff/attendance', icon: QrCode },

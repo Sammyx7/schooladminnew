@@ -329,19 +329,28 @@ export async function createAdminExpenseRecord(data: ExpenseFormValues): Promise
 
 // Mock staff list for admin view
 let MOCK_STAFF_LIST: AdminStaffListItem[] = [
-  { id: 'STF001', staffId: 'TCH101', name: 'Dr. Priya Nair', role: 'Principal', department: 'Administration', email: 'priya.nair@example.com' },
-  { id: 'STF002', staffId: 'TCH102', name: 'Mr. Vikram Singh', role: 'Mathematics Teacher', department: 'Academics - Senior Secondary', email: 'vikram.singh@example.com' },
-  { id: 'STF003', staffId: 'TCH103', name: 'Ms. Anjali Sharma', role: 'Science Teacher', department: 'Academics - Primary', email: 'anjali.sharma@example.com' },
-  { id: 'STF004', staffId: 'ADM001', name: 'Mr. Rajesh Kumar', role: 'Accountant', department: 'Accounts', email: 'rajesh.kumar@example.com' },
+  { id: 'STF001', staffId: 'TCH101', name: 'Dr. Priya Nair', role: 'Principal', department: 'Administration', email: 'priya.nair@example.com', phone: '9876543210', dateOfJoining: '2010-05-20T00:00:00.000Z', qualifications: ['Ph.D. in Education', 'M.Ed.'] },
+  { id: 'STF002', staffId: 'TCH102', name: 'Mr. Vikram Singh', role: 'Mathematics Teacher', department: 'Academics - Senior Secondary', email: 'vikram.singh@example.com', phone: '9876543211', dateOfJoining: '2015-08-01T00:00:00.000Z', qualifications: ['M.Sc. Mathematics', 'B.Ed.'] },
+  { id: 'STF003', staffId: 'TCH103', name: 'Ms. Anjali Sharma', role: 'Science Teacher', department: 'Academics - Primary', email: 'anjali.sharma@example.com', phone: '9876543212', dateOfJoining: '2018-07-15T00:00:00.000Z', qualifications: ['M.Sc. Chemistry', 'B.Ed.'] },
+  { id: 'STF004', staffId: 'ADM001', name: 'Mr. Rajesh Kumar', role: 'Accountant', department: 'Accounts', email: 'rajesh.kumar@example.com', phone: '9876543213', dateOfJoining: '2012-02-10T00:00:00.000Z', qualifications: ['M.Com', 'Tally Certified'] },
 ];
 
-export async function getAdminStaffList() {
-    return new Promise<AdminStaffListItem[]>(resolve => {
+export async function getAdminStaffList(): Promise<AdminStaffListItem[]> {
+    return new Promise(resolve => {
         setTimeout(() => {
             resolve(MOCK_STAFF_LIST);
         }, 800);
     });
 }
+
+export async function getAdminStaffMemberById(id: string): Promise<AdminStaffListItem | undefined> {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(MOCK_STAFF_LIST.find(staff => staff.id === id));
+        }, 500);
+    });
+}
+
 
 export async function createAdminStaffMember(data: StaffOnboardingFormValues): Promise<AdminStaffListItem> {
     return new Promise((resolve) => {
@@ -361,8 +370,11 @@ export async function createAdminStaffMember(data: StaffOnboardingFormValues): P
                 staffId: newStaffId,
                 name: data.fullName,
                 email: data.email,
+                phone: data.phone,
                 role: data.role,
                 department: data.department,
+                qualifications: data.qualifications ? data.qualifications.split(',').map(q => q.trim()) : [],
+                dateOfJoining: new Date().toISOString(),
             };
             MOCK_STAFF_LIST.unshift(newStaffMember);
             resolve(newStaffMember);

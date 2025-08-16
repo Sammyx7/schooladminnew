@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // Added import
+import { useRouter } from 'next/navigation';
 import { Bell, LogOut, UserCircle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,17 +17,40 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+const USER_DETAILS = {
+  admin: { name: 'Dr. Priya Nair', email: 'dr.priya.nair@example.com' },
+  staff: { name: 'Mr. Vikram Singh', email: 'vikram.singh@example.com' },
+  student: { name: 'Aisha Sharma', email: 'aisha.sharma@example.com' },
+};
+
+// Helper function to get a default dashboard path
+const getDefaultDashboardPath = (role: string | null) => {
+  switch (role) {
+    case 'admin': return '/admin/dashboard';
+    case 'staff': return '/staff/profile';
+    case 'student': return '/student/dashboard';
+    default: return '/login';
+  }
+};
+
 export function TopHeader() {
   const { userRole, logout } = useAuth();
-  const router = useRouter(); // Initialized router
-  // Mock user data - in a real app, this would come from auth context or API
-  const userName = userRole === 'admin' ? "Dr. Priya Nair" : "Mr. Vikram Singh";
-  const userEmail = userRole === 'admin' ? "dr.priya.nair@example.com" : "vikram.singh@example.com";
+  const router = useRouter();
+
+  const userDetails = userRole ? USER_DETAILS[userRole] : { name: 'Guest', email: ''};
+  const userName = userDetails.name;
+  const userEmail = userDetails.email;
+
+  const handleProfileClick = () => {
+    // Navigate to profile for staff, dashboard otherwise
+    const path = userRole === 'staff' ? '/staff/profile' : getDefaultDashboardPath(userRole);
+    router.push(path);
+  }
 
   return (
     <header className="bg-card text-card-foreground h-16 flex items-center justify-between px-4 md:px-6 border-b fixed top-0 left-0 right-0 z-40">
       <div className="flex items-center gap-3">
-        <Link href={`/${userRole === 'admin' ? 'admin/dashboard' : 'staff/profile' }`} className="flex items-center gap-2">
+        <Link href={getDefaultDashboardPath(userRole)} className="flex items-center gap-2">
           <div className="bg-primary text-primary-foreground p-2 rounded-md w-10 h-10 flex items-center justify-center">
             <span className="font-bold text-sm">LOGO</span>
           </div>
@@ -80,9 +103,9 @@ export function TopHeader() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push(getDefaultDashboardPath(userRole))}>
+            <DropdownMenuItem onClick={handleProfileClick}>
               <UserCircle className="mr-2 h-4 w-4" />
-              <span>Profile</span>
+              <span>{userRole === 'staff' ? 'Profile' : 'Dashboard'}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
@@ -95,12 +118,3 @@ export function TopHeader() {
     </header>
   );
 }
-
-// Helper function to get a default dashboard path - you might want to move this or improve it
-const getDefaultDashboardPath = (role: string | null) => {
-  switch (role) {
-    case 'admin': return '/admin/dashboard';
-    case 'staff': return '/staff/profile';
-    default: return '/login';
-  }
-};

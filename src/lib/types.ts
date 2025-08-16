@@ -29,6 +29,10 @@ export const AdminStaffListItemSchema = z.object({
   role: z.string(),
   department: z.string(),
   email: z.string().email(),
+  phone: z.string().optional().nullable(),
+  dateOfJoining: z.string().optional().nullable(),
+  qualifications: z.array(z.string()).optional().nullable(),
+  avatarUrl: z.string().optional().nullable(),
 });
 export type AdminStaffListItem = z.infer<typeof AdminStaffListItemSchema>;
 
