@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect, lazy } from 'react';
+import { useState, useEffect, useMemo, lazy } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
@@ -23,6 +23,9 @@ import type { ExpenseRecord, ExpenseFormValues, ExpenseCategory } from '@/lib/ty
 import { ExpenseFormSchema, expenseCategories } from '@/lib/types';
 import { getAdminExpenseRecords, createAdminExpenseRecord } from '@/lib/services/adminService';
 import { cn } from '@/lib/utils';
+import { Pie, ResponsiveContainer, Tooltip, Legend, Cell } from 'recharts';
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF1943'];
 
 export default function AdminExpensesPage() {
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
@@ -88,6 +91,21 @@ export default function AdminExpensesPage() {
   const handleDeleteExpense = (expense: ExpenseRecord) => {
      toast({ title: "Delete Expense (Placeholder)", description: `Deleting: ${expense.description}` });
   }
+
+  const expenseChartData = useMemo(() => {
+    if (!expenses || expenses.length === 0) return [];
+    
+    const categoryTotals = expenses.reduce((acc, expense) => {
+      acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+      return acc;
+    }, {} as Record<ExpenseCategory, number>);
+
+    return Object.entries(categoryTotals).map(([name, value]) => ({
+      name,
+      value,
+    }));
+
+  }, [expenses]);
 
 
   return (
@@ -195,10 +213,43 @@ export default function AdminExpensesPage() {
                 <CardDescription>Visualization of expense distribution by category.</CardDescription>
             </CardHeader>
             <CardContent className="flex items-center justify-center h-[300px] text-muted-foreground">
-                <div className="text-center">
-                    <PieChart className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                    <p>Chart visualization will be implemented here.</p>
-                </div>
+                {expenseChartData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                                data={expenseChartData}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="value"
+                                nameKey="name"
+                                label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                                    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                                    const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
+                                    const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
+                                    return (
+                                        <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+                                            {`${(percent * 100).toFixed(0)}%`}
+                                        </text>
+                                    );
+                                }}
+                            >
+                                {expenseChartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip formatter={(value: number) => `₹${value.toLocaleString('en-IN')}`} />
+                            <Legend />
+                        </PieChart>
+                    </ResponsiveContainer>
+                ) : (
+                    <div className="text-center">
+                        <PieChart className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                        <p>No data available for chart.</p>
+                    </div>
+                )}
             </CardContent>
         </Card>
       </div>

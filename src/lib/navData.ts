@@ -18,6 +18,7 @@ export const adminNavItems: NavItem[] = [
   { title: 'Staff Attendance', href: '/admin/attendance/staff', icon: UserCheck },
   { title: 'Timetable', href: '/admin/timetable', icon: CalendarDays },
   { title: 'Circulars', href: '/admin/circulars', icon: Megaphone },
+  { title: 'Transport', href: '/admin/transport', icon: Bus },
   { title: 'Fee Notices', href: '/admin/fees/bulk-notice', icon: Receipt },
   { title: 'Payment History', href: '/admin/payments', icon: History },
   { title: 'Expenses', href: '/admin/expenses', icon: DollarSign },

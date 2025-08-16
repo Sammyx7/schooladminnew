@@ -257,3 +257,17 @@ export type AdminPaymentFilters = {
     dateFrom?: Date;
     dateTo?: Date;
 }
+
+// Transport Types
+export const TransportRouteFormSchema = z.object({
+  routeNumber: z.string().min(1, "Route number is required."),
+  driverName: z.string().min(3, "Driver name is required."),
+  driverContact: z.string().min(10, "A valid contact number is required."),
+  vehicleNumber: z.string().min(5, "Vehicle number is required."),
+  capacity: z.coerce.number().positive("Capacity must be a positive number."),
+});
+export type TransportRouteFormValues = z.infer<typeof TransportRouteFormSchema>;
+
+export type TransportRoute = TransportRouteFormValues & {
+  id: string;
+};
