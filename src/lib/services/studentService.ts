@@ -1,6 +1,4 @@
 
-'use client';
-
 import type { StudentDashboardData, FeeNotice, PaymentRecord, ReportCardData, TimetableEntry, Circular, StudentProfile } from '@/lib/types';
 import { format, parseISO, isBefore, startOfToday } from 'date-fns';
 

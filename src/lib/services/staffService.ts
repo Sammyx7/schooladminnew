@@ -1,6 +1,4 @@
 
-'use client';
-
 import type { StaffProfile, Circular, TimetableEntry, StaffAttendanceRecord, AttendanceStatus, DayOfWeek, StudentProfile } from '@/lib/types';
 import { format, parseISO, isEqual, startOfDay } from 'date-fns';
 

@@ -1,6 +1,4 @@
 
-'use client';
-
 import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, AdminPaymentRecord, AdminPaymentFiltersFormValues, StudentAttendanceRecord, StudentAttendanceFilterFormValues, StaffAttendanceRecord, StaffAttendanceFilterFormValues, ExpenseRecord, ExpenseFormValues, TimetableEntry, AdminTimetableFilterFormValues, FeeReportData, TransportRoute, TransportRouteFormValues, AdminStaffListItem, StaffOnboardingFormValues } from '@/lib/types';
 import { format, parseISO, isEqual, startOfDay } from 'date-fns';
 
