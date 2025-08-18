@@ -4,6 +4,9 @@
 import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, StudentAttendanceRecord, StudentAttendanceFilterFormValues, AttendanceStatus, ExpenseRecord, ExpenseFormValues, AdminStaffListItem, TimetableEntry, DayOfWeek, AdminTimetableFilterFormValues, StaffAttendanceRecord, StaffAttendanceFilterFormValues, AdminPaymentRecord, AdminPaymentFiltersFormValues, PaymentRecord } from '@/lib/types';
 import { format, parseISO, isEqual, startOfDay, isWithinInterval, endOfDay } from 'date-fns';
 
+// Keep a tiny delay to preserve loading UX without slowing the app
+const MOCK_DELAY = 30; // milliseconds
+
 // Mock data for a list of students for the admin view
 const MOCK_STUDENT_LIST: StudentProfile[] = [
   {
@@ -50,7 +53,7 @@ export async function getAdminStudentList(): Promise<StudentProfile[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(MOCK_STUDENT_LIST);
-    }, 800);
+    }, MOCK_DELAY);
   });
 }
 
@@ -68,7 +71,7 @@ export async function getAdminCirculars(): Promise<Circular[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve([...MOCK_ADMIN_CIRCULARS].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    }, 700);
+    }, MOCK_DELAY);
   });
 }
 
@@ -85,7 +88,7 @@ export async function createAdminCircular(data: CreateCircularFormValues): Promi
       };
       MOCK_ADMIN_CIRCULARS.unshift(newCircular);
       resolve(newCircular);
-    }, 500);
+    }, MOCK_DELAY);
   });
 }
 
@@ -99,7 +102,7 @@ export async function deleteAdminCircular(circularId: string): Promise<void> {
       } else {
         reject(new Error("Circular not found."));
       }
-    }, 300);
+    }, MOCK_DELAY);
   });
 }
 
@@ -130,7 +133,7 @@ export async function getAdminGeneratedFeeNotices(): Promise<BulkFeeNoticeDefini
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve([...MOCK_ADMIN_BULK_FEE_NOTICES].sort((a,b) => parseISO(b.generatedDate).getTime() - parseISO(a.generatedDate).getTime()));
-    }, 600);
+    }, MOCK_DELAY);
   });
 }
 
@@ -146,7 +149,7 @@ export async function createAdminBulkFeeNotice(data: BulkFeeNoticeFormValues): P
       };
       MOCK_ADMIN_BULK_FEE_NOTICES.unshift(newNoticeDefinition);
       resolve(newNoticeDefinition);
-    }, 700);
+    }, MOCK_DELAY);
   });
 }
 
@@ -186,7 +189,7 @@ export async function getAdminStudentApplications(): Promise<StudentApplication[
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve([...MOCK_STUDENT_APPLICATIONS].sort((a,b) => new Date(b.applicationDate).getTime() - new Date(a.applicationDate).getTime()));
-    }, 750);
+    }, MOCK_DELAY);
   });
 }
 
@@ -201,7 +204,7 @@ export async function createAdminStudentApplication(data: StudentApplicationForm
       };
       MOCK_STUDENT_APPLICATIONS.unshift(newApplication);
       resolve(newApplication);
-    }, 500);
+    }, MOCK_DELAY);
   });
 }
 
@@ -215,7 +218,7 @@ export async function updateAdminStudentApplicationStatus(applicationId: string,
       } else {
         reject(new Error("Application not found."));
       }
-    }, 400);
+    }, MOCK_DELAY);
   });
 }
 
@@ -256,7 +259,7 @@ export async function getAdminStudentAttendanceRecords(filters?: StudentAttendan
         }
       }
       resolve(filteredRecords.sort((a,b) => parseISO(b.date).getTime() - parseISO(a.date).getTime()));
-    }, 600);
+    }, MOCK_DELAY);
   });
 }
 
@@ -275,7 +278,7 @@ export async function getAdminExpenseRecords(): Promise<ExpenseRecord[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve([...MOCK_EXPENSE_RECORDS].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    }, 500);
+    }, MOCK_DELAY);
   });
 }
 
@@ -290,7 +293,7 @@ export async function createAdminExpenseRecord(data: ExpenseFormValues): Promise
       };
       MOCK_EXPENSE_RECORDS.unshift(newExpense);
       resolve(newExpense);
-    }, 400);
+    }, MOCK_DELAY);
   });
 }
 
@@ -308,7 +311,7 @@ export async function getAdminStaffList(): Promise<AdminStaffListItem[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve([...MOCK_ADMIN_STAFF_LIST]);
-    }, 700);
+    }, MOCK_DELAY);
   });
 }
 
@@ -343,7 +346,7 @@ export async function getAdminTimetable(filters?: AdminTimetableFilterFormValues
                 }
             }
             resolve(filteredEntries);
-        }, 600);
+        }, MOCK_DELAY);
     });
 }
 
@@ -379,7 +382,7 @@ export async function getAdminStaffAttendanceRecords(filters?: StaffAttendanceFi
         }
       }
       resolve(filteredRecords.sort((a,b) => parseISO(b.date).getTime() - parseISO(a.date).getTime()));
-    }, 650);
+    }, MOCK_DELAY);
   });
 }
 
@@ -428,7 +431,7 @@ export async function getAdminPaymentHistory(filters?: AdminPaymentFiltersFormVa
         }
       }
       resolve(filteredRecords.sort((a, b) => parseISO(b.paymentDate).getTime() - parseISO(a.paymentDate).getTime()));
-    }, 700);
+    }, MOCK_DELAY);
   });
 }
 

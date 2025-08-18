@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/form";
 import type { Circular, CreateCircularFormValues, CircularCategory } from '@/lib/types';
 import { CreateCircularSchema, circularCategories } from '@/lib/types';
-import { getAdminCirculars, createAdminCircular, deleteAdminCircular } from '@/lib/services/adminService';
+import { getAdminCirculars, createAdminCircular, deleteAdminCircular } from '@/lib/services/circularsService';
 import { cn } from '@/lib/utils';
 
 export default function AdminCircularsPage() {

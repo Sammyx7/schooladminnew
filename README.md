@@ -1,6 +1,6 @@
 # School Management System
 
-This is a comprehensive School Management System built in Firebase Studio, designed to streamline administrative tasks and enhance communication between the school, students, and staff.
+This is a comprehensive School Management System built with Next.js and mock data, designed to streamline administrative tasks and enhance communication between the school, students, and staff.
 
 ## Key Features
 
@@ -35,6 +35,6 @@ The application features three distinct user portals:
 
 - **Framework:** Next.js with App Router
 - **UI:** React, ShadCN UI, Tailwind CSS
-- **AI/Generative:** Firebase Genkit
+- **AI/Generative:** Genkit
 
 To get started, explore the different user roles by logging in. Use `test@example.com` and `password` for credentials.

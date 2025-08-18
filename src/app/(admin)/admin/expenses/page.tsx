@@ -21,7 +21,7 @@ import { DollarSign, PlusCircle, Loader2, AlertCircle as AlertIcon, Download, Pi
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import type { ExpenseRecord, ExpenseFormValues, ExpenseCategory } from '@/lib/types';
 import { ExpenseFormSchema, expenseCategories } from '@/lib/types';
-import { getAdminExpenseRecords, createAdminExpenseRecord } from '@/lib/services/adminService';
+import { getAdminExpenseRecords, createAdminExpenseRecord, deleteAdminExpense } from '@/lib/services/expensesService';
 import { cn } from '@/lib/utils';
 
 export default function AdminExpensesPage() {
@@ -86,7 +86,19 @@ export default function AdminExpensesPage() {
      toast({ title: "Edit Expense (Placeholder)", description: `Editing: ${expense.description}` });
   }
   const handleDeleteExpense = (expense: ExpenseRecord) => {
-     toast({ title: "Delete Expense (Placeholder)", description: `Deleting: ${expense.description}` });
+     (async () => {
+       setIsSubmitting(true);
+       try {
+         await deleteAdminExpense(expense.id);
+         toast({ title: "Expense Deleted", description: `Deleted: ${expense.description}` });
+         await fetchExpenses();
+       } catch (err) {
+         const errorMessage = err instanceof Error ? err.message : "Failed to delete expense.";
+         toast({ title: "Error", description: errorMessage, variant: "destructive" });
+       } finally {
+         setIsSubmitting(false);
+       }
+     })();
   }
 
 

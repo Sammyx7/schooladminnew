@@ -6,6 +6,9 @@
 import type { StudentDashboardData, FeeNotice, ReportCardData, Circular, TimetableEntry, PaymentRecord, FeeNoticeStatus } from '@/lib/types';
 import { Atom } from 'lucide-react'; // Using Atom for Physics
 
+// Keep a tiny delay to preserve loading UX without slowing the app
+const MOCK_DELAY = 30; // milliseconds
+
 const MOCK_STUDENT_DATA: StudentDashboardData = {
   profile: {
     name: "Aisha Sharma",
@@ -90,7 +93,7 @@ export async function getStudentDashboardData(studentId: string): Promise<Studen
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(dataToReturn);
-    }, 1200); 
+    }, MOCK_DELAY); 
   });
 }
 
@@ -98,7 +101,7 @@ export async function getStudentDashboardDataWithError(): Promise<StudentDashboa
     return new Promise((resolve, reject) => {
     setTimeout(() => {
       reject(new Error("Failed to fetch student dashboard data. Please try again later."));
-    }, 1200);
+    }, MOCK_DELAY);
   });
 }
 
@@ -124,7 +127,7 @@ export async function getStudentFeeNotices(studentId: string): Promise<FeeNotice
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(JSON.parse(JSON.stringify(notices))); // Return a deep copy
-    }, 1000); // Simulate network delay
+    }, MOCK_DELAY); // Simulate network delay
   });
 }
 
@@ -186,7 +189,7 @@ export async function getStudentReportCards(studentId: string): Promise<ReportCa
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(reports);
-    }, 1300); // Simulate network delay
+    }, MOCK_DELAY); // Simulate network delay
   });
 }
 
@@ -211,7 +214,7 @@ export async function getStudentCirculars(studentId: string): Promise<Circular[]
       // Sort by date descending before resolving
       const sortedCirculars = circulars.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
       resolve(sortedCirculars);
-    }, 900); // Simulate network delay
+    }, MOCK_DELAY); // Simulate network delay
   });
 }
 
@@ -243,7 +246,7 @@ export async function getStudentTimetable(studentId: string): Promise<TimetableE
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(timetable);
-    }, 1100); // Simulate network delay
+    }, MOCK_DELAY); // Simulate network delay
   });
 }
 
@@ -265,7 +268,7 @@ export async function getStudentPaymentHistory(studentId: string): Promise<Payme
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(history);
-    }, 800); // Simulate network delay
+    }, MOCK_DELAY); // Simulate network delay
   });
 }
 

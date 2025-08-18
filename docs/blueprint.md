@@ -3,13 +3,11 @@
 ## Core Features:
 
 - Admin Overview: Displays key metrics such as fees collected, pending admissions, and attendance overview using clear, concise cards.
-- Student Profile Display: Allows viewing of student details including ID, name, contact information, and parent/guardian details in a structured format. A placeholder for viewing student specific documents is present.
-- Fee Notice Viewer: Provides a dedicated section for students to view fee notices and payment status.
 - Staff Profile Display: Allows staff members to view their profile information including Staff ID, Role, Contact, and Date of Birth.
-- Role Based Access Control: Implements role-based authentication to ensure only authorized users (Admin, Students, Staff) can access specific dashboards and functionalities.
+- Role Based Access Control: Implements role-based authentication to ensure only authorized users (Admin, Staff) can access specific dashboards and functionalities.
 - Summarized Notices: Utilizes a generative AI tool to generate summaries of important school notices to help parents understand important details more efficiently. LLM determines what information to include.
 - Bulk Fee Notices: Module for generating fee notices for multiple students by standard/section, including auto-calculation of late fees and placeholders for sending reminders.
-- Payment History: Provides payment history tracking for students and admins, with tables displaying payment details and status, along with placeholders for UPI integration.
+- Payment History (Admin): Provides payment history tracking for school payments with tables displaying payment details and status, along with placeholders for UPI integration.
 - Admission Management: Manages student admissions through online forms with document upload, status tracking, and verification processes.
 - Staff Attendance: Enables staff to record attendance by scanning a QR code generated on the admin dashboard. Includes a history table showing attendance records.
 - Teacher Onboarding: Provides a form for onboarding new teachers, including fields for personal information, qualifications, and document uploads, with a placeholder for document verification.
