@@ -21,9 +21,9 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col bg-background overflow-x-hidden">
       <TopHeader />
-      <div className="flex flex-1 pt-16 min-w-0">
+      <div className="flex flex-1 pt-16 min-w-0 overflow-x-hidden">
         {userRole === 'admin' && (
           <AppSidebar 
             navItems={adminNavItems} 
@@ -33,10 +33,12 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
         )}
         <main 
           className={cn(
-            "flex flex-1 flex-col items-stretch bg-background overflow-y-auto overflow-x-hidden min-w-0 box-border pl-4 sm:pl-6 lg:pl-8 pr-0 pb-4 pt-[5px]"
+            "flex flex-1 flex-col items-stretch bg-background overflow-y-auto overflow-x-hidden min-w-0 box-border px-4 sm:px-6 lg:px-8 pb-4 pt-[5px]"
           )}
           style={{
-            width: '100%',
+            width: isMobile
+              ? '100vw'
+              : `calc(100vw - ${sidebarState === 'collapsed' ? 'var(--sidebar-width-icon)' : 'var(--sidebar-width)'})`
           }}
         >
           {children}

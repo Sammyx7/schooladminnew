@@ -17,12 +17,13 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { DollarSign, PlusCircle, Loader2, AlertCircle as AlertIcon, Download, PieChart, Edit, Trash2 } from 'lucide-react';
+import { DollarSign, PlusCircle, Loader2, AlertCircle as AlertIcon, Download, PieChart as PieChartIcon, Edit, Trash2 } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import type { ExpenseRecord, ExpenseFormValues, ExpenseCategory } from '@/lib/types';
 import { ExpenseFormSchema, expenseCategories } from '@/lib/types';
-import { getAdminExpenseRecords, createAdminExpenseRecord, deleteAdminExpense } from '@/lib/services/expensesService';
+import { getAdminExpenseRecords, createAdminExpenseRecord, deleteAdminExpense, updateAdminExpense } from '@/lib/services/expensesService';
 import { cn } from '@/lib/utils';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function AdminExpensesPage() {
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
@@ -30,6 +31,7 @@ export default function AdminExpensesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<ExpenseRecord | null>(null);
   const { toast } = useToast();
 
   const form = useForm<ExpenseFormValues>({
@@ -62,16 +64,22 @@ export default function AdminExpensesPage() {
     fetchExpenses();
   }, []);
 
-  const handleAddExpense = async (values: ExpenseFormValues) => {
+  const onSubmit = async (values: ExpenseFormValues) => {
     setIsSubmitting(true);
     try {
-      await createAdminExpenseRecord(values);
-      toast({ title: "Success", description: "New expense recorded successfully." });
+      if (editingExpense) {
+        await updateAdminExpense(editingExpense.id, values);
+        toast({ title: "Expense Updated", description: "Changes saved successfully." });
+      } else {
+        await createAdminExpenseRecord(values);
+        toast({ title: "Success", description: "New expense recorded successfully." });
+      }
       setIsFormDialogOpen(false);
+      setEditingExpense(null);
       form.reset({ date: new Date(), category: undefined, description: '', amount: '', paymentMethod: '' });
       await fetchExpenses();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to add expense.";
+      const errorMessage = err instanceof Error ? err.message : (editingExpense ? "Failed to update expense." : "Failed to add expense.");
       toast({ title: "Error", description: errorMessage, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
@@ -79,11 +87,40 @@ export default function AdminExpensesPage() {
   };
   
   const handleExportCSV = () => {
-    toast({ title: "Export to CSV (Placeholder)", description: "This feature will download expenses as a CSV file." });
+    if (!expenses.length) return;
+    const headers = ["id","date","category","description","amount","paymentMethod"];
+    const csvRows = [headers.join(",")];
+    for (const e of expenses) {
+      const row = [
+        e.id,
+        new Date(e.date).toISOString(),
+        e.category,
+        e.description.replace(/"/g, '""'),
+        String(e.amount),
+        e.paymentMethod ?? ''
+      ];
+      // Quote fields containing commas or quotes
+      csvRows.push(row.map(v => (/[,"\n]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v)).join(","));
+    }
+    const blob = new Blob(["\ufeff" + csvRows.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `expenses_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleEditExpense = (expense: ExpenseRecord) => {
-     toast({ title: "Edit Expense (Placeholder)", description: `Editing: ${expense.description}` });
+     setEditingExpense(expense);
+     form.reset({
+       date: new Date(expense.date),
+       category: expense.category as ExpenseCategory,
+       description: expense.description,
+       amount: String(expense.amount),
+       paymentMethod: expense.paymentMethod ?? ''
+     });
+     setIsFormDialogOpen(true);
   }
   const handleDeleteExpense = (expense: ExpenseRecord) => {
      (async () => {
@@ -203,28 +240,59 @@ export default function AdminExpensesPage() {
         
         <Card className="border shadow-md">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><PieChart className="h-5 w-5" /> Expense Chart</CardTitle>
-                <CardDescription>Visualization of expense distribution by category.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><PieChartIcon className="h-5 w-5" /> Expense Chart</CardTitle>
+                <CardDescription>Distribution by category</CardDescription>
             </CardHeader>
-            <CardContent className="flex items-center justify-center h-[300px] text-muted-foreground">
-                <div className="text-center">
-                    <PieChart className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                    <p>Chart visualization will be implemented here.</p>
+            <CardContent className="h-[300px]">
+              {expenses.length === 0 ? (
+                <div className="flex h-full items-center justify-center text-muted-foreground">
+                  <div className="text-center">
+                    <PieChartIcon className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                    <p>No data to display</p>
+                  </div>
                 </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Tooltip formatter={(v: any) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(v))} />
+                    <Pie
+                      data={Object.entries(expenses.reduce((acc: Record<string, number>, e) => {
+                        acc[e.category] = (acc[e.category] || 0) + Number(e.amount);
+                        return acc;
+                      }, {})).map(([name, value]) => ({ name, value }))}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={100}
+                      paddingAngle={4}
+                      stroke="#fff"
+                    >
+                      {Object.entries(expenses.reduce((acc: Record<string, number>, e) => {
+                        acc[e.category] = (acc[e.category] || 0) + Number(e.amount);
+                        return acc;
+                      }, {})).map(([name], idx) => (
+                        <Cell key={`cell-${name}`} fill={["#6366f1","#22c55e","#f59e0b","#ef4444","#06b6d4","#a855f7","#64748b"][idx % 7]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
             </CardContent>
         </Card>
       </div>
 
-      <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
+      <Dialog open={isFormDialogOpen} onOpenChange={(open) => { setIsFormDialogOpen(open); if (!open) { setEditingExpense(null); } }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add New Expense</DialogTitle>
+            <DialogTitle>{editingExpense ? 'Edit Expense' : 'Add New Expense'}</DialogTitle>
             <DialogDescription>
-              Fill in the details below to record a new school expense.
+              {editingExpense ? 'Update the details for this expense.' : 'Fill in the details below to record a new school expense.'}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleAddExpense)} className="space-y-4 py-2 max-h-[70vh] overflow-y-auto pr-2">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-2 max-h-[70vh] overflow-y-auto pr-2">
               <FormField
                 control={form.control}
                 name="date"
@@ -309,7 +377,7 @@ export default function AdminExpensesPage() {
                 </DialogClose>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Add Expense
+                  {editingExpense ? 'Save Changes' : 'Add Expense'}
                 </Button>
               </DialogFooter>
             </form>

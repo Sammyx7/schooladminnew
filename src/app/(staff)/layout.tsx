@@ -2,22 +2,25 @@
 "use client";
 
 import type { ReactNode } from 'react';
-import { SidebarProvider } from '@/components/ui/sidebar'; // Removed useSidebar
+import { SidebarProvider, useSidebar } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/layout/AppSidebar';
 import ProtectedRoute from '@/components/layout/ProtectedRoute';
 import { staffNavItems } from '@/lib/navData';
 import { useAuth } from '@/contexts/AuthContext';
-import { TopHeader } from '@/components/layout/TopHeader'; // Assuming TopHeader should be here
-import { cn } from '@/lib/utils'; // Added cn
+import { TopHeader } from '@/components/layout/TopHeader';
+import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 function StaffLayoutContent({ children }: { children: ReactNode }) {
   const { userRole } = useAuth();
+  const { state: sidebarState } = useSidebar();
+  const isMobile = useIsMobile();
   
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <TopHeader /> {/* Added TopHeader for consistency */}
-      <div className="flex flex-1 pt-16 min-w-0"> {/* Added pt-16 for TopHeader and min-w-0 to allow shrinking */}
+    <div className="flex min-h-screen flex-col bg-background overflow-x-hidden">
+      <TopHeader />
+      <div className="flex flex-1 pt-16 min-w-0 overflow-x-hidden">
         {userRole === 'staff' && (
           <AppSidebar 
             navItems={staffNavItems} 
@@ -29,6 +32,11 @@ function StaffLayoutContent({ children }: { children: ReactNode }) {
           className={cn(
             "flex flex-1 flex-col items-stretch bg-background overflow-y-auto overflow-x-hidden min-w-0 box-border px-4 sm:px-6 lg:px-8 pb-4 pt-[5px]"
           )}
+          style={{
+            width: isMobile
+              ? '100vw'
+              : `calc(100vw - ${sidebarState === 'collapsed' ? 'var(--sidebar-width-icon)' : 'var(--sidebar-width)'})`
+          }}
         >
           {children}
         </main>
@@ -40,7 +48,7 @@ function StaffLayoutContent({ children }: { children: ReactNode }) {
 export default function StaffLayout({ children }: { children: ReactNode }) {
   return (
     <ProtectedRoute allowedRoles={['staff']}>
-      <SidebarProvider defaultOpen={true}> {/* Wrap with SidebarProvider */}
+      <SidebarProvider defaultOpen={true}>
         <StaffLayoutContent>{children}</StaffLayoutContent>
       </SidebarProvider>
     </ProtectedRoute>

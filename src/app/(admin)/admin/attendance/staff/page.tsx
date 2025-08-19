@@ -21,12 +21,14 @@ import type { StaffAttendanceRecord, StaffAttendanceFilterFormValues, Attendance
 import { StaffAttendanceFilterSchema, attendanceStatuses } from '@/lib/types';
 import { getAdminStaffAttendanceRecords } from '@/lib/services/adminService';
 import { cn } from '@/lib/utils';
+import StaffQrDialog from '@/components/attendance/StaffQrDialog';
 
 export default function AdminStaffAttendancePage() {
   const [attendanceRecords, setAttendanceRecords] = useState<StaffAttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const [qrOpen, setQrOpen] = useState(false);
 
   const form = useForm<StaffAttendanceFilterFormValues>({
     resolver: zodResolver(StaffAttendanceFilterSchema),
@@ -63,16 +65,58 @@ export default function AdminStaffAttendancePage() {
   const handleClearFilters = () => {
     form.reset({ departmentFilter: '', staffNameOrIdFilter: '', dateFilter: undefined });
     fetchAttendanceRecords();
-  }
+  };
 
   const handleExportCSV = () => {
-    toast({ title: "Export to CSV (Placeholder)", description: "This feature will download the current view as a CSV file." });
-  };
-  
-  const handleGenerateQrCode = () => {
-    toast({ title: "Generate QR Code (Placeholder)", description: "This would generate a QR code for staff check-in." });
+    try {
+      if (attendanceRecords.length === 0) {
+        toast({ title: "Nothing to Export", description: "No attendance records in the current view." });
+        return;
+      }
+      const escapeCsv = (val: unknown): string => {
+        if (val === null || val === undefined) return '';
+        const s = String(val);
+        if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+        return s;
+      };
+      const headers = ['Date', 'Staff ID', 'Staff Name', 'Department', 'Status'];
+      const rows = attendanceRecords.map(r => [
+        format(new Date(r.date), 'yyyy-MM-dd'),
+        r.staffId,
+        r.staffName,
+        r.department,
+        r.status,
+      ]);
+      const csv = [headers, ...rows]
+        .map(cols => cols.map(escapeCsv).join(','))
+        .join('\n');
+
+      const filters = form.getValues();
+      const parts: string[] = ['attendance_staff'];
+      if (filters.departmentFilter) parts.push(`dept_${filters.departmentFilter.replace(/\s+/g, '_')}`);
+      if (filters.staffNameOrIdFilter) parts.push(`staff_${filters.staffNameOrIdFilter.replace(/\s+/g, '_')}`);
+      if (filters.dateFilter) parts.push(`date_${format(filters.dateFilter, 'yyyyMMdd')}`);
+      const filename = `${parts.join('_')}.csv`;
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast({ title: 'CSV Exported', description: `Downloaded ${filename}` });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to export CSV.';
+      toast({ title: 'Export Failed', description: msg, variant: 'destructive' });
+    }
   };
 
+  const handleGenerateQrCode = () => {
+    setQrOpen(true);
+  };
 
   const getStatusBadgeClassName = (status: AttendanceStatus): string => {
     switch (status) {
@@ -242,6 +286,9 @@ export default function AdminStaffAttendancePage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Staff Attendance QR Dialog */}
+      <StaffQrDialog open={qrOpen} onOpenChange={setQrOpen} ttlSeconds={60} />
     </div>
   );
 }

@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/form";
 import type { Circular, CreateCircularFormValues, CircularCategory } from '@/lib/types';
 import { CreateCircularSchema, circularCategories } from '@/lib/types';
-import { getAdminCirculars, createAdminCircular, deleteAdminCircular } from '@/lib/services/circularsService';
+import { getAdminCirculars, createAdminCircular, deleteAdminCircular, updateAdminCircular } from '@/lib/services/circularsService';
 import { cn } from '@/lib/utils';
 
 export default function AdminCircularsPage() {
@@ -40,6 +40,7 @@ export default function AdminCircularsPage() {
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [circularToDelete, setCircularToDelete] = useState<Circular | null>(null);
+  const [editingCircular, setEditingCircular] = useState<Circular | null>(null);
   const { toast } = useToast();
 
   const form = useForm<CreateCircularFormValues>({
@@ -87,6 +88,24 @@ export default function AdminCircularsPage() {
     }
   };
 
+  const handleUpdateCircular = async (values: CreateCircularFormValues) => {
+    if (!editingCircular) return;
+    setIsSubmitting(true);
+    try {
+      await updateAdminCircular(editingCircular.id, values);
+      toast({ title: "Circular Updated", description: `"${values.title}" has been saved.` });
+      setIsFormDialogOpen(false);
+      setEditingCircular(null);
+      form.reset();
+      await fetchCirculars();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Failed to update circular.";
+      toast({ title: "Update Failed", description: errorMessage, variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleDeleteConfirm = async () => {
     if (!circularToDelete) return;
     setIsSubmitting(true); // Can reuse for deletion loading state
@@ -112,7 +131,15 @@ export default function AdminCircularsPage() {
   };
   
   const handleEditCircular = (circular: Circular) => {
-    toast({ title: "Edit Circular (Placeholder)", description: `Editing: ${circular.title}` });
+    setEditingCircular(circular);
+    // Prefill form with selected circular
+    form.reset({
+      title: circular.title,
+      summary: circular.summary,
+      category: circular.category,
+      attachmentLink: circular.attachmentLink ?? '',
+    });
+    setIsFormDialogOpen(true);
   };
 
   const getCategoryBadgeClassName = (category?: CircularCategory): string => {
@@ -137,7 +164,7 @@ export default function AdminCircularsPage() {
         icon={Megaphone}
         description="Manage and distribute school circulars and notices."
         actions={
-          <Button onClick={() => { form.reset(); setIsFormDialogOpen(true); }}>
+          <Button onClick={() => { setEditingCircular(null); form.reset(); setIsFormDialogOpen(true); }}>
             <PlusCircle className="mr-2 h-4 w-4" />
             Add New Circular
           </Button>
@@ -234,16 +261,19 @@ export default function AdminCircularsPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
+      <Dialog open={isFormDialogOpen} onOpenChange={(open) => { 
+        setIsFormDialogOpen(open); 
+        if (!open) { setEditingCircular(null); form.reset({ title: '', summary: '', category: undefined, attachmentLink: '' }); }
+      }}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Add New Circular</DialogTitle>
+            <DialogTitle>{editingCircular ? 'Edit Circular' : 'Add New Circular'}</DialogTitle>
             <DialogDescription>
-              Fill in the details below to publish a new school circular.
+              {editingCircular ? 'Update the details of this circular.' : 'Fill in the details below to publish a new school circular.'}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleAddCircular)} className="space-y-4 py-2 max-h-[70vh] overflow-y-auto pr-2">
+            <form onSubmit={form.handleSubmit(editingCircular ? handleUpdateCircular : handleAddCircular)} className="space-y-4 py-2 max-h-[70vh] overflow-y-auto pr-2">
               <FormField
                 control={form.control}
                 name="title"
@@ -313,7 +343,7 @@ export default function AdminCircularsPage() {
                 </DialogClose>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Publish Circular
+                  {editingCircular ? 'Save Changes' : 'Publish Circular'}
                 </Button>
               </DialogFooter>
             </form>

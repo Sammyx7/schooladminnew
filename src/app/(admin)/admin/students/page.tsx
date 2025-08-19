@@ -10,6 +10,15 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { StudentProfile } from '@/lib/types';
-import { getAdminStudentList } from '@/lib/services/adminService'; 
+import { listStudents, getStudentByStudentId, updateStudent } from '@/lib/services/studentsDbService';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminStudentsPage() {
@@ -28,12 +37,24 @@ export default function AdminStudentsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
 
+  // Dialog state
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [activeStudent, setActiveStudent] = useState<StudentProfile | null>(null);
+  const [isFetchingStudent, setIsFetchingStudent] = useState(false);
+
+  // Edit form state
+  const [editName, setEditName] = useState('');
+  const [editClassSection, setEditClassSection] = useState('');
+  const [editAvatarUrl, setEditAvatarUrl] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getAdminStudentList();
+        const data = await listStudents();
         setStudents(data);
         setFilteredStudents(data);
       } catch (err) {
@@ -57,18 +78,59 @@ export default function AdminStudentsPage() {
     setFilteredStudents(filteredData);
   }, [searchTerm, students]);
 
-  const handleViewDetails = (student: StudentProfile) => {
-    toast({
-      title: "View Details (Placeholder)",
-      description: `Viewing details for ${student.name} (${student.studentId}).`,
-    });
+  const handleViewDetails = async (student: StudentProfile) => {
+    try {
+      setIsFetchingStudent(true);
+      const fresh = await getStudentByStudentId(student.studentId);
+      setActiveStudent(fresh ?? student);
+      setViewOpen(true);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to load student details';
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
+    } finally {
+      setIsFetchingStudent(false);
+    }
   };
   
-  const handleEditStudent = (student: StudentProfile) => {
-    toast({
-      title: "Edit Student (Placeholder)",
-      description: `Editing details for ${student.name} (${student.studentId}).`,
-    });
+  const handleEditStudent = async (student: StudentProfile) => {
+    try {
+      setIsFetchingStudent(true);
+      const fresh = await getStudentByStudentId(student.studentId);
+      const s = fresh ?? student;
+      setActiveStudent(s);
+      setEditName(s.name);
+      setEditClassSection(s.classSection ?? '');
+      setEditAvatarUrl(s.avatarUrl ?? '');
+      setEditOpen(true);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to load student for editing';
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
+    } finally {
+      setIsFetchingStudent(false);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!activeStudent) return;
+    try {
+      setIsSaving(true);
+      const updated = await updateStudent(activeStudent.studentId, {
+        name: editName,
+        classSection: editClassSection,
+        avatarUrl: editAvatarUrl || null,
+      });
+      // Update local lists
+      setStudents((prev) => prev.map((s) => (s.studentId === updated.studentId ? updated : s)));
+      setFilteredStudents((prev) => prev.map((s) => (s.studentId === updated.studentId ? updated : s)));
+      setActiveStudent(updated);
+      setEditOpen(false);
+      toast({ title: 'Student updated', description: `${updated.name} saved successfully.` });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to update student';
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
 
@@ -99,11 +161,10 @@ export default function AdminStudentsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[15%] text-xs uppercase font-medium text-muted-foreground">Student ID</TableHead>
-                  <TableHead className="w-[30%] text-xs uppercase font-medium text-muted-foreground">Name</TableHead>
-                  <TableHead className="w-[25%] text-xs uppercase font-medium text-muted-foreground">Class & Section</TableHead>
-                  <TableHead className="w-[15%] hidden md:table-cell text-xs uppercase font-medium text-muted-foreground">Contact (Demo)</TableHead>
-                  <TableHead className="w-[15%] text-right text-xs uppercase font-medium text-muted-foreground">Actions</TableHead>
+                  <TableHead className="w-[15ch] text-xs uppercase font-medium text-muted-foreground">Student ID</TableHead>
+                  <TableHead className="text-xs uppercase font-medium text-muted-foreground">Name</TableHead>
+                  <TableHead className="text-xs uppercase font-medium text-muted-foreground">Class & Section</TableHead>
+                  <TableHead className="text-right text-xs uppercase font-medium text-muted-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -112,7 +173,6 @@ export default function AdminStudentsPage() {
                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-40" /></TableCell>
                     <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                    <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-28" /></TableCell>
                     <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded-full" /></TableCell>
                   </TableRow>
                 ))}
@@ -143,7 +203,6 @@ export default function AdminStudentsPage() {
                   <TableHead className="w-[15ch] text-xs uppercase font-medium text-muted-foreground">Student ID</TableHead>
                   <TableHead className="min-w-[20ch] text-xs uppercase font-medium text-muted-foreground">Name</TableHead>
                   <TableHead className="min-w-[20ch] text-xs uppercase font-medium text-muted-foreground">Class & Section</TableHead>
-                  <TableHead className="w-[15ch] hidden md:table-cell text-xs uppercase font-medium text-muted-foreground">Contact (Demo)</TableHead>
                   <TableHead className="w-[10ch] text-right text-xs uppercase font-medium text-muted-foreground">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -153,10 +212,6 @@ export default function AdminStudentsPage() {
                     <TableCell className="font-mono text-sm">{student.studentId}</TableCell>
                     <TableCell className="font-medium">{student.name}</TableCell>
                     <TableCell>{student.classSection}</TableCell>
-                    <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
-                      {/* Placeholder for contact info */}
-                      01234 56789
-                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -182,6 +237,79 @@ export default function AdminStudentsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* View Details Dialog */}
+      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Student Details</DialogTitle>
+            <DialogDescription>View basic information for this student.</DialogDescription>
+          </DialogHeader>
+          {isFetchingStudent && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading...
+            </div>
+          )}
+          {activeStudent && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-xs text-muted-foreground">Student ID</div>
+                  <div className="font-mono text-sm">{activeStudent.studentId}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Name</div>
+                  <div className="font-medium">{activeStudent.name}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Class & Section</div>
+                  <div>{activeStudent.classSection || '-'}</div>
+                </div>
+                {activeStudent.avatarUrl && (
+                  <div>
+                    <div className="text-xs text-muted-foreground">Avatar URL</div>
+                    <a className="text-primary underline break-all" href={activeStudent.avatarUrl} target="_blank" rel="noreferrer">
+                      {activeStudent.avatarUrl}
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Student</DialogTitle>
+            <DialogDescription>Update the student details below.</DialogDescription>
+          </DialogHeader>
+          {activeStudent && (
+            <div className="space-y-4">
+              <div className="grid gap-2">
+                <Label htmlFor="name">Name</Label>
+                <Input id="name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="classSection">Class & Section</Label>
+                <Input id="classSection" value={editClassSection} onChange={(e) => setEditClassSection(e.target.value)} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="avatarUrl">Avatar URL</Label>
+                <Input id="avatarUrl" value={editAvatarUrl} onChange={(e) => setEditAvatarUrl(e.target.value)} placeholder="https://..." />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)} disabled={isSaving}>Cancel</Button>
+            <Button onClick={handleSaveEdit} disabled={isSaving}>
+              {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

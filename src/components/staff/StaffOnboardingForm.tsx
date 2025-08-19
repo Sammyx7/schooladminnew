@@ -57,8 +57,9 @@ export default function StaffOnboardingForm() {
         setStaff(list);
       })
       .catch((err) => {
-        console.error(err);
-        toast({ title: "Failed to load staff", description: String(err.message ?? err), variant: "destructive" });
+        const msg = err instanceof Error ? err.message : (typeof err === 'string' ? err : JSON.stringify(err));
+        console.warn('Failed to load staff', err);
+        toast({ title: "Failed to load staff", description: msg, variant: "destructive" });
       })
       .finally(() => {
         if (mounted) setLoading(false);
@@ -99,8 +100,9 @@ export default function StaffOnboardingForm() {
       toast({ title: "Staff onboarded", description: `${created.name} (${created.staffId})` });
       form.reset({ ...form.getValues(), staffId: "", name: "", role: "", email: "" });
     } catch (err: any) {
-      console.error(err);
-      toast({ title: "Failed to onboard", description: String(err.message ?? err), variant: "destructive" });
+      const msg = err instanceof Error ? err.message : (typeof err === 'string' ? err : JSON.stringify(err));
+      console.warn('Failed to onboard staff', err);
+      toast({ title: "Failed to onboard", description: msg, variant: "destructive" });
     }
   };
 
@@ -110,8 +112,9 @@ export default function StaffOnboardingForm() {
       setStaff((prev) => prev.filter((s) => s.id !== id));
       toast({ title: "Removed staff", description: `ID ${id}` });
     } catch (err: any) {
-      console.error(err);
-      toast({ title: "Failed to remove", description: String(err.message ?? err), variant: "destructive" });
+      const msg = err instanceof Error ? err.message : (typeof err === 'string' ? err : JSON.stringify(err));
+      console.warn('Failed to remove staff', err);
+      toast({ title: "Failed to remove", description: msg, variant: "destructive" });
     }
   };
 

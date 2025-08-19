@@ -350,6 +350,34 @@ export async function getAdminTimetable(filters?: AdminTimetableFilterFormValues
     });
 }
 
+// Admin Timetable: Create a new entry
+export async function createAdminTimetableEntry(data: Omit<TimetableEntry, 'id'>): Promise<TimetableEntry> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const newEntry: TimetableEntry = { id: `TT_${Date.now()}`, ...data };
+      // Mutate mock array in-place to preserve reference
+      MOCK_ADMIN_TIMETABLE_ENTRIES.push(newEntry);
+      resolve(newEntry);
+    }, MOCK_DELAY);
+  });
+}
+
+// Admin Timetable: Update an existing entry
+export async function updateAdminTimetableEntry(id: string, data: Omit<TimetableEntry, 'id'>): Promise<TimetableEntry> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const idx = MOCK_ADMIN_TIMETABLE_ENTRIES.findIndex(e => e.id === id);
+      if (idx !== -1) {
+        const updated: TimetableEntry = { ...MOCK_ADMIN_TIMETABLE_ENTRIES[idx], ...data, id };
+        MOCK_ADMIN_TIMETABLE_ENTRIES[idx] = updated;
+        resolve(updated);
+      } else {
+        reject(new Error('Timetable entry not found.'));
+      }
+    }, MOCK_DELAY);
+  });
+}
+
 // Admin Staff Attendance Management
 const MOCK_STAFF_ATTENDANCE_RECORDS: StaffAttendanceRecord[] = [
   { id: 'S_ATT001', staffId: 'TCH101', staffName: 'Dr. Anjali Sharma', department: 'Administration', date: today.toISOString(), status: 'Present' },

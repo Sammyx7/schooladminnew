@@ -12,16 +12,18 @@ import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/componen
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import type { StaffAttendanceRecord, AttendanceStatus } from '@/lib/types';
-import { getStaffOwnAttendanceHistory } from '@/lib/services/staffService';
+import { getStaffOwnAttendanceHistoryDb } from '@/lib/services/staffAttendanceService';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 // import { useAuth } from '@/contexts/AuthContext'; // If needed for staffId
+import { useRouter } from 'next/navigation';
 
 export default function StaffAttendancePage() {
   const [attendanceHistory, setAttendanceHistory] = useState<StaffAttendanceRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const router = useRouter();
   // const { user } = useAuth(); // To get staffId if available
 
   const MOCK_STAFF_ID = "TCH102"; // Using Mr. Vikram Singh's ID
@@ -32,7 +34,7 @@ export default function StaffAttendancePage() {
       setError(null);
       try {
         // const staffIdToFetch = user?.staffId || MOCK_STAFF_ID;
-        const data = await getStaffOwnAttendanceHistory(MOCK_STAFF_ID);
+        const data = await getStaffOwnAttendanceHistoryDb(MOCK_STAFF_ID);
         setAttendanceHistory(data);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
@@ -46,10 +48,8 @@ export default function StaffAttendancePage() {
   }, [toast]);
 
   const handleMarkAttendance = () => {
-    toast({
-      title: "Mark Attendance (Placeholder)",
-      description: "This would typically involve scanning a QR code or another check-in method.",
-    });
+    // Navigate to the check-in page where a scanned QR will land, or allow manual token entry
+    router.push('/staff/attendance/check-in');
   };
 
   const getStatusBadgeClassName = (status: AttendanceStatus): string => {

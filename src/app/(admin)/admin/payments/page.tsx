@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { History, Filter, Loader2, AlertCircle as AlertIcon, RotateCcw, Download, Eye } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import type { AdminPaymentRecord, AdminPaymentFiltersFormValues } from '@/lib/types';
 import { AdminPaymentFiltersSchema } from '@/lib/types';
 import { getAdminPaymentHistory } from '@/lib/services/adminService';
@@ -25,6 +26,8 @@ export default function AdminPaymentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedRecord, setSelectedRecord] = useState<AdminPaymentRecord | null>(null);
 
   const form = useForm<AdminPaymentFiltersFormValues>({
     resolver: zodResolver(AdminPaymentFiltersSchema),
@@ -64,11 +67,67 @@ export default function AdminPaymentsPage() {
   };
 
   const handleExportCSV = () => {
-    toast({ title: "Export to CSV (Placeholder)", description: "This feature will download the current payment history view as a CSV file." });
+    try {
+      if (paymentRecords.length === 0) {
+        toast({ title: "Nothing to Export", description: "No payment records in the current view.", variant: "default" });
+        return;
+      }
+      const escapeCsv = (val: unknown): string => {
+        if (val === null || val === undefined) return '';
+        const s = String(val);
+        if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+        return s;
+      };
+      const headers = [
+        'Date',
+        'Student ID',
+        'Student Name',
+        'Description',
+        'Amount',
+        'Method',
+        'Transaction ID',
+        'Receipt Link',
+      ];
+      const rows = paymentRecords.map(r => [
+        format(parseISO(r.paymentDate), 'yyyy-MM-dd HH:mm'),
+        r.studentId,
+        r.studentName,
+        r.description,
+        r.amountPaid,
+        r.paymentMethod,
+        r.transactionId ?? '',
+        r.receiptLink ?? '',
+      ]);
+      const csv = [headers, ...rows]
+        .map(cols => cols.map(escapeCsv).join(','))
+        .join('\n');
+
+      const filters = form.getValues();
+      const parts: string[] = ['payments'];
+      if (filters.studentIdOrName) parts.push(`student_${filters.studentIdOrName.replace(/\s+/g, '_')}`);
+      if (filters.dateFrom) parts.push(`from_${format(filters.dateFrom, 'yyyyMMdd')}`);
+      if (filters.dateTo) parts.push(`to_${format(filters.dateTo, 'yyyyMMdd')}`);
+      const filename = `${parts.join('_')}.csv`;
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast({ title: 'CSV Exported', description: `Downloaded ${filename}` });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to export CSV.';
+      toast({ title: 'Export Failed', description: msg, variant: 'destructive' });
+    }
   };
   
   const handleViewDetails = (record: AdminPaymentRecord) => {
-    toast({ title: "View Payment Details (Placeholder)", description: `Viewing details for transaction ID: ${record.transactionId || record.id}` });
+    setSelectedRecord(record);
+    setDetailsOpen(true);
   };
 
   return (
@@ -223,6 +282,55 @@ export default function AdminPaymentsPage() {
           )}
         </CardContent>
       </Card>
+    
+      {/* Payment Details Dialog */}
+      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Payment Details</DialogTitle>
+            <DialogDescription>Detailed information for this payment.</DialogDescription>
+          </DialogHeader>
+          {selectedRecord && (
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Date</span>
+                <span className="font-medium">{format(parseISO(selectedRecord.paymentDate), "do MMM, yyyy, p")}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Student</span>
+                <span className="font-medium">{selectedRecord.studentName} ({selectedRecord.studentId})</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Description</span>
+                <span className="font-medium text-right max-w-[60%]">{selectedRecord.description}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Amount</span>
+                <span className="font-semibold">₹ {selectedRecord.amountPaid.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Method</span>
+                <span className="font-medium">{selectedRecord.paymentMethod}</span>
+              </div>
+              {selectedRecord.transactionId && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Transaction ID</span>
+                  <span className="font-mono text-xs">{selectedRecord.transactionId}</span>
+                </div>
+              )}
+              {selectedRecord.receiptLink && (
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Receipt</span>
+                  <a href={selectedRecord.receiptLink} target="_blank" rel="noreferrer" className="text-primary underline">Open receipt</a>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button type="button" onClick={() => setDetailsOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

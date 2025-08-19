@@ -55,6 +55,26 @@ export async function createAdminExpenseRecord(values: ExpenseFormValues): Promi
   return mapRowToExpense(data);
 }
 
+export async function updateAdminExpense(id: string, values: ExpenseFormValues): Promise<ExpenseRecord> {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error("Supabase is not configured.");
+  const payload = {
+    date: values.date.toISOString(),
+    category: values.category,
+    description: values.description,
+    amount: Number(values.amount),
+    payment_method: values.paymentMethod && values.paymentMethod.length > 0 ? values.paymentMethod : null,
+  };
+  const { data, error } = await supabase
+    .from("expenses")
+    .update(payload)
+    .eq("id", id)
+    .select("id, date, category, description, amount, payment_method, created_at")
+    .single();
+  if (error) throw error;
+  return mapRowToExpense(data);
+}
+
 export async function deleteAdminExpense(id: string): Promise<void> {
   const supabase = getSupabase();
   if (!supabase) throw new Error("Supabase is not configured.");

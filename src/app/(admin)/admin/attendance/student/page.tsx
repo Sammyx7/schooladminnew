@@ -66,7 +66,51 @@ export default function AdminStudentAttendancePage() {
   }
 
   const handleExportCSV = () => {
-    toast({ title: "Export to CSV (Placeholder)", description: "This feature will download the current view as a CSV file." });
+    try {
+      if (attendanceRecords.length === 0) {
+        toast({ title: "Nothing to Export", description: "No attendance records in the current view." });
+        return;
+      }
+      const escapeCsv = (val: unknown): string => {
+        if (val === null || val === undefined) return '';
+        const s = String(val);
+        if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+        return s;
+      };
+      const headers = ['Date', 'Student ID', 'Student Name', 'Class', 'Section', 'Status'];
+      const rows = attendanceRecords.map(r => [
+        format(new Date(r.date), 'yyyy-MM-dd'),
+        r.studentId,
+        r.studentName,
+        r.class,
+        r.section,
+        r.status,
+      ]);
+      const csv = [headers, ...rows]
+        .map(cols => cols.map(escapeCsv).join(','))
+        .join('\n');
+
+      const filters = form.getValues();
+      const parts: string[] = ['attendance_student'];
+      if (filters.classFilter) parts.push(`class_${filters.classFilter}`);
+      if (filters.sectionFilter) parts.push(`section_${filters.sectionFilter}`);
+      if (filters.dateFilter) parts.push(`date_${format(filters.dateFilter, 'yyyyMMdd')}`);
+      const filename = `${parts.join('_')}.csv`;
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast({ title: 'CSV Exported', description: `Downloaded ${filename}` });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to export CSV.';
+      toast({ title: 'Export Failed', description: msg, variant: 'destructive' });
+    }
   };
 
   const getStatusBadgeClassName = (status: AttendanceStatus): string => {

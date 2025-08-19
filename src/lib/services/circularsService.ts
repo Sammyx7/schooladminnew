@@ -48,6 +48,25 @@ export async function createAdminCircular(values: CreateCircularFormValues): Pro
   return mapRowToCircular(data);
 }
 
+export async function updateAdminCircular(id: string, values: CreateCircularFormValues): Promise<Circular> {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error("Supabase is not configured.");
+  const payload = {
+    title: values.title,
+    summary: values.summary,
+    category: values.category ?? null,
+    attachment_link: values.attachmentLink && values.attachmentLink.length > 0 ? values.attachmentLink : null,
+  };
+  const { data, error } = await supabase
+    .from("circulars")
+    .update(payload)
+    .eq("id", id)
+    .select("id, title, summary, category, attachment_link, created_at")
+    .single();
+  if (error) throw error;
+  return mapRowToCircular(data);
+}
+
 export async function deleteAdminCircular(id: string): Promise<void> {
   const supabase = getSupabase();
   if (!supabase) throw new Error("Supabase is not configured.");

@@ -67,11 +67,17 @@ export async function createStaff(input: CreateStaffInput): Promise<AdminStaffLi
   };
 }
 
-export async function deleteStaff(id: string): Promise<void> {
-  const supabase = getSupabase();
-  if (!supabase) throw new Error('Supabase is not configured.');
-  const { error } = await supabase.from('staff').delete().eq('id', id);
-  if (error) throw error;
+export async function deleteStaff(idOrStaffId: string): Promise<void> {
+  // Use server API to bypass RLS and rely on service key
+  const res = await fetch('/api/staff/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idOrStaffId }),
+  });
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload.error || `Delete failed with status ${res.status}`);
+  }
 }
 
 export async function getStaffProfileByStaffId(staffId: string): Promise<StaffProfile | null> {
@@ -96,4 +102,29 @@ export async function getStaffProfileByStaffId(staffId: string): Promise<StaffPr
     qualifications: Array.isArray(data.qualifications) ? data.qualifications : [],
     avatarUrl: data.avatar_url ?? undefined,
   };
+}
+
+export interface UpdateStaffInput {
+  name?: string;
+  role?: string;
+  department?: string;
+  email?: string;
+  phone?: string | null;
+  joiningDate?: string; // ISO
+  qualifications?: string[] | null;
+  avatarUrl?: string | null;
+}
+
+export async function updateStaff(staffId: string, updates: UpdateStaffInput): Promise<AdminStaffListItem> {
+  // Use server API route to perform update with service role
+  const res = await fetch('/api/staff/update', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ staffId, updates }),
+  });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || `Update failed with status ${res.status}`);
+  }
+  return payload as AdminStaffListItem;
 }
