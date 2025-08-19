@@ -47,7 +47,7 @@ export default function StaffProfileView({ staffId = "TCH102" }: Props) {
 
   if (!profile) {
     return (
-      <Card>
+      <Card className="border shadow-md">
         <CardHeader>
           <CardTitle>No profile found</CardTitle>
           <CardDescription>Unable to load staff profile.</CardDescription>
@@ -64,21 +64,21 @@ export default function StaffProfileView({ staffId = "TCH102" }: Props) {
     .toUpperCase();
 
   return (
-    <Card>
+    <Card className="border shadow-md">
       <CardHeader>
-        <div className="flex items-center gap-4">
-          <Avatar className="h-16 w-16">
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <Avatar className="h-12 w-12 sm:h-16 sm:w-16 shrink-0">
             <AvatarImage src={profile.avatarUrl} alt={profile.name} />
             <AvatarFallback>{initials || <User className="h-6 w-6" />}</AvatarFallback>
           </Avatar>
-          <div>
-            <CardTitle className="text-xl">{profile.name}</CardTitle>
-            <CardDescription>{profile.staffId}</CardDescription>
+          <div className="min-w-0">
+            <CardTitle className="text-lg sm:text-xl truncate">{profile.name}</CardTitle>
+            <CardDescription className="truncate">{profile.staffId}</CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           <InfoRow icon={<Briefcase className="h-4 w-4" />} label="Role" value={profile.role} />
           <InfoRow icon={<Briefcase className="h-4 w-4" />} label="Department" value={profile.department} />
           <InfoRow icon={<Mail className="h-4 w-4" />} label="Email" value={profile.email} />
@@ -91,7 +91,7 @@ export default function StaffProfileView({ staffId = "TCH102" }: Props) {
           {profile.qualifications && profile.qualifications.length > 0 ? (
             <ul className="list-disc pl-5 space-y-1">
               {profile.qualifications.map((q, idx) => (
-                <li key={idx}>{q}</li>
+                <li key={idx} className="break-words">{q}</li>
               ))}
             </ul>
           ) : (
@@ -105,11 +105,11 @@ export default function StaffProfileView({ staffId = "TCH102" }: Props) {
 
 function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className="text-muted-foreground">{icon}</div>
-      <div className="text-sm">
+    <div className="flex items-start gap-3 min-w-0">
+      <div className="text-muted-foreground shrink-0">{icon}</div>
+      <div className="text-sm min-w-0">
         <div className="text-xs text-muted-foreground">{label}</div>
-        <div className="font-medium">{value || "-"}</div>
+        <div className="font-medium break-words">{value || "-"}</div>
       </div>
     </div>
   );

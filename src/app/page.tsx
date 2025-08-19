@@ -24,10 +24,11 @@ export default function HomePage() {
             router.replace('/staff/profile');
             break;
           default:
-            router.replace('/login');
+            router.replace('/staff/profile');
         }
       } else {
-        router.replace('/login');
+        // Default app link leads to Staff dashboard
+        router.replace('/staff/profile');
       }
     }
   }, [isAuthenticated, userRole, router, isLoading]);

@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { TopHeader } from '@/components/layout/TopHeader';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { StaffMobileTabBar } from '@/components/layout/StaffMobileTabBar';
 
 function StaffLayoutContent({ children }: { children: ReactNode }) {
   const { userRole } = useAuth();
@@ -30,24 +31,26 @@ function StaffLayoutContent({ children }: { children: ReactNode }) {
         )}
         <main 
           className={cn(
-            "flex flex-1 flex-col items-stretch bg-background overflow-y-auto overflow-x-hidden min-w-0 box-border px-4 sm:px-6 lg:px-8 pb-4 pt-[5px]"
+            "flex flex-1 flex-col items-stretch bg-background overflow-y-auto overflow-x-hidden min-w-0 box-border px-4 sm:px-6 lg:px-8 pb-16 md:pb-4 pt-[5px]"
           )}
           style={{
             width: isMobile
-              ? '100vw'
-              : `calc(100vw - ${sidebarState === 'collapsed' ? 'var(--sidebar-width-icon)' : 'var(--sidebar-width)'})`
+              ? '100%'
+              : `calc(100vw - ${sidebarState === 'collapsed' ? 'var(--sidebar-width-icon)' : 'var(--sidebar-width)'})`,
+            paddingBottom: isMobile ? 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' : undefined
           }}
         >
           {children}
         </main>
       </div>
+      <StaffMobileTabBar />
     </div>
   );
 }
 
 export default function StaffLayout({ children }: { children: ReactNode }) {
   return (
-    <ProtectedRoute allowedRoles={['staff']}>
+    <ProtectedRoute allowedRoles={['staff']} unauthRedirect="/stafflogin">
       <SidebarProvider defaultOpen={true}>
         <StaffLayoutContent>{children}</StaffLayoutContent>
       </SidebarProvider>

@@ -164,6 +164,7 @@ let MOCK_STUDENT_APPLICATIONS: StudentApplication[] = [
     parentName: 'Mr. Anil Sharma',
     parentEmail: 'anil.sharma@example.com',
     parentPhone: '9876543210',
+    dob: new Date('2017-05-12').toISOString(),
   },
   {
     id: `APP_${Date.now() - 200000}`,
@@ -173,6 +174,7 @@ let MOCK_STUDENT_APPLICATIONS: StudentApplication[] = [
     status: 'Approved',
     parentName: 'Ms. Sunita Patel',
     parentEmail: 'sunita.p@example.com',
+    dob: new Date('2014-11-02').toISOString(),
   },
   {
     id: `APP_${Date.now() - 300000}`,
@@ -182,6 +184,7 @@ let MOCK_STUDENT_APPLICATIONS: StudentApplication[] = [
     status: 'Interview Scheduled',
     parentName: 'Mr. Imran Khan',
     parentPhone: '9988776655',
+    dob: new Date('2022-03-20').toISOString(),
   },
 ];
 
@@ -196,11 +199,13 @@ export async function getAdminStudentApplications(): Promise<StudentApplication[
 export async function createAdminStudentApplication(data: StudentApplicationFormValues): Promise<StudentApplication> {
   return new Promise((resolve) => {
     setTimeout(() => {
+      const { dob, applicationDate, ...rest } = data;
       const newApplication: StudentApplication = {
-        ...data,
+        ...rest,
         id: `APP_${Date.now()}`,
-        applicationDate: data.applicationDate.toISOString(), 
-        status: 'Pending Review', 
+        applicationDate: applicationDate.toISOString(),
+        dob: dob.toISOString(),
+        status: 'Pending Review',
       };
       MOCK_STUDENT_APPLICATIONS.unshift(newApplication);
       resolve(newApplication);

@@ -87,22 +87,34 @@ export default function StaffAttendancePage() {
         </CardHeader>
         <CardContent>
           {isLoading && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[70%] text-xs uppercase font-medium text-muted-foreground">Date</TableHead>
-                  <TableHead className="w-[30%] text-xs uppercase font-medium text-muted-foreground">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {[...Array(3)].map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                    <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                  </TableRow>
+            <>
+              {/* Mobile skeleton */}
+              <div className="md:hidden space-y-3">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex items-center justify-between rounded-md border p-3">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-5 w-16" />
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+              {/* Desktop skeleton */}
+              <Table className="hidden md:table">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[70%] text-xs uppercase font-medium text-muted-foreground">Date</TableHead>
+                    <TableHead className="w-[30%] text-xs uppercase font-medium text-muted-foreground">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {[...Array(3)].map((_, i) => (
+                    <TableRow key={i}>
+                      <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
           )}
 
           {!isLoading && error && (
@@ -122,26 +134,43 @@ export default function StaffAttendancePage() {
           )}
 
           {!isLoading && !error && attendanceHistory.length > 0 && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[70%] text-xs uppercase font-medium text-muted-foreground">Date</TableHead>
-                  <TableHead className="w-[30%] text-xs uppercase font-medium text-muted-foreground">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile list */}
+              <div className="md:hidden space-y-2">
                 {attendanceHistory.map((record) => (
-                  <TableRow key={record.id}>
-                    <TableCell>{format(parseISO(record.date), "EEEE, do MMMM, yyyy")}</TableCell>
-                    <TableCell>
-                      <Badge className={cn("text-xs py-1", getStatusBadgeClassName(record.status))}>
-                        {record.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
+                  <div key={record.id} className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="text-sm font-medium leading-tight">
+                      {format(parseISO(record.date), "EEE, dd MMM yyyy")}
+                    </div>
+                    <Badge className={cn("text-[10px] py-0.5 px-2", getStatusBadgeClassName(record.status))}>
+                      {record.status}
+                    </Badge>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop table */}
+              <Table className="hidden md:table">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[70%] text-xs uppercase font-medium text-muted-foreground">Date</TableHead>
+                    <TableHead className="w-[30%] text-xs uppercase font-medium text-muted-foreground">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {attendanceHistory.map((record) => (
+                    <TableRow key={record.id}>
+                      <TableCell>{format(parseISO(record.date), "EEEE, do MMMM, yyyy")}</TableCell>
+                      <TableCell>
+                        <Badge className={cn("text-xs py-1", getStatusBadgeClassName(record.status))}>
+                          {record.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
           )}
         </CardContent>
       </Card>

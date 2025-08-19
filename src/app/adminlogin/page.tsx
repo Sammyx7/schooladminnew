@@ -1,55 +1,46 @@
-
 "use client";
 
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { UserRole } from '@/lib/types';
 import { LogIn } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
-  const router = useRouter();
+export default function AdminLoginPage() {
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole | ''>('');
+  const role: UserRole = 'admin';
   const [error, setError] = useState('');
-
-  // Immediately redirect legacy /login to the new /adminlogin route
-  useEffect(() => {
-    router.replace('/adminlogin');
-  }, [router]);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     setError('');
-    if (!email || !password || !role) {
-      setError('All fields are required.');
+    if (!email || !password) {
+      setError('Email and password are required.');
       return;
     }
-    // Using fixed credentials as per original setup
-    if (email === "test@example.com" && password === "password") {
-      login(role as UserRole);
+    // Demo credentials as per current setup
+    if (email === 'test@example.com' && password === 'password') {
+      login(role);
     } else {
-      setError('Invalid credentials. Use test@example.com and password.');
+      setError("Invalid credentials. Use test@example.com and 'password'.");
     }
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md border shadow-xl bg-card"> {/* Added bg-card */}
+      <Card className="w-full max-w-md border shadow-xl bg-card">
         <CardHeader className="text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg">
-            <span className="font-bold text-xl">LOGO</span> 
+            <span className="font-bold text-xl">LOGO</span>
           </div>
-          <CardTitle className="text-2xl font-bold text-foreground">School Management System</CardTitle>
+          <CardTitle className="text-2xl font-bold text-foreground">Admin Login</CardTitle>
           <CardDescription className="text-muted-foreground px-4">
-            A comprehensive portal for admins, students, and staff. Sign in to access your dashboard.
+            Sign in to access the Admin dashboard.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -59,7 +50,7 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="user@example.com"
+                placeholder="admin@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -77,19 +68,6 @@ export default function LoginPage() {
                 required
                 className="text-sm bg-input text-foreground border-border focus:border-primary"
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="role" className="text-foreground">Role</Label>
-              <Select onValueChange={(value) => setRole(value as UserRole)} value={role}>
-                <SelectTrigger id="role" className="text-sm bg-input text-foreground border-border focus:border-primary">
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover text-popover-foreground">
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="staff">Staff</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full text-base py-2.5 mt-2 bg-primary text-primary-foreground hover:bg-primary/90">

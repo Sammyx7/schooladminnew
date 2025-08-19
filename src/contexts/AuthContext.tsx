@@ -53,11 +53,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.push('/staff/profile');
         break;
       default:
-        router.push('/login');
+        router.push('/staff/profile');
     }
   };
 
   const logout = () => {
+    const prevRole = userRole; // capture before clearing
     try {
       localStorage.removeItem('userRole');
     } catch (error) {
@@ -65,7 +66,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     setUserRole(null);
     setIsAuthenticated(false);
-    router.push('/login');
+    if (prevRole === 'staff') {
+      router.push('/stafflogin');
+    } else {
+      router.push('/adminlogin');
+    }
   };
 
   return (

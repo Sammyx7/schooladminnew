@@ -4,23 +4,12 @@ import { getSupabase } from '@/lib/supabaseClient';
 import type { AdminStaffListItem, StaffProfile } from '@/lib/types';
 
 export async function listStaff(): Promise<AdminStaffListItem[]> {
-  const supabase = getSupabase();
-  if (!supabase) throw new Error('Supabase is not configured.');
-  const { data, error } = await supabase
-    .from('staff')
-    .select('id, staff_id, name, role, department, email, phone, joining_date')
-    .order('name', { ascending: true });
-  if (error) throw error;
-  return (data ?? []).map((r: any) => ({
-    id: String(r.id),
-    staffId: r.staff_id,
-    name: r.name,
-    role: r.role,
-    department: r.department,
-    email: r.email,
-    phone: r.phone ?? undefined,
-    joiningDate: r.joining_date,
-  }));
+  const res = await fetch('/api/staff/list', { method: 'GET' });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || `List failed with status ${res.status}`);
+  }
+  return payload as AdminStaffListItem[];
 }
 
 export interface CreateStaffInput {
@@ -33,38 +22,25 @@ export interface CreateStaffInput {
   joiningDate: string; // ISO string
   qualifications?: string[];
   avatarUrl?: string;
+  assignments?: {
+    className: string;
+    section: string;
+    subject?: string;
+    isClassTeacher?: boolean;
+  }[];
 }
 
 export async function createStaff(input: CreateStaffInput): Promise<AdminStaffListItem> {
-  const supabase = getSupabase();
-  if (!supabase) throw new Error('Supabase is not configured.');
-  const payload = {
-    staff_id: input.staffId,
-    name: input.name,
-    role: input.role,
-    department: input.department,
-    email: input.email,
-    phone: input.phone ?? null,
-    joining_date: input.joiningDate,
-    qualifications: input.qualifications ?? null,
-    avatar_url: input.avatarUrl ?? null,
-  };
-  const { data, error } = await supabase
-    .from('staff')
-    .insert(payload)
-    .select('id, staff_id, name, role, department, email, phone, joining_date')
-    .single();
-  if (error) throw error;
-  return {
-    id: String(data!.id),
-    staffId: data!.staff_id,
-    name: data!.name,
-    role: data!.role,
-    department: data!.department,
-    email: data!.email,
-    phone: data!.phone ?? undefined,
-    joiningDate: data!.joining_date,
-  };
+  const res = await fetch('/api/staff/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || `Create failed with status ${res.status}`);
+  }
+  return payload as AdminStaffListItem;
 }
 
 export async function deleteStaff(idOrStaffId: string): Promise<void> {
@@ -127,4 +103,23 @@ export async function updateStaff(staffId: string, updates: UpdateStaffInput): P
     throw new Error(payload.error || `Update failed with status ${res.status}`);
   }
   return payload as AdminStaffListItem;
+}
+
+// Helper to set staff password after verifying staffId + name on the server.
+// Calls the server route at `/api/auth/staff/set-password` which uses the Supabase service role.
+export async function setStaffPassword(
+  staffId: string,
+  name: string,
+  password: string,
+): Promise<{ ok: boolean; created?: boolean; updated?: boolean; linked?: boolean }> {
+  const res = await fetch('/api/auth/staff/set-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ staffId, name, password }),
+  });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || `Set password failed with status ${res.status}`);
+  }
+  return payload as { ok: boolean; created?: boolean; updated?: boolean; linked?: boolean };
 }

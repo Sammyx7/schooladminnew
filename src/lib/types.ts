@@ -203,6 +203,10 @@ export const StudentApplicationFormSchema = z.object({
     required_error: "Application date is required.",
     invalid_type_error: "That's not a valid date!",
   }),
+  dob: z.date({
+    required_error: "Date of Birth is required.",
+    invalid_type_error: "That's not a valid date!",
+  }),
   parentName: z.string().optional(),
   parentEmail: z.string().email({ message: "Invalid email address."}).optional().or(z.literal('')),
   parentPhone: z.string().optional(),
@@ -214,6 +218,7 @@ export const StudentApplicationSchema = StudentApplicationFormSchema.extend({
   id: z.string(),
   status: z.enum(applicationStatuses),
   applicationDate: z.string(), // Stored as ISOString
+  dob: z.string(), // Stored as ISOString
 });
 export type StudentApplication = z.infer<typeof StudentApplicationSchema>;
 

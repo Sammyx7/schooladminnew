@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { FeeNotice, FeeNoticeStatus } from '@/lib/types';
-import { getStudentFeeNotices } from '@/lib/services/studentService';
+import { getStudentFeeNotices, markFeeNoticePaid } from '@/lib/services/feeNoticesService';
 import { useToast } from '@/hooks/use-toast';
 import { format, parseISO } from 'date-fns';
 import {
@@ -69,21 +69,20 @@ export default function StudentFeeNoticesPage() {
     if (!selectedNoticeForPayment) return;
 
     setIsProcessingPayment(true);
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
-
-    setFeeNotices(prevNotices =>
-      prevNotices.map(notice =>
-        notice.id === selectedNoticeForPayment.id
-          ? { ...notice, status: 'Paid' as FeeNoticeStatus }
-          : notice
-      )
-    );
-
-    toast({
-      title: "Payment Successful (Demo)",
-      description: `Payment for "${selectedNoticeForPayment.title}" has been processed.`,
-      action: <CheckCircle className="h-5 w-5 text-green-500" />,
-    });
+    try {
+      const updated = await markFeeNoticePaid(selectedNoticeForPayment.id);
+      setFeeNotices(prevNotices =>
+        prevNotices.map(notice => (notice.id === updated.id ? updated : notice))
+      );
+      toast({
+        title: "Payment Successful",
+        description: `Payment for "${selectedNoticeForPayment.title}" has been processed.`,
+        action: <CheckCircle className="h-5 w-5 text-green-500" />,
+      });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to process payment.';
+      toast({ title: 'Payment Failed', description: msg, variant: 'destructive' });
+    }
 
     setIsProcessingPayment(false);
     setIsPaymentDialogVisible(false);

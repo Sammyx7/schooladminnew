@@ -26,28 +26,46 @@ const groupTimetableByDay = (entries: TimetableEntry[]): Record<DayOfWeek, Timet
 };
 
 const DayTimetableSkeleton = () => (
-  <Table>
-    <TableHeader>
-      <TableRow>
-        <TableHead className="w-[10%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-12" /></TableHead>
-        <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-24" /></TableHead>
-        <TableHead className="w-[30%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-32" /></TableHead>
-        <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-24" /></TableHead>
-        <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-24" /></TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {[...Array(3)].map((_, i) => (
-        <TableRow key={i}>
-          <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-          <TableCell><Skeleton className="h-5 w-full" /></TableCell>
-        </TableRow>
+  <>
+    {/* Mobile skeleton */}
+    <div className="md:hidden space-y-3">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="rounded-lg border p-3">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-4 w-10" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <div className="mt-2 flex items-center justify-between text-sm">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-16" />
+          </div>
+        </div>
       ))}
-    </TableBody>
-  </Table>
+    </div>
+    {/* Desktop skeleton */}
+    <Table className="hidden md:table">
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-[10%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-12" /></TableHead>
+          <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-24" /></TableHead>
+          <TableHead className="w-[30%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-32" /></TableHead>
+          <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-24" /></TableHead>
+          <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground"><Skeleton className="h-5 w-24" /></TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {[...Array(3)].map((_, i) => (
+          <TableRow key={i}>
+            <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+            <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+            <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+            <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+            <TableCell><Skeleton className="h-5 w-full" /></TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </>
 );
 
 export default function StaffTimetablePage() {
@@ -110,43 +128,63 @@ export default function StaffTimetablePage() {
               </div>
             ) : (
               <Tabs defaultValue={firstDayWithEntries} className="w-full">
-                <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-1.5 mb-4">
+                <div className="-mx-1 sm:mx-0 overflow-x-auto">
+                  <TabsList className="grid w-full min-w-max grid-cols-6 sm:grid-cols-4 md:grid-cols-6 gap-1.5 mb-4 px-1">
                   {daysOfWeek.map((day) => (
                     <TabsTrigger
                       key={day}
                       value={day}
                       disabled={!groupedTimetable[day] || groupedTimetable[day].length === 0}
-                      className="text-xs sm:text-sm py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                      className="text-xs sm:text-sm py-2 whitespace-nowrap data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                     >
                       {day}
                     </TabsTrigger>
                   ))}
-                </TabsList>
+                  </TabsList>
+                </div>
                 {daysOfWeek.map((day) => (
                   <TabsContent key={day} value={day}>
                     {groupedTimetable[day] && groupedTimetable[day].length > 0 ? (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead className="w-[10%] text-center text-xs uppercase font-medium text-muted-foreground">Period</TableHead>
-                            <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground">Time</TableHead>
-                            <TableHead className="w-[30%] text-xs uppercase font-medium text-muted-foreground">Subject</TableHead>
-                            <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground">Class</TableHead>
-                            <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground">Section</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
+                      <>
+                        {/* Mobile list */}
+                        <div className="md:hidden space-y-2">
                           {groupedTimetable[day].map((entry) => (
-                            <TableRow key={entry.id}>
-                              <TableCell className="text-center font-medium">{entry.period}</TableCell>
-                              <TableCell>{entry.timeSlot}</TableCell>
-                              <TableCell className="font-medium">{entry.subject}</TableCell>
-                              <TableCell>{entry.class}</TableCell>
-                              <TableCell>{entry.section}</TableCell>
-                            </TableRow>
+                            <div key={entry.id} className="rounded-lg border p-3">
+                              <div className="flex items-center justify-between text-sm">
+                                <div className="font-semibold">P{entry.period}</div>
+                                <div className="text-muted-foreground">{entry.timeSlot}</div>
+                              </div>
+                              <div className="mt-1 text-sm">
+                                <div className="font-medium">{entry.subject}</div>
+                                <div className="text-muted-foreground">Class {entry.class} • Sec {entry.section}</div>
+                              </div>
+                            </div>
                           ))}
-                        </TableBody>
-                      </Table>
+                        </div>
+                        {/* Desktop table */}
+                        <Table className="hidden md:table">
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[10%] text-center text-xs uppercase font-medium text-muted-foreground">Period</TableHead>
+                              <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground">Time</TableHead>
+                              <TableHead className="w-[30%] text-xs uppercase font-medium text-muted-foreground">Subject</TableHead>
+                              <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground">Class</TableHead>
+                              <TableHead className="w-[20%] text-xs uppercase font-medium text-muted-foreground">Section</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {groupedTimetable[day].map((entry) => (
+                              <TableRow key={entry.id}>
+                                <TableCell className="text-center font-medium">{entry.period}</TableCell>
+                                <TableCell>{entry.timeSlot}</TableCell>
+                                <TableCell className="font-medium">{entry.subject}</TableCell>
+                                <TableCell>{entry.class}</TableCell>
+                                <TableCell>{entry.section}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </>
                     ) : (
                       <div className="text-center py-10 text-muted-foreground">
                         <Info className="h-10 w-10 mx-auto mb-3 opacity-60" />

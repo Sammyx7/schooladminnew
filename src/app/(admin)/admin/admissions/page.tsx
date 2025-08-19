@@ -52,6 +52,8 @@ export default function AdminAdmissionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [selectedApp, setSelectedApp] = useState<StudentApplication | null>(null);
   const { toast } = useToast();
 
   const form = useForm<StudentApplicationFormValues>({
@@ -60,6 +62,7 @@ export default function AdminAdmissionsPage() {
       applicantName: '',
       classAppliedFor: '',
       applicationDate: new Date(),
+      dob: new Date(),
       parentName: '',
       parentEmail: '',
       parentPhone: '',
@@ -102,10 +105,8 @@ export default function AdminAdmissionsPage() {
   };
 
   const handleViewDetails = (application: StudentApplication) => {
-    toast({
-      title: "View Details (Placeholder)",
-      description: `Viewing details for application ID: ${application.id}. This would show full application data.`,
-    });
+    setSelectedApp(application);
+    setIsDetailsOpen(true);
   };
 
   const handleUpdateStatus = async (applicationId: string, newStatus: ApplicationStatus) => {
@@ -309,6 +310,21 @@ export default function AdminAdmissionsPage() {
               />
               <FormField
                 control={form.control}
+                name="dob"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className="mb-1.5">Date of Birth</FormLabel>
+                    <DatePicker
+                      date={field.value}
+                      setDate={field.onChange}
+                      // disabled={(date) => date > new Date()} // Prevent future DOB
+                    />
+                    <FormMessage className="mt-1" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="parentName"
                 render={({ field }) => (
                   <FormItem>
@@ -359,6 +375,60 @@ export default function AdminAdmissionsPage() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/** Details Dialog for viewing a single application */}
+      <Dialog open={isDetailsOpen} onOpenChange={(open) => { setIsDetailsOpen(open); if (!open) setSelectedApp(null); }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Application Details</DialogTitle>
+            <DialogDescription>Full details for the selected application.</DialogDescription>
+          </DialogHeader>
+          {selectedApp && (
+            <div className="space-y-3 py-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Status</span>
+                <Badge className={cn("text-xs py-1", getStatusBadgeClassName(selectedApp.status))}>{selectedApp.status}</Badge>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Applicant Name</Label>
+                  <p className="font-medium">{selectedApp.applicantName}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Class Applied For</Label>
+                  <p className="font-medium">{selectedApp.classAppliedFor}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Application Date</Label>
+                  <p className="font-medium">{format(new Date(selectedApp.applicationDate), "do MMM, yyyy")}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Date of Birth</Label>
+                  <p className="font-medium">{format(new Date(selectedApp.dob), "do MMM, yyyy")}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Parent/Guardian Name</Label>
+                  <p className="font-medium">{selectedApp.parentName || "—"}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Parent Email</Label>
+                  <p className="font-medium break-all">{selectedApp.parentEmail || "—"}</p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Parent Phone</Label>
+                  <p className="font-medium">{selectedApp.parentPhone || "—"}</p>
+                </div>
+              </div>
+          
+              <DialogFooter className="pt-2">
+                <DialogClose asChild>
+                  <Button variant="outline">Close</Button>
+                </DialogClose>
+              </DialogFooter>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
