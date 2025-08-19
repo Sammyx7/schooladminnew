@@ -18,6 +18,14 @@ export const StudentProfileSchema = z.object({
   avatarUrl: z.string().optional(),
   studentId: z.string(),
   classSection: z.string(),
+  rollNo: z.number().optional(),
+  parentName: z.string().optional(),
+  parentContact: z.string().optional(),
+  admissionNumber: z.string().optional(),
+  address: z.string().optional(),
+  fatherName: z.string().optional(),
+  motherName: z.string().optional(),
+  emergencyContact: z.string().optional(),
 });
 export type StudentProfile = z.infer<typeof StudentProfileSchema>;
 
@@ -297,6 +305,18 @@ export const AdminStaffListItemSchema = z.object({
   email: z.string(),
   phone: z.string().optional(),
   joiningDate: z.string(), // Stored as ISOString
+  qualifications: z.array(z.string()).optional(),
+  avatarUrl: z.string().optional(),
+  assignments: z
+    .array(
+      z.object({
+        className: z.string(),
+        section: z.string(),
+        subject: z.string().optional(),
+        isClassTeacher: z.boolean().optional(),
+      })
+    )
+    .optional(),
 });
 export type AdminStaffListItem = z.infer<typeof AdminStaffListItemSchema>;
 

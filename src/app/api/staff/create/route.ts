@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       assignments,
     } = body || {};
 
-    if (!staffId || !name || !role || !department || !email || !joiningDate) {
+    if (!name || !role || !department || !email || !joiningDate) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -29,8 +29,21 @@ export async function POST(req: Request) {
 
     const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
+    // If staffId not provided, generate next based on latest staff_id
+    let finalStaffId: string = staffId;
+    if (!finalStaffId) {
+      const { data: last, error: lastErr } = await supabase
+        .from('staff')
+        .select('staff_id')
+        .order('id', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const prev = last?.staff_id || '';
+      finalStaffId = nextStaffId(prev);
+    }
+
     const payload: any = {
-      staff_id: staffId,
+      staff_id: finalStaffId,
       name,
       role,
       department,
@@ -44,7 +57,7 @@ export async function POST(req: Request) {
     const { data, error } = await supabase
       .from('staff')
       .insert(payload)
-      .select('id, staff_id, name, role, department, email, phone, joining_date')
+      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
       .single();
 
     if (error) {
@@ -78,6 +91,8 @@ export async function POST(req: Request) {
             email: data!.email,
             phone: data!.phone ?? undefined,
             joiningDate: data!.joining_date,
+            qualifications: Array.isArray(data!.qualifications) ? data!.qualifications : [],
+            avatarUrl: data!.avatar_url ?? undefined,
             _assignmentsWarning: aErr.message,
           });
         }
@@ -93,8 +108,21 @@ export async function POST(req: Request) {
       email: data!.email,
       phone: data!.phone ?? undefined,
       joiningDate: data!.joining_date,
+      qualifications: Array.isArray(data!.qualifications) ? data!.qualifications : [],
+      avatarUrl: data!.avatar_url ?? undefined,
     });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Unknown error' }, { status: 500 });
   }
+}
+
+function nextStaffId(prev: string | undefined | null): string {
+  const base = (prev || '').trim();
+  if (!base) return 'TCH100';
+  const m = base.match(/^([A-Za-z-]*?)(\d+)$/);
+  if (!m) return 'TCH100';
+  const prefix = m[1] || 'TCH';
+  const numStr = m[2];
+  const next = (parseInt(numStr, 10) + 1).toString().padStart(numStr.length, '0');
+  return `${prefix}${next}`;
 }

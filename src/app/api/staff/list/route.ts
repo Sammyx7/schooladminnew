@@ -13,14 +13,34 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from('staff')
-      .select('id, staff_id, name, role, department, email, phone, joining_date')
+      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
       .order('name', { ascending: true });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    const mapped = (data ?? []).map((r: any) => ({
+    const staffRows = data ?? [];
+
+    // If we have staff, load all assignments in one query and group by staff_id
+    let assignmentsByStaffId: Record<string, any[]> = {};
+    if (staffRows.length > 0) {
+      const staffIds = staffRows.map((r: any) => r.staff_id);
+      const { data: assigns, error: aerr } = await supabase
+        .from('staff_class_assignments')
+        .select('staff_id, class_name, section, subject, is_class_teacher')
+        .in('staff_id', staffIds);
+      if (aerr) {
+        return NextResponse.json({ error: aerr.message }, { status: 400 });
+      }
+      (assigns ?? []).forEach((row: any) => {
+        const key = row.staff_id;
+        if (!assignmentsByStaffId[key]) assignmentsByStaffId[key] = [];
+        assignmentsByStaffId[key].push(row);
+      });
+    }
+
+    const mapped = staffRows.map((r: any) => ({
       id: String(r.id),
       staffId: r.staff_id,
       name: r.name,
@@ -29,6 +49,14 @@ export async function GET() {
       email: r.email,
       phone: r.phone ?? undefined,
       joiningDate: r.joining_date,
+      qualifications: Array.isArray(r.qualifications) ? r.qualifications : undefined,
+      avatarUrl: r.avatar_url ?? undefined,
+      assignments: (assignmentsByStaffId[r.staff_id] || []).map((a: any) => ({
+        className: a.class_name,
+        section: a.section,
+        subject: a.subject ?? undefined,
+        isClassTeacher: !!a.is_class_teacher,
+      })),
     }));
 
     return NextResponse.json(mapped);

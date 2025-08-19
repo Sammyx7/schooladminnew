@@ -17,6 +17,7 @@ export async function POST(req: Request) {
     const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
     const payload: any = {};
+    if (updates.staffIdNew !== undefined) payload.staff_id = updates.staffIdNew;
     if (updates.name !== undefined) payload.name = updates.name;
     if (updates.role !== undefined) payload.role = updates.role;
     if (updates.department !== undefined) payload.department = updates.department;
@@ -30,7 +31,7 @@ export async function POST(req: Request) {
       .from('staff')
       .update(payload)
       .eq('staff_id', staffId)
-      .select('id, staff_id, name, role, department, email, phone, joining_date')
+      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -44,6 +45,8 @@ export async function POST(req: Request) {
       email: data!.email,
       phone: data!.phone ?? undefined,
       joiningDate: data!.joining_date,
+      qualifications: Array.isArray(data!.qualifications) ? data!.qualifications : [],
+      avatarUrl: data!.avatar_url ?? undefined,
     });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Unknown error' }, { status: 500 });

@@ -73,6 +73,8 @@ export default function StaffLoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ staffId: loginStaffId.trim() }),
       }).catch(() => {});
+      // Persist staffId for client-side profile resolution
+      try { localStorage.setItem('staffId', loginStaffId.trim()); } catch {}
       login(role);
     } catch (err: any) {
       setLoginError(err?.message || 'Login failed');
@@ -162,6 +164,8 @@ export default function StaffLoginPage() {
       setTab('login');
       setLoginStaffId(verifyStaffId.trim());
       setLoginPassword('');
+      // Persist staffId after successful registration
+      try { localStorage.setItem('staffId', verifyStaffId.trim()); } catch {}
       login(role);
     } catch (err: any) {
       setRegisterError(err?.message || 'Registration failed');

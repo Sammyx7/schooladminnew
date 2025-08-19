@@ -3,9 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: Request) {
   try {
-    const { studentId, updates } = await req.json();
-    if (!studentId || typeof updates !== 'object') {
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+    const body = await req.json();
+    const { studentId, name, classSection, avatarUrl, rollNo, parentName, parentContact, admissionNumber, address, fatherName, motherName, emergencyContact } = body || {};
+
+    if (!studentId || !name || !classSection) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,23 +18,24 @@ export async function POST(req: Request) {
 
     const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
-    const payload: any = {};
-    if (updates.name !== undefined) payload.name = updates.name;
-    if (updates.classSection !== undefined) payload.class_section = updates.classSection;
-    if (updates.avatarUrl !== undefined) payload.avatar_url = updates.avatarUrl;
-    if (updates.rollNo !== undefined) payload.roll_no = updates.rollNo;
-    if (updates.parentName !== undefined) payload.parent_name = updates.parentName;
-    if (updates.parentContact !== undefined) payload.parent_contact = updates.parentContact;
-    if (updates.admissionNumber !== undefined) payload.admission_number = updates.admissionNumber;
-    if (updates.address !== undefined) payload.address = updates.address;
-    if (updates.fatherName !== undefined) payload.father_name = updates.fatherName;
-    if (updates.motherName !== undefined) payload.mother_name = updates.motherName;
-    if (updates.emergencyContact !== undefined) payload.emergency_contact = updates.emergencyContact;
+    const payload: any = {
+      student_id: studentId,
+      name,
+      class_section: classSection,
+      avatar_url: avatarUrl ?? null,
+      roll_no: typeof rollNo === 'number' ? rollNo : null,
+      parent_name: parentName ?? null,
+      parent_contact: parentContact ?? null,
+      admission_number: admissionNumber ?? null,
+      address: address ?? null,
+      father_name: fatherName ?? null,
+      mother_name: motherName ?? null,
+      emergency_contact: emergencyContact ?? null,
+    };
 
     const { data, error } = await supabase
       .from('students')
-      .update(payload)
-      .eq('student_id', studentId)
+      .insert(payload)
       .select('student_id, name, class_section, avatar_url, roll_no, parent_name, parent_contact, admission_number, address, father_name, mother_name, emergency_contact')
       .single();
 

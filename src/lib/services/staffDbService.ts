@@ -58,26 +58,70 @@ export async function deleteStaff(idOrStaffId: string): Promise<void> {
 
 export async function getStaffProfileByStaffId(staffId: string): Promise<StaffProfile | null> {
   const supabase = getSupabase();
-  if (!supabase) throw new Error('Supabase is not configured.');
-  const { data, error } = await supabase
-    .from('staff')
-    .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
-    .eq('staff_id', staffId)
-    .maybeSingle();
-  if (error) throw error;
-  if (!data) return null;
-  return {
-    id: String(data.id),
-    staffId: data.staff_id,
-    name: data.name,
-    role: data.role,
-    department: data.department,
-    email: data.email,
-    phone: data.phone ?? '',
-    dateOfJoining: data.joining_date,
-    qualifications: Array.isArray(data.qualifications) ? data.qualifications : [],
-    avatarUrl: data.avatar_url ?? undefined,
-  };
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('staff')
+      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
+      .eq('staff_id', staffId)
+      .maybeSingle();
+    if (error) throw error;
+    if (data) {
+      return {
+        id: String(data.id),
+        staffId: data.staff_id,
+        name: data.name,
+        role: data.role,
+        department: data.department,
+        email: data.email,
+        phone: data.phone ?? '',
+        dateOfJoining: data.joining_date,
+        qualifications: Array.isArray(data.qualifications) ? data.qualifications : [],
+        avatarUrl: data.avatar_url ?? undefined,
+      };
+    }
+  }
+  // Fallback to server route (service role) to bypass client env/RLS issues
+  const res = await fetch(`/api/staff/profile?staffId=${encodeURIComponent(staffId)}`);
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload.error || `Profile fetch failed (${res.status})`);
+  }
+  const payload = await res.json();
+  return payload as StaffProfile | null;
+}
+
+export async function getStaffProfileByEmail(email: string): Promise<StaffProfile | null> {
+  const supabase = getSupabase();
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('staff')
+      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
+      .eq('email', email)
+      .maybeSingle();
+    if (error) throw error;
+    if (data) {
+      return {
+        id: String(data.id),
+        staffId: data.staff_id,
+        name: data.name,
+        role: data.role,
+        department: data.department,
+        email: data.email,
+        phone: data.phone ?? '',
+        dateOfJoining: data.joining_date,
+        qualifications: Array.isArray(data.qualifications) ? data.qualifications : [],
+        avatarUrl: data.avatar_url ?? undefined,
+      };
+    }
+  }
+  // Fallback to server route (service role)
+  const res = await fetch(`/api/staff/profile?email=${encodeURIComponent(email)}`);
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}));
+    throw new Error(payload.error || `Profile fetch failed (${res.status})`);
+  }
+  const payload = await res.json();
+  return payload as StaffProfile | null;
 }
 
 export interface UpdateStaffInput {
@@ -103,6 +147,18 @@ export async function updateStaff(staffId: string, updates: UpdateStaffInput): P
     throw new Error(payload.error || `Update failed with status ${res.status}`);
   }
   return payload as AdminStaffListItem;
+}
+
+// Bulk import staff via CSV (server-side route consumes multipart/form-data)
+export async function importStaffCsv(file: File): Promise<{ ok: boolean; processed: number }> {
+  const form = new FormData();
+  form.append('file', file);
+  const res = await fetch('/api/staff/import', { method: 'POST', body: form });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || `Import failed with status ${res.status}`);
+  }
+  return payload as { ok: boolean; processed: number };
 }
 
 // Helper to set staff password after verifying staffId + name on the server.

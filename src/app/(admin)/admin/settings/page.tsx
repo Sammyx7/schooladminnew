@@ -37,6 +37,10 @@ export default function AdminSettingsPage() {
   const [newClassSectionsCsv, setNewClassSectionsCsv] = useState<string>("");
   const [newClassSubjectsCsv, setNewClassSubjectsCsv] = useState<string>("");
   const [subjectsCsv, setSubjectsCsv] = useState<string>("english,hindi,urdu,sanskrit,arabic,maths,science,social science,general knowledge");
+ 
+  // UI: consistent input depth and focus styling
+  const inputDecor = "bg-white shadow-sm hover:shadow focus:shadow-md transition-shadow border-muted/60 focus-visible:ring-2 focus-visible:ring-primary/30";
+ 
 
   useEffect(() => {
     let mounted = true;
@@ -189,6 +193,7 @@ export default function AdminSettingsPage() {
         icon={Settings}
         description="Manage school name, classes range, sections and basic info used across the app."
       />
+ 
 
       <form onSubmit={handleSaveChanges}>
         <Card className="border shadow-md">
@@ -204,24 +209,25 @@ export default function AdminSettingsPage() {
                 value={schoolName}
                 onChange={(e) => setSchoolName(e.target.value)}
                 placeholder="e.g., Greenwood High"
+                className={inputDecor}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="address">Address</Label>
-                <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street, City, State" />
+                <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street, City, State" className={inputDecor} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="phone">Phone</Label>
-                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g., +91 98765 43210" />
+                <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g., +91 98765 43210" className={inputDecor} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="contact@school.com" />
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="contact@school.com" className={inputDecor} />
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="logoUrl">Logo URL</Label>
-                <Input id="logoUrl" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://..." />
+                <Input id="logoUrl" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://..." className={inputDecor} />
               </div>
             </div>
           </CardContent>
@@ -239,11 +245,11 @@ export default function AdminSettingsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-1.5 md:col-span-1">
                 <Label htmlFor="sections">Default Sections (comma-separated)</Label>
-                <Input id="sections" value={sectionsCsv} onChange={(e) => setSectionsCsv(e.target.value)} placeholder="A,B,C" />
+                <Input id="sections" value={sectionsCsv} onChange={(e) => setSectionsCsv(e.target.value)} placeholder="A,B,C" className={inputDecor} />
               </div>
               <div className="space-y-1.5 md:col-span-2">
                 <Label htmlFor="subjects">Subjects (comma-separated)</Label>
-                <Input id="subjects" value={subjectsCsv} onChange={(e) => setSubjectsCsv(e.target.value)} placeholder="english,hindi,urdu,sanskrit,arabic,maths,science,social science,general knowledge" />
+                <Input id="subjects" value={subjectsCsv} onChange={(e) => setSubjectsCsv(e.target.value)} placeholder="english,hindi,urdu,sanskrit,arabic,maths,science,social science,general knowledge" className={inputDecor} />
               </div>
             </div>
 
@@ -254,15 +260,15 @@ export default function AdminSettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                 <div className="space-y-1.5">
                   <Label htmlFor="newClassName">Add Class</Label>
-                  <Input id="newClassName" placeholder="e.g., Nursery" value={newClassName} onChange={(e) => setNewClassName(e.target.value)} />
+                  <Input id="newClassName" placeholder="e.g., Nursery" value={newClassName} onChange={(e) => setNewClassName(e.target.value)} className={inputDecor} />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="newClassSections">Sections for this class (comma-separated)</Label>
-                  <Input id="newClassSections" placeholder="e.g., A,B" value={newClassSectionsCsv} onChange={(e) => setNewClassSectionsCsv(e.target.value)} />
+                  <Input id="newClassSections" placeholder="e.g., A,B" value={newClassSectionsCsv} onChange={(e) => setNewClassSectionsCsv(e.target.value)} className={inputDecor} />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="newClassSubjects">Subjects for this class (comma-separated)</Label>
-                  <Input id="newClassSubjects" placeholder="e.g., english,maths" value={newClassSubjectsCsv} onChange={(e) => setNewClassSubjectsCsv(e.target.value)} />
+                  <Input id="newClassSubjects" placeholder="e.g., english,maths" value={newClassSubjectsCsv} onChange={(e) => setNewClassSubjectsCsv(e.target.value)} className={inputDecor} />
                 </div>
               </div>
               <div className="flex gap-2">
@@ -282,6 +288,7 @@ export default function AdminSettingsPage() {
                         <Input
                           value={(classSections[c] || []).join(',')}
                           onChange={(e) => updateClassSections(c, e.target.value)}
+                          className={inputDecor}
                         />
                       </div>
                       <div className="space-y-1.5">
@@ -292,6 +299,7 @@ export default function AdminSettingsPage() {
                             const csv = e.target.value;
                             setClassSubjects(prev => ({ ...prev, [c]: csv.split(',').map(s=>s.trim()).filter(Boolean) }));
                           }}
+                          className={inputDecor}
                         />
                       </div>
                       <div className="flex gap-2">

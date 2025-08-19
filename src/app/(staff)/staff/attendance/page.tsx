@@ -3,8 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { UserCheck, QrCode, Loader2, AlertCircle as AlertIcon, Info } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { UserCheck, QrCode, Loader2, AlertCircle as AlertIcon, Info, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { SectionCard } from '@/components/staff/ui/SectionCard';
+import { MetricCard } from '@/components/staff/ui/MetricCard';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -67,12 +68,19 @@ export default function StaffAttendancePage() {
     }
   };
 
+  // Quick stats
+  const totalDays = attendanceHistory.length;
+  const present = attendanceHistory.filter(r => r.status === 'Present').length;
+  const late = attendanceHistory.filter(r => r.status === 'Late').length;
+  const absent = attendanceHistory.filter(r => r.status === 'Absent').length;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-6">
       <PageHeader
         title="My Attendance"
         icon={UserCheck}
         description="View your attendance history and mark today's attendance."
+        className="mb-3 sm:mb-6"
         actions={
           <Button onClick={handleMarkAttendance}>
             <QrCode className="mr-2 h-4 w-4" />
@@ -80,12 +88,16 @@ export default function StaffAttendancePage() {
           </Button>
         }
       />
+      <SectionCard title="Overview" description="Your recent attendance summary">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <MetricCard icon={<CheckCircle2 className="h-4 w-4" />} label="Present" value={present.toString()} />
+          <MetricCard icon={<Clock className="h-4 w-4" />} label="Late" value={late.toString()} />
+          <MetricCard icon={<XCircle className="h-4 w-4" />} label="Absent" value={absent.toString()} />
+          <MetricCard icon={<UserCheck className="h-4 w-4" />} label="Rate" value={totalDays ? `${Math.round((present / totalDays) * 100)}%` : '—'} />
+        </div>
+      </SectionCard>
 
-      <Card className="border shadow-md">
-        <CardHeader>
-          <CardTitle>My Attendance History</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <SectionCard title="My Attendance History">
           {isLoading && (
             <>
               {/* Mobile skeleton */}
@@ -172,8 +184,7 @@ export default function StaffAttendancePage() {
               </Table>
             </>
           )}
-        </CardContent>
-      </Card>
+      </SectionCard>
     </div>
   );
 }

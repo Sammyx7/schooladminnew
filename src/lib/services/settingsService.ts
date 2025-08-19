@@ -18,6 +18,18 @@ export type SchoolSettings = {
   updatedAt?: string;
 };
 
+function getBaseUrl(): string {
+  // Client: use relative URLs
+  if (typeof window !== 'undefined') return '';
+  // Server: prefer explicit app URL envs
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || process.env.VERCEL_URL;
+  if (envUrl) {
+    return envUrl.startsWith('http') ? envUrl : `https://${envUrl}`;
+  }
+  const port = process.env.PORT || '3000';
+  return `http://localhost:${port}`;
+}
+
 /**
  * Return subjects for a given class from settings.
  * Falls back to per-app global subjects, then to a sensible default list.
@@ -34,7 +46,7 @@ export function subjectsForClass(settings: SchoolSettings | null | undefined, cl
 }
 
 export async function getSchoolSettings(): Promise<SchoolSettings | null> {
-  const res = await fetch('/api/settings/get', { method: 'GET', cache: 'no-store' });
+  const res = await fetch(`${getBaseUrl()}/api/settings/get`, { method: 'GET', cache: 'no-store' });
   const payload = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(payload.error || `Get settings failed with status ${res.status}`);
@@ -43,7 +55,7 @@ export async function getSchoolSettings(): Promise<SchoolSettings | null> {
 }
 
 export async function updateSchoolSettings(settings: SchoolSettings): Promise<SchoolSettings> {
-  const res = await fetch('/api/settings/update', {
+  const res = await fetch(`${getBaseUrl()}/api/settings/update`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(settings),

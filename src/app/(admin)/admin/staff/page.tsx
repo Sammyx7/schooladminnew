@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Briefcase, MoreHorizontal, AlertCircle as AlertIcon, Loader2, Search, Eye, Edit, Trash2 } from 'lucide-react';
+import { Briefcase, MoreHorizontal, AlertCircle as AlertIcon, Loader2, Search, Eye, Edit, Trash2, Upload, Filter, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Dialog,
   DialogContent,
@@ -27,6 +36,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { AdminStaffListItem, StaffProfile } from '@/lib/types';
 import { listStaff, getStaffProfileByStaffId, updateStaff, deleteStaff } from '@/lib/services/staffDbService';
+import { Checkbox } from '@/components/ui/checkbox';
+import type { StaffAssignment } from '@/lib/services/staffAssignmentsService';
+import { getAssignmentsForStaff, setAssignmentsForStaff, getAssignmentOptions } from '@/lib/services/staffAssignmentsService';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
@@ -36,7 +48,11 @@ export default function AdminStaffPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState<string>('all');
   const { toast } = useToast();
+  // CSV import state
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -63,19 +79,48 @@ export default function AdminStaffPage() {
 
   useEffect(() => {
     const lowercasedFilter = searchTerm.toLowerCase();
-    const filteredData = staffList.filter(staff =>
-      staff.name.toLowerCase().includes(lowercasedFilter) ||
-      staff.staffId.toLowerCase().includes(lowercasedFilter) ||
-      staff.role.toLowerCase().includes(lowercasedFilter) ||
-      staff.department.toLowerCase().includes(lowercasedFilter) ||
-      staff.email.toLowerCase().includes(lowercasedFilter)
-    );
+    const filteredData = staffList.filter((staff) => {
+      const matchesSearch =
+        staff.name.toLowerCase().includes(lowercasedFilter) ||
+        staff.staffId.toLowerCase().includes(lowercasedFilter) ||
+        staff.role.toLowerCase().includes(lowercasedFilter) ||
+        staff.department.toLowerCase().includes(lowercasedFilter) ||
+        staff.email.toLowerCase().includes(lowercasedFilter);
+      const matchesDept = departmentFilter === 'all' || staff.department === departmentFilter;
+      return matchesSearch && matchesDept;
+    });
     setFilteredStaff(filteredData);
-  }, [searchTerm, staffList]);
+  }, [searchTerm, departmentFilter, staffList]);
+
+  async function handleImportCsv() {
+    if (!csvFile) {
+      toast({ title: 'No file selected', description: 'Choose a CSV file first.', variant: 'destructive' });
+      return;
+    }
+    try {
+      setIsImporting(true);
+      const fd = new FormData();
+      fd.append('file', csvFile);
+      const res = await fetch('/api/staff/import', { method: 'POST', body: fd });
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(payload.error || `Import failed with status ${res.status}`);
+      toast({ title: 'Import Complete', description: `Processed ${payload.processed || 0} rows.` });
+      // refresh list
+      setIsLoading(true);
+      const data = await listStaff();
+      setStaffList(data);
+      setFilteredStaff(data);
+    } catch (e: any) {
+      toast({ title: 'Import Failed', description: e?.message || 'Unknown error', variant: 'destructive' });
+    } finally {
+      setIsImporting(false);
+    }
+  }
 
   // Dialog state
   const [viewOpen, setViewOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
   const [activeStaff, setActiveStaff] = useState<StaffProfile | null>(null);
   const [isLoadingStaff, setIsLoadingStaff] = useState(false);
 
@@ -86,6 +131,13 @@ export default function AdminStaffPage() {
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  // Assignments edit state
+  const [assignRows, setAssignRows] = useState<StaffAssignment[]>([]);
+  const [assignLoading, setAssignLoading] = useState(false);
+  const [assignSaving, setAssignSaving] = useState(false);
+  const [optClasses, setOptClasses] = useState<string[]>([]);
+  const [optSections, setOptSections] = useState<string[]>([]);
+  const [optSubjects, setOptSubjects] = useState<string[]>([]);
 
   const handleViewDetails = async (staff: AdminStaffListItem) => {
     try {
@@ -100,7 +152,7 @@ export default function AdminStaffPage() {
         email: staff.email,
         phone: staff.phone ?? '',
         dateOfJoining: staff.joiningDate,
-        qualifications: [],
+        qualifications: Array.isArray(staff.qualifications) ? staff.qualifications : [],
       });
       setViewOpen(true);
     } catch (e) {
@@ -138,6 +190,77 @@ export default function AdminStaffPage() {
       toast({ title: 'Error', description: msg, variant: 'destructive' });
     } finally {
       setIsLoadingStaff(false);
+    }
+  };
+
+  const handleEditAssignments = async (staff: AdminStaffListItem) => {
+    try {
+      setIsLoadingStaff(true);
+      setAssignLoading(true);
+      const [profile, options, rows] = await Promise.all([
+        getStaffProfileByStaffId(staff.staffId).catch(() => null),
+        getAssignmentOptions().catch(() => ({ classes: [], sections: [], subjects: [] })),
+        getAssignmentsForStaff(staff.staffId).catch(() => []),
+      ]);
+      const s: StaffProfile = (profile || {
+        id: staff.id,
+        staffId: staff.staffId,
+        name: staff.name,
+        role: staff.role,
+        department: staff.department,
+        email: staff.email,
+        phone: staff.phone ?? '',
+        dateOfJoining: staff.joiningDate,
+        qualifications: [],
+      }) as StaffProfile;
+      setActiveStaff(s);
+      setOptClasses(options.classes || []);
+      setOptSections(options.sections || []);
+      setOptSubjects(options.subjects || []);
+      setAssignRows(rows);
+      setAssignOpen(true);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to load assignments';
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
+    } finally {
+      setIsLoadingStaff(false);
+      setAssignLoading(false);
+    }
+  };
+
+  const addAssignRow = () => {
+    setAssignRows((prev) => [...prev, { className: '', section: '', subject: '', isClassTeacher: false }]);
+  };
+  const removeAssignRow = (idx: number) => {
+    setAssignRows((prev) => prev.filter((_, i) => i !== idx));
+  };
+  const updateAssignRow = (idx: number, field: keyof StaffAssignment, value: any) => {
+    setAssignRows((prev) => prev.map((r, i) => (i === idx ? { ...r, [field]: value } : r)));
+  };
+  const saveAssignments = async () => {
+    if (!activeStaff) return;
+    try {
+      setAssignSaving(true);
+      // basic validation
+      const rows = assignRows
+        .map(r => ({
+          className: (r.className || '').trim(),
+          section: (r.section || '').trim(),
+          subject: (r.subject || '').trim(),
+          isClassTeacher: !!r.isClassTeacher,
+        }))
+        .filter(r => r.className && r.section);
+      await setAssignmentsForStaff(activeStaff.staffId, rows);
+      // reflect in list UI without full refetch
+      setStaffList((prev) => prev.map((s) => s.staffId === activeStaff.staffId ? { ...s, assignments: rows } as any : s));
+      setFilteredStaff((prev) => prev.map((s) => s.staffId === activeStaff.staffId ? { ...s, assignments: rows } as any : s));
+      setAssignOpen(false);
+      toast({ title: 'Assignments saved', description: `${rows.length} assignment(s) updated.` });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Failed to save assignments';
+      toast({ title: 'Error', description: msg, variant: 'destructive' });
+    } finally {
+      setAssignSaving(false);
     }
   };
 
@@ -179,6 +302,9 @@ export default function AdminStaffPage() {
   };
 
 
+  // Unique department options
+  const departmentOptions = Array.from(new Set(staffList.map((s) => s.department).filter(Boolean))).sort();
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -188,20 +314,102 @@ export default function AdminStaffPage() {
       />
 
       <Card className="border shadow-md">
-        <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <CardTitle className="text-xl font-semibold">Staff List</CardTitle>
-           <div className="relative w-full sm:w-auto sm:max-w-sm">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search staff..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8 w-full bg-input"
-            />
+        <CardHeader className="space-y-4 pb-2">
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="text-xl font-semibold flex items-center gap-2">
+              Staff List
+              <Badge variant="secondary" className="rounded-full">
+                {isLoading ? 'Loading…' : `${filteredStaff.length}/${staffList.length}`}
+              </Badge>
+            </CardTitle>
+            <div className="hidden sm:flex items-center gap-2">
+              <div className="relative w-64">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search staff..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8 w-full bg-input"
+                />
+              </div>
+              <div className="w-56">
+                <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                  <SelectTrigger aria-label="Filter by department">
+                    <SelectValue placeholder="Department" />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectItem value="all">All Departments</SelectItem>
+                    {departmentOptions.map((d) => (
+                      <SelectItem key={d} value={d}>{d}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile toolbar */}
+          <div className="sm:hidden grid grid-cols-1 gap-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search staff..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-8 w-full bg-input"
+              />
+            </div>
+            <div>
+              <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+                <SelectTrigger aria-label="Filter by department" className="w-full">
+                  <div className="flex items-center gap-2">
+                    <Filter className="h-4 w-4" />
+                    <SelectValue placeholder="Department" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Departments</SelectItem>
+                  {departmentOptions.map((d) => (
+                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
+          {/* CSV Import */}
+          <div className="mb-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <label className="flex-1 cursor-pointer">
+                <div className="border border-dashed rounded-lg p-3 hover:bg-muted/40 transition-colors">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-sm text-muted-foreground truncate">
+                      {csvFile ? `Selected: ${csvFile.name}` : 'Choose a CSV file to import staff'}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Upload className="h-4 w-4" />
+                      <span>Browse</span>
+                    </div>
+                  </div>
+                </div>
+                <input
+                  className="sr-only"
+                  type="file"
+                  accept=".csv"
+                  onChange={(e) => setCsvFile(e.target.files?.[0] || null)}
+                />
+              </label>
+              <Button onClick={handleImportCsv} disabled={isImporting || !csvFile} className="shrink-0">
+                {isImporting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Upload CSV
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              CSV columns: staff_id, name, role, department, email, [phone], [joining_date], [qualifications], [avatar_url]
+            </p>
+          </div>
           {isLoading && (
             <Table>
               <TableHeader>
@@ -238,60 +446,97 @@ export default function AdminStaffPage() {
           )}
 
           {!isLoading && !error && filteredStaff.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <Briefcase className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">No Staff Found</p>
-              <p>{searchTerm ? "No staff members match your search criteria." : "There are no staff records to display."}</p>
+            <div className="text-center py-16">
+              <Briefcase className="h-14 w-14 mx-auto mb-3 text-muted-foreground" />
+              <p className="text-base font-medium">No staff found</p>
+              <p className="text-sm text-muted-foreground">
+                {searchTerm || departmentFilter !== 'all' ? 'Try adjusting search or filters.' : 'Import a CSV to get started.'}
+              </p>
             </div>
           )}
 
           {!isLoading && !error && filteredStaff.length > 0 && (
-            <Table>
-              <TableHeader>
-                 <TableRow>
-                  <TableHead className="w-[12ch] text-xs uppercase font-medium text-muted-foreground">Staff ID</TableHead>
-                  <TableHead className="min-w-[20ch] text-xs uppercase font-medium text-muted-foreground">Name</TableHead>
-                  <TableHead className="min-w-[15ch] text-xs uppercase font-medium text-muted-foreground">Role</TableHead>
-                  <TableHead className="min-w-[20ch] hidden md:table-cell text-xs uppercase font-medium text-muted-foreground">Department</TableHead>
-                  <TableHead className="min-w-[25ch] hidden lg:table-cell text-xs uppercase font-medium text-muted-foreground">Email</TableHead>
-                  <TableHead className="w-[10ch] text-right text-xs uppercase font-medium text-muted-foreground">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredStaff.map((staff) => (
-                  <TableRow key={staff.id}>
-                    <TableCell className="font-mono text-sm">{staff.staffId}</TableCell>
-                    <TableCell className="font-medium">{staff.name}</TableCell>
-                    <TableCell>{staff.role}</TableCell>
-                    <TableCell className="hidden md:table-cell">{staff.department}</TableCell>
-                    <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">{staff.email}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Actions</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleViewDetails(staff)}>
-                            <Eye className="mr-2 h-4 w-4" /> View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEditStaff(staff)}>
-                            <Edit className="mr-2 h-4 w-4" /> Edit Staff
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => handleDeleteStaff(staff)} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                             <Trash2 className="mr-2 h-4 w-4" /> Delete Staff
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="rounded-md border overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-background">
+                    <TableRow>
+                      <TableHead className="w-[12ch] text-xs uppercase font-medium text-muted-foreground">Staff ID</TableHead>
+                      <TableHead className="min-w-[22ch] text-xs uppercase font-medium text-muted-foreground">Name</TableHead>
+                      <TableHead className="min-w-[15ch] text-xs uppercase font-medium text-muted-foreground">Role</TableHead>
+                      <TableHead className="min-w-[20ch] hidden md:table-cell text-xs uppercase font-medium text-muted-foreground">Department</TableHead>
+                      <TableHead className="min-w-[25ch] hidden lg:table-cell text-xs uppercase font-medium text-muted-foreground">Email</TableHead>
+                      <TableHead className="min-w-[26ch] text-xs uppercase font-medium text-muted-foreground">Assignments</TableHead>
+                      <TableHead className="w-[10ch] text-right text-xs uppercase font-medium text-muted-foreground">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredStaff.map((staff) => (
+                      <TableRow key={staff.id}>
+                        <TableCell className="font-mono text-sm">{staff.staffId}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={staff.avatarUrl} alt={staff.name} />
+                              <AvatarFallback>{staff.name?.slice(0,1)?.toUpperCase() ?? '?'}</AvatarFallback>
+                            </Avatar>
+                            <div className="font-medium leading-none">{staff.name}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{staff.role}</TableCell>
+                        <TableCell className="hidden md:table-cell">{staff.department}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
+                          <span className="block max-w-[28ch] truncate" title={staff.email}>{staff.email}</span>
+                        </TableCell>
+                        <TableCell>
+                          {(staff.assignments && staff.assignments.length > 0) ? (
+                            <div className="flex flex-wrap gap-1 max-w-[40ch]">
+                              {staff.assignments.slice(0,4).map((a, idx) => (
+                                <Badge key={idx} variant="outline" className="font-normal">
+                                  {a.className}-{a.section}{a.isClassTeacher ? ' • CT' : ''}
+                                </Badge>
+                              ))}
+                              {staff.assignments.length > 4 && (
+                                <span className="text-muted-foreground text-xs">+{staff.assignments.length - 4} more</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Actions</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleViewDetails(staff)}>
+                                <Eye className="mr-2 h-4 w-4" /> View More
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEditStaff(staff)}>
+                                <Edit className="mr-2 h-4 w-4" /> Edit Staff
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEditAssignments(staff)}>
+                                <Edit className="mr-2 h-4 w-4" /> Edit Assignments
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleDeleteStaff(staff)} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete Staff
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           )}
+
         </CardContent>
       </Card>
       {/* View Details Dialog */}
@@ -338,6 +583,20 @@ export default function AdminStaffPage() {
                 <div className="text-xs text-muted-foreground">Date of Joining</div>
                 <div>{format(new Date(activeStaff.dateOfJoining), 'dd MMM yyyy')}</div>
               </div>
+              <div className="col-span-2">
+                <div className="text-xs text-muted-foreground">Qualifications</div>
+                <div className="mt-1">
+                  {Array.isArray(activeStaff.qualifications) && activeStaff.qualifications.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {activeStaff.qualifications.map((q, i) => (
+                        <Badge key={i} variant="secondary">{q}</Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </DialogContent>
@@ -376,6 +635,76 @@ export default function AdminStaffPage() {
             <Button variant="outline" onClick={() => setEditOpen(false)} disabled={isSaving}>Cancel</Button>
             <Button onClick={handleSaveEdit} disabled={isSaving}>
               {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Assignments Dialog */}
+      <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Edit Assignments</DialogTitle>
+            <DialogDescription>
+              {activeStaff ? `Manage assignments for ${activeStaff.name} (${activeStaff.staffId})` : 'Manage assignments'}
+            </DialogDescription>
+          </DialogHeader>
+          {assignLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin"/> Loading...</div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-muted-foreground">Add class/section/subject rows. Mark CT for class teacher.</div>
+                <Button variant="secondary" size="sm" onClick={addAssignRow}><Plus className="h-4 w-4 mr-1"/> Add Row</Button>
+              </div>
+              <div className="border rounded-md overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Class</TableHead>
+                      <TableHead>Section</TableHead>
+                      <TableHead className="hidden sm:table-cell">Subject</TableHead>
+                      <TableHead>Class Teacher</TableHead>
+                      <TableHead className="w-[90px]"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {assignRows.length === 0 && (
+                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">No rows. Click Add Row.</TableCell></TableRow>
+                    )}
+                    {assignRows.map((row, idx) => (
+                      <TableRow key={idx}>
+                        <TableCell>
+                          <Input placeholder="e.g., 7" value={row.className || ''} onChange={(e) => updateAssignRow(idx, 'className', e.target.value)} />
+                        </TableCell>
+                        <TableCell>
+                          <Input placeholder="e.g., A" value={row.section || ''} onChange={(e) => updateAssignRow(idx, 'section', e.target.value)} />
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          <Input placeholder="e.g., Maths" value={row.subject || ''} onChange={(e) => updateAssignRow(idx, 'subject', e.target.value)} />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Checkbox checked={!!row.isClassTeacher} onCheckedChange={(v) => updateAssignRow(idx, 'isClassTeacher', !!v)} />
+                            <span className="text-sm">CT</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" onClick={() => removeAssignRow(idx)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssignOpen(false)} disabled={assignSaving}>Cancel</Button>
+            <Button onClick={saveAssignments} disabled={assignSaving}>
+              {assignSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Save Assignments
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -40,8 +40,57 @@ export async function POST(request: Request) {
       email,
       password,
       email_confirm: true,
+      user_metadata: { staffId, name },
     });
-    if (createErr) return NextResponse.json({ error: createErr.message }, { status: 400 });
+    if (createErr) {
+      const msg = String((createErr as any)?.message || '');
+      const status = (createErr as any)?.status ? Number((createErr as any).status) : 409;
+      const looksExisting = status === 409 || status === 422 || /already/i.test(msg);
+
+      if (looksExisting) {
+        // Fetch existing user by the generated staff email
+        let existingUser: any = null;
+        try {
+          if ((supabase as any).auth.admin.getUserByEmail) {
+            const { data, error: getErr } = await (supabase as any).auth.admin.getUserByEmail(email);
+            if (!getErr) {
+              existingUser = (data && (data as any).user) ? (data as any).user : (data as any);
+            }
+          }
+        } catch (_) {}
+
+        if (!existingUser) {
+          try {
+            const { data: list, error: listErr } = await (supabase as any).auth.admin.listUsers();
+            if (!listErr) {
+              const users = (list as any)?.users ?? list;
+              existingUser = Array.isArray(users)
+                ? users.find((u: any) => String(u.email).toLowerCase() === String(email).toLowerCase())
+                : null;
+            }
+          } catch (_) {}
+        }
+
+        if (!existingUser) {
+          return NextResponse.json({ error: msg || 'User already exists', code: status }, { status });
+        }
+
+        // Update password
+        const { error: updErr } = await (supabase as any).auth.admin.updateUserById(existingUser.id, { password });
+        if (updErr) return NextResponse.json({ error: updErr.message }, { status: 400 });
+
+        // Link to staff
+        const { error: updateErr } = await supabase
+          .from('staff')
+          .update({ auth_user_id: existingUser.id })
+          .eq('staff_id', staffId);
+        if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 });
+
+        return NextResponse.json({ ok: true, updated: true, linked: true });
+      }
+
+      return NextResponse.json({ error: msg || 'Create user failed', code: status }, { status });
+    }
 
     const userId = created.user?.id;
     if (!userId) return NextResponse.json({ error: 'User creation failed' }, { status: 500 });

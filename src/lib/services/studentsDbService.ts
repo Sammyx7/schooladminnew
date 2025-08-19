@@ -8,7 +8,7 @@ export async function listStudents(): Promise<StudentProfile[]> {
   if (!supabase) throw new Error('Supabase is not configured.');
   const { data, error } = await supabase
     .from('students')
-    .select('student_id, name, class_section, avatar_url')
+    .select('student_id, name, class_section, avatar_url, roll_no, parent_name, parent_contact, admission_number, address, father_name, mother_name, emergency_contact')
     .order('name', { ascending: true });
   if (error) throw error;
   return (data ?? []).map((s: any) => ({
@@ -16,6 +16,14 @@ export async function listStudents(): Promise<StudentProfile[]> {
     name: s.name as string,
     classSection: s.class_section as string,
     avatarUrl: s.avatar_url ?? undefined,
+    rollNo: typeof s.roll_no === 'number' ? s.roll_no : undefined,
+    parentName: s.parent_name ?? undefined,
+    parentContact: s.parent_contact ?? undefined,
+    admissionNumber: s.admission_number ?? undefined,
+    address: s.address ?? undefined,
+    fatherName: s.father_name ?? undefined,
+    motherName: s.mother_name ?? undefined,
+    emergencyContact: s.emergency_contact ?? undefined,
   }));
 }
 
@@ -24,7 +32,7 @@ export async function getStudentByStudentId(studentId: string): Promise<StudentP
   if (!supabase) throw new Error('Supabase is not configured.');
   const { data, error } = await supabase
     .from('students')
-    .select('student_id, name, class_section, avatar_url')
+    .select('student_id, name, class_section, avatar_url, roll_no, parent_name, parent_contact, admission_number, address, father_name, mother_name, emergency_contact')
     .eq('student_id', studentId)
     .maybeSingle();
   if (error) throw error;
@@ -34,6 +42,14 @@ export async function getStudentByStudentId(studentId: string): Promise<StudentP
     name: data.name as string,
     classSection: data.class_section as string,
     avatarUrl: data.avatar_url ?? undefined,
+    rollNo: typeof data.roll_no === 'number' ? data.roll_no : undefined,
+    parentName: data.parent_name ?? undefined,
+    parentContact: data.parent_contact ?? undefined,
+    admissionNumber: data.admission_number ?? undefined,
+    address: data.address ?? undefined,
+    fatherName: data.father_name ?? undefined,
+    motherName: data.mother_name ?? undefined,
+    emergencyContact: data.emergency_contact ?? undefined,
   };
 }
 
@@ -41,6 +57,14 @@ export interface UpdateStudentInput {
   name?: string;
   classSection?: string;
   avatarUrl?: string | null;
+  rollNo?: number | null;
+  parentName?: string | null;
+  parentContact?: string | null;
+  admissionNumber?: string | null;
+  address?: string | null;
+  fatherName?: string | null;
+  motherName?: string | null;
+  emergencyContact?: string | null;
 }
 
 export async function updateStudent(studentId: string, updates: UpdateStudentInput): Promise<StudentProfile> {

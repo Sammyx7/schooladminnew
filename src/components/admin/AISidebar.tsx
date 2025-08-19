@@ -22,6 +22,7 @@ export function AISidebar() {
   const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { closeAIDock } = useAISidebar();
+  const STORAGE_KEY = 'ai_sidebar_chat_v1';
 
   const handleSendMessage = async (event?: FormEvent) => {
     if (event) event.preventDefault();
@@ -38,7 +39,8 @@ export function AISidebar() {
     setIsLoading(true);
 
     try {
-      const result = await getAIResponseForAdminQuery({ question: userMessage.text });
+      const history = [...messages, userMessage].map(m => ({ role: (m.sender === 'ai' ? 'ai' : 'user') as 'ai' | 'user', text: m.text })) as { role: 'user' | 'ai'; text: string }[];
+      const result = await getAIResponseForAdminQuery({ question: userMessage.text, history });
       if (result.error) {
         toast({ title: "AI Error", description: result.error, variant: "destructive" });
         const aiErrorMessage: ChatMessage = {
@@ -81,18 +83,39 @@ export function AISidebar() {
     }
   }, [messages]);
 
+  // Load chat history on mount
   useEffect(() => {
-    if (messages.length === 0) {
-        setMessages([
-        {
-            id: `ai-greeting-${Date.now()}`,
-            text: "Hello! I'm your school administration AI assistant. How can I help you today?",
-            sender: 'ai',
-            timestamp: new Date(),
+    try {
+      const raw = typeof window !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+      if (raw) {
+        const parsed: ChatMessage[] = JSON.parse(raw).map((m: any) => ({
+          ...m,
+          timestamp: m.timestamp ? new Date(m.timestamp) : new Date(),
+        }));
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+          return;
         }
-        ]);
-    }
-  }, [messages.length]);
+      }
+    } catch {}
+    // Fallback greeting if no history
+    setMessages([
+      {
+        id: `ai-greeting-${Date.now()}`,
+        text: "Hello! I'm your school administration AI assistant. How can I help you today?",
+        sender: 'ai',
+        timestamp: new Date(),
+      },
+    ]);
+  }, []);
+
+  // Persist chat history on change (limit to last 100 messages)
+  useEffect(() => {
+    try {
+      const capped = messages.slice(-100).map(m => ({ ...m, timestamp: m.timestamp instanceof Date ? m.timestamp.toISOString() : m.timestamp }));
+      if (typeof window !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(capped));
+    } catch {}
+  }, [messages]);
 
   return (
     <div className="fixed top-0 right-0 h-screen w-[var(--ai-sidebar-width)] bg-card border-l border-border shadow-xl flex flex-col z-50 transition-transform duration-300 ease-in-out">

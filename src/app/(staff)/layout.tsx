@@ -31,7 +31,7 @@ function StaffLayoutContent({ children }: { children: ReactNode }) {
         )}
         <main 
           className={cn(
-            "flex flex-1 flex-col items-stretch bg-background overflow-y-auto overflow-x-hidden min-w-0 box-border px-4 sm:px-6 lg:px-8 pb-16 md:pb-4 pt-[5px]"
+            "flex flex-1 flex-col items-stretch bg-background overflow-y-auto overflow-x-hidden min-w-0 box-border px-3 sm:px-6 lg:px-8 pb-16 md:pb-4 pt-[5px]"
           )}
           style={{
             width: isMobile

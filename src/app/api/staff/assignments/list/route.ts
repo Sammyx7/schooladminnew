@@ -4,7 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 export async function GET(req: Request) {
   try {
     const urlObj = new URL(req.url);
-    const staffId = urlObj.searchParams.get('staffId');
+    const staffIdRaw = urlObj.searchParams.get('staffId');
+    const staffId = staffIdRaw ? staffIdRaw.trim() : '';
     if (!staffId) return NextResponse.json({ error: 'staffId is required' }, { status: 400 });
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -18,8 +19,9 @@ export async function GET(req: Request) {
     const { data, error } = await supabase
       .from('staff_class_assignments')
       .select('class_name, section, subject, is_class_teacher')
-      .eq('staff_id', staffId)
-      .order('class_name', { ascending: true });
+      .ilike('staff_id', staffId)
+      .order('class_name', { ascending: true })
+      .order('section', { ascending: true });
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 

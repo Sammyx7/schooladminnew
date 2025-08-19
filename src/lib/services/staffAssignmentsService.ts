@@ -27,3 +27,12 @@ export async function setAssignmentsForStaff(staffId: string, assignments: Staff
   }
   return payload as { ok: boolean };
 }
+
+export async function getAssignmentOptions(): Promise<{ classes: string[]; sections: string[]; subjects: string[] }>{
+  const res = await fetch('/api/staff/assignments/options', { method: 'GET' });
+  const payload = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(payload.error || `Options fetch failed with status ${res.status}`);
+  }
+  return payload as { classes: string[]; sections: string[]; subjects: string[] };
+}

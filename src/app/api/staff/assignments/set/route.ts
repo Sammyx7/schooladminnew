@@ -4,7 +4,9 @@ import { createClient } from '@supabase/supabase-js';
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
-    const { staffId, assignments } = body || {};
+    const staffIdRaw: string | undefined = body?.staffId;
+    const assignments: any[] = Array.isArray(body?.assignments) ? body.assignments : [];
+    const staffId = staffIdRaw ? String(staffIdRaw).trim() : '';
     if (!staffId || !Array.isArray(assignments)) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
@@ -17,20 +19,43 @@ export async function POST(req: Request) {
 
     const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
-    // Upsert strategy: delete existing for staffId then insert new set (simple and safe for small N)
-    const { error: delErr } = await supabase
-      .from('staff_class_assignments')
-      .delete()
-      .eq('staff_id', staffId);
-    if (delErr) return NextResponse.json({ error: delErr.message }, { status: 400 });
+    // Canonicalize staffId from staff table (case-insensitive match)
+    let canonicalStaffId = staffId;
+    {
+      const { data: staffRow, error: staffErr } = await supabase
+        .from('staff')
+        .select('staff_id')
+        .ilike('staff_id', staffId)
+        .maybeSingle();
+      if (!staffErr && staffRow?.staff_id) {
+        canonicalStaffId = staffRow.staff_id as string;
+      }
+    }
+
+    // Delete existing assignments for this staff (case-insensitive): select IDs then delete
+    {
+      const { data: existing, error: selErr } = await supabase
+        .from('staff_class_assignments')
+        .select('id')
+        .ilike('staff_id', canonicalStaffId);
+      if (selErr) return NextResponse.json({ error: selErr.message }, { status: 400 });
+      const ids = (existing || []).map((r: any) => r.id).filter(Boolean);
+      if (ids.length > 0) {
+        const { error: delErr } = await supabase
+          .from('staff_class_assignments')
+          .delete()
+          .in('id', ids);
+        if (delErr) return NextResponse.json({ error: delErr.message }, { status: 400 });
+      }
+    }
 
     const rows = assignments
       .filter((a: any) => a && a.className && a.section)
       .map((a: any) => ({
-        staff_id: staffId,
-        class_name: String(a.className),
-        section: String(a.section),
-        subject: a.subject ?? null,
+        staff_id: canonicalStaffId,
+        class_name: String(a.className).trim(),
+        section: String(a.section).trim(),
+        subject: typeof a.subject === 'string' ? a.subject.trim() : a.subject ?? null,
         is_class_teacher: !!a.isClassTeacher,
       }));
 
