@@ -4,7 +4,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import Image from 'next/image';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Receipt, Loader2, AlertCircle as AlertIcon, CreditCard, CheckCircle, Info } from 'lucide-react';
+import { Loader2, AlertCircle as AlertIcon, CreditCard, CheckCircle, Info } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -106,7 +106,6 @@ export default function StudentFeeNoticesPage() {
     <div className="space-y-6">
       <PageHeader
         title="My Fee Notices"
-        icon={Receipt}
         description="View your current and past fee notices, payment status, and dues."
       />
 

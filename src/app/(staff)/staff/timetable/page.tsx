@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { CalendarDays, Loader2, AlertCircle as AlertIcon, Info, ClipboardList } from 'lucide-react';
+import { Loader2, AlertCircle as AlertIcon, Info, ClipboardList } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card'; // Removed CardHeader, CardTitle
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -105,7 +105,6 @@ export default function StaffTimetablePage() {
     <div className="space-y-6">
       <PageHeader
         title="My Timetable"
-        icon={CalendarDays}
         description="Your weekly teaching schedule."
       />
 

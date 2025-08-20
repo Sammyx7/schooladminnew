@@ -19,7 +19,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { TimetableEntry, DayOfWeek, AdminTimetableFilterFormValues, AdminStaffListItem } from '@/lib/types';
 import { AdminTimetableFilterSchema } from '@/lib/types';
-import { getAdminTimetable, createAdminTimetableEntry, updateAdminTimetableEntry, getAdminStaffList } from '@/lib/services/adminService';
+import { listTimetable, createTimetableEntry, updateTimetableEntry } from '@/lib/services/timetableService';
+import { listStaff } from '@/lib/services/staffDbService';
 import { useToast } from '@/hooks/use-toast';
 
 const daysOfWeek: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -90,7 +91,17 @@ export default function AdminTimetablePage() {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await getAdminTimetable(filters);
+      // Map teacher filter (name) -> staffId if available
+      let teacherStaffId: string | undefined = undefined;
+      if (filters?.teacherFilter) {
+        const byName = staff.find(s => s.name === filters.teacherFilter);
+        if (byName) teacherStaffId = byName.staffId;
+      }
+      const data = await listTimetable({
+        class: filters?.classFilter || undefined,
+        section: filters?.sectionFilter || undefined,
+        teacherStaffId,
+      });
       setTimetableEntries(data);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error fetching timetable.";
@@ -109,7 +120,7 @@ export default function AdminTimetablePage() {
   useEffect(() => {
     (async () => {
       try {
-        const s = await getAdminStaffList();
+        const s = await listStaff();
         setStaff(s);
       } catch (e) {
         // Non-blocking; show a soft toast
@@ -187,14 +198,50 @@ export default function AdminTimetablePage() {
      setIsDialogOpen(true);
   };
 
+  // Helper to parse timeSlot like "HH:MM - HH:MM" into start/end
+  const splitTimeSlot = (s: string): { start: string; end: string } => {
+    const m = s.match(/^\s*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*$/);
+    if (!m) {
+      // Default slot if user typed incorrectly
+      return { start: '09:00', end: '09:45' };
+    }
+    return { start: m[1], end: m[2] };
+  };
+
   const onSubmitEntry = async (values: TimetableEntryFormValues) => {
     try {
       setIsSaving(true);
+      const teacherName = values.teacher;
+      const staffItem = staff.find(s => s.name === teacherName);
+      const teacherStaffId = staffItem?.staffId || teacherName; // fallback to name if not found
+      const { start, end } = splitTimeSlot(values.timeSlot);
+
       if (editingEntry) {
-        await updateAdminTimetableEntry(editingEntry.id, values);
+        await updateTimetableEntry({
+          id: editingEntry.id,
+          day: values.day,
+          period: values.period,
+          startTime: start,
+          endTime: end,
+          subject: values.subject,
+          class: values.class || '',
+          section: values.section || '',
+          teacherStaffId,
+          teacherName,
+        } as any);
         toast({ title: 'Entry Updated', description: 'The timetable entry has been updated.' });
       } else {
-        await createAdminTimetableEntry(values);
+        await createTimetableEntry({
+          day: values.day,
+          period: values.period,
+          startTime: start,
+          endTime: end,
+          subject: values.subject,
+          class: values.class || '',
+          section: values.section || '',
+          teacherStaffId,
+          teacherName,
+        });
         toast({ title: 'Entry Created', description: 'A new timetable entry has been added.' });
       }
       setIsDialogOpen(false);

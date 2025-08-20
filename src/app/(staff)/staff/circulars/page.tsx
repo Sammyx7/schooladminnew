@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Megaphone, FileText, AlertCircle as AlertIcon, Info } from 'lucide-react';
+import { FileText, AlertCircle as AlertIcon, Info } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -93,7 +93,6 @@ export default function StaffCircularsPage() {
     <div className="space-y-6">
       <PageHeader
         title="School Circulars & Notices"
-        icon={Megaphone}
         description="Stay updated with important announcements relevant to staff."
       />
 

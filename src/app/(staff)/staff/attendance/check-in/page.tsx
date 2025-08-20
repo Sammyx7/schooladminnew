@@ -2,153 +2,166 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { PageHeader } from "@/components/layout/PageHeader";
-import { QrCode, ShieldCheck, Camera, AlertCircle as AlertIcon } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from "@/components/ui/alert";
-import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getSupabase } from "@/lib/supabaseClient";
 import { markAttendanceViaToken } from "@/lib/services/staffAttendanceService";
-import QrScanDialog from "@/components/qr/QrScanDialog";
+import QrScanInline from "@/components/qr/QrScanInline";
+import { CheckCircle2, Loader2 } from "lucide-react";
 
 export default function StaffAttendanceCheckInPage() {
   const search = useSearchParams();
   const router = useRouter();
-  const { toast } = useToast();
 
   const initialToken = useMemo(() => search.get("token") || "", [search]);
-  const initialStaffId = useMemo(() => search.get("staffId") || "", [search]);
 
-  const [token, setToken] = useState<string>(initialToken);
-  const [staffId, setStaffId] = useState<string>(initialStaffId);
+  const [staffId, setStaffId] = useState<string | null>(null);
+  const [identityReady, setIdentityReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [scanOpen, setScanOpen] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [scanKey, setScanKey] = useState(0);
 
+  // Emit page title for TopHeader on mobile
   useEffect(() => {
-    setToken(initialToken);
-    setStaffId(initialStaffId);
-  }, [initialToken, initialStaffId]);
+    try {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('page-title-change', { detail: { title: 'Check In' } }));
+      }
+    } catch {}
+  }, []);
 
-  const onSubmit = async () => {
+  // If token present in URL, auto-submit once identity is ready
+  useEffect(() => {
+    if (!initialToken) return;
+    if (!identityReady || !staffId) return;
+    void onSubmit(initialToken);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialToken, identityReady, staffId]);
+
+  // Resolve current staffId from Supabase session email (prefix) or localStorage fallback
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const supabase = getSupabase();
+        let resolved: string | null = null;
+        if (supabase) {
+          const { data } = await supabase.auth.getUser();
+          const email = data.user?.email || null;
+          if (email && email.includes("@")) {
+            resolved = email.split("@")[0];
+          }
+        }
+        if (!resolved) {
+          try {
+            const stored = localStorage.getItem("staffId");
+            if (stored) resolved = stored;
+          } catch {}
+        }
+        if (mounted) {
+          if (resolved) {
+            setStaffId(resolved);
+            try { localStorage.setItem("staffId", resolved); } catch {}
+          } else {
+            setStaffId(null);
+          }
+        }
+      } catch {
+        if (mounted) setStaffId(null);
+      } finally {
+        if (mounted) setIdentityReady(true);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  const onSubmit = async (token: string) => {
     setError(null);
     if (!token || token.length < 10) {
-      setError("Invalid or missing token. Please scan the QR again or paste the token.");
+      setError("Invalid QR. Please try again.");
+      setScanKey((k) => k + 1); // restart scanner
       return;
     }
-    if (!staffId || staffId.length < 3) {
-      setError("Please enter your Staff ID.");
+    if (!staffId) {
+      setError("Sign in required. Unable to resolve Staff ID.");
       return;
     }
     setSubmitting(true);
     const res = await markAttendanceViaToken(staffId, token);
     setSubmitting(false);
     if (!res.ok) {
-      toast({ title: "Check-in Failed", description: res.message, variant: "destructive" });
-      setError(res.message);
+      setError(res.message || "Check-in failed. Please try again.");
+      setScanKey((k) => k + 1);
       return;
     }
-    toast({ title: "Check-in Successful", description: "Your attendance has been recorded." });
-    // Navigate back to attendance history
-    router.replace("/staff/attendance");
+    setSuccess(true);
+    // Auto-redirect after short delay
+    setTimeout(() => router.replace("/staff/attendance"), 1500);
   };
 
   const handleDetected = (decodedText: string) => {
+    let token = "";
+    // 1) JSON with { token } or { url }
     try {
-      // Try JSON first (from StaffQrDialog)
       const obj = JSON.parse(decodedText);
       if (obj && typeof obj === "object") {
-        if (obj.token) setToken(String(obj.token));
-        if (obj.staffId) setStaffId(String(obj.staffId));
+        if (obj.token) token = String(obj.token);
         else if (obj.url && typeof obj.url === "string") {
           const u = new URL(obj.url);
-          const t = u.searchParams.get("token");
-          const s = u.searchParams.get("staffId");
-          if (t) setToken(t);
-          if (s) setStaffId(s);
+          token = u.searchParams.get("token") || "";
         }
-        setScanOpen(false);
-        return;
       }
     } catch (_) {
-      // Not JSON: continue
+      // ignore
     }
-    try {
-      // Try as URL with query params
-      const u = new URL(decodedText);
-      const t = u.searchParams.get("token");
-      const s = u.searchParams.get("staffId");
-      if (t) setToken(t);
-      if (s) setStaffId(s);
-    } catch {
-      // Fallback: treat whole text as token
-      if (decodedText && decodedText.length > 10) setToken(decodedText);
+    // 2) URL with ?token=
+    if (!token) {
+      try {
+        const u = new URL(decodedText);
+        token = u.searchParams.get("token") || "";
+      } catch {
+        // 3) raw token
+        if (decodedText && decodedText.length > 10) token = decodedText;
+      }
     }
-    setScanOpen(false);
+    if (token) void onSubmit(token);
+    else setScanKey((k) => k + 1);
   };
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Staff Attendance Check-in"
-        icon={QrCode}
-        description="Scan a QR or use your token to record today's attendance."
-      />
-
-      {error && (
-        <Alert variant="destructive">
-          <AlertIcon className="h-5 w-5" />
-          <AlertMsgTitle>Unable to Check-in</AlertMsgTitle>
-          <AlertDescription>{error}</AlertDescription>
+    <div className="min-h-[calc(100vh-56px)] p-4 flex flex-col items-center justify-start gap-4">
+      {!identityReady ? (
+        <div className="w-full sm:max-w-sm text-center text-sm text-muted-foreground mt-8">Resolving your staff identity…</div>
+      ) : !staffId ? (
+        <Alert variant="destructive" className="w-full sm:max-w-sm mt-8">
+          <AlertDescription>Sign in required. Unable to resolve your Staff ID.</AlertDescription>
         </Alert>
+      ) : success ? (
+        <div className="w-full sm:max-w-sm mt-10 flex flex-col items-center text-center">
+          <CheckCircle2 className="h-20 w-20 text-green-600" />
+          <h1 className="mt-4 text-2xl font-semibold">Checked in successfully</h1>
+          <p className="mt-2 text-muted-foreground">You're all set for today.</p>
+        </div>
+      ) : (
+        <div className="w-full sm:max-w-sm mt-2">
+          <h1 className="text-xl font-semibold mb-4">Scan to Check In</h1>
+          <QrScanInline key={scanKey} onDetected={handleDetected} className="w-full" />
+          {error && (
+            <Alert variant="destructive" className="mt-3">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+        </div>
       )}
 
-      <Card className="border shadow-md">
-        <CardHeader>
-          <CardTitle>Verify and Submit</CardTitle>
-          <CardDescription>Ensure details are correct before submitting.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-3">
-            <label className="text-sm font-medium">Token</label>
-            <Input
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="Auto-filled from QR link or paste token"
-            />
+      {submitting && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-background rounded-xl px-6 py-4 shadow-lg flex items-center gap-3">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="text-sm">Recording your attendance…</span>
           </div>
-          <div className="grid gap-3">
-            <label className="text-sm font-medium">Staff ID</label>
-            <Input
-              value={staffId}
-              onChange={(e) => setStaffId(e.target.value)}
-              placeholder="e.g. TCH102"
-            />
-          </div>
-          <Separator />
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="secondary" onClick={() => setScanOpen(true)}>
-              <Camera className="mr-2 h-4 w-4" />
-              Scan QR
-            </Button>
-            <Button onClick={onSubmit} disabled={submitting}>
-              <ShieldCheck className="mr-2 h-4 w-4" />
-              {submitting ? "Submitting..." : "Check In"}
-            </Button>
-            <Button variant="outline" onClick={() => router.push("/staff/attendance")}>Back to History</Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <QrScanDialog
-        open={scanOpen}
-        onOpenChange={setScanOpen}
-        onDetected={handleDetected}
-        title="Scan Attendance QR"
-        description="Align the QR inside the box"
-      />
+        </div>
+      )}
     </div>
   );
 }

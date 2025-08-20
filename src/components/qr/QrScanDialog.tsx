@@ -6,14 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 
-// Minimal TS declarations for html5-qrcode loaded via script tag
+// Instance type kept loose to avoid tight coupling and allow lazy import
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyObj = any;
-
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  interface Window { Html5Qrcode?: any; Html5QrcodeScanner?: any }
-}
 
 export type QrScanDialogProps = {
   open: boolean;
@@ -24,13 +19,8 @@ export type QrScanDialogProps = {
   facingMode?: "environment" | "user";
 };
 
-const SCRIPT_SRCS = [
-  "https://unpkg.com/html5-qrcode@2.3.10/minified/html5-qrcode.min.js",
-  "https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.10/minified/html5-qrcode.min.js",
-  "https://unpkg.com/html5-qrcode@2.3.10/html5-qrcode.min.js",
-];
-
-let html5qrcodeLoadPromise: Promise<void> | null = null;
+// Lazy-load the library from the npm package to avoid CDN/CSP issues.
+let html5qrcodeModulePromise: Promise<any> | null = null;
 
 export default function QrScanDialog({ open, onOpenChange, onDetected, title = "Scan QR Code", description = "Point your camera at the QR", facingMode = "environment" }: QrScanDialogProps) {
   const containerId = useRef(`qr-scan-${Math.random().toString(36).slice(2)}`).current;
@@ -38,35 +28,10 @@ export default function QrScanDialog({ open, onOpenChange, onDetected, title = "
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const ensureScript = useCallback(async () => {
-    if (window.Html5Qrcode) return;
-    if (html5qrcodeLoadPromise) return html5qrcodeLoadPromise;
-
-    const tryLoad = (src: string) =>
-      new Promise<void>((resolve, reject) => {
-        const s = document.createElement("script");
-        s.src = src;
-        s.async = true;
-        s.crossOrigin = "anonymous";
-        s.onload = () => resolve();
-        s.onerror = () => reject(new Error(`Failed to load ${src}`));
-        document.body.appendChild(s);
-      });
-
-    html5qrcodeLoadPromise = (async () => {
-      let lastErr: unknown = null;
-      for (const src of SCRIPT_SRCS) {
-        try {
-          await tryLoad(src);
-          return;
-        } catch (e) {
-          lastErr = e;
-        }
-      }
-      throw lastErr ?? new Error("Failed to load QR scanner library");
-    })();
-
-    return html5qrcodeLoadPromise;
+  const ensureLib = useCallback(async () => {
+    if (html5qrcodeModulePromise) return html5qrcodeModulePromise;
+    html5qrcodeModulePromise = import("html5-qrcode");
+    return html5qrcodeModulePromise;
   }, []);
 
   const startScanner = useCallback(async () => {
@@ -78,9 +43,8 @@ export default function QrScanDialog({ open, onOpenChange, onDetected, title = "
         // Most browsers require HTTPS or localhost to access camera
         console.warn("Camera access requires a secure context (HTTPS) or localhost.");
       }
-      await ensureScript();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const Html5Qrcode: any = window.Html5Qrcode;
+      const mod = await ensureLib();
+      const Html5Qrcode = mod.Html5Qrcode as AnyObj;
       if (!Html5Qrcode) throw new Error("Scanner not available");
       instanceRef.current = new Html5Qrcode(containerId);
       await instanceRef.current.start(
@@ -100,7 +64,7 @@ export default function QrScanDialog({ open, onOpenChange, onDetected, title = "
     } finally {
       setLoading(false);
     }
-  }, [containerId, ensureScript, facingMode, onDetected, open]);
+  }, [containerId, ensureLib, facingMode, onDetected, open]);
 
   const stopScanner = useCallback(async () => {
     try {

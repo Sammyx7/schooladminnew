@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Megaphone, Download, FileText, AlertCircle as AlertIcon, Loader2, Info } from 'lucide-react'; // Renamed AlertCircle
+import { Download, FileText, AlertCircle as AlertIcon, Loader2, Info } from 'lucide-react'; // Renamed AlertCircle
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -94,7 +94,6 @@ export default function StudentCircularsPage() {
     <div className="space-y-6 py-4 md:py-6 lg:py-8">
       <PageHeader
         title="School Circulars & Notices"
-        icon={Megaphone}
         description="Stay updated with the latest announcements from the school."
       />
 

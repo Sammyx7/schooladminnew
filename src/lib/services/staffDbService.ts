@@ -13,7 +13,7 @@ export async function listStaff(): Promise<AdminStaffListItem[]> {
 }
 
 export interface CreateStaffInput {
-  staffId: string;
+  staffId?: string;
   name: string;
   role: string;
   department: string;

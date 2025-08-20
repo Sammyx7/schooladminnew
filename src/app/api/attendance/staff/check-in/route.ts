@@ -9,6 +9,8 @@ export async function POST(req: Request) {
     if (!staffId || !token) {
       return NextResponse.json({ error: 'Missing staffId or token' }, { status: 400 });
     }
+    // Normalize to uppercase to avoid case mismatches (e.g., "tch001" vs "TCH001")
+    const normalizedStaffId = String(staffId).trim().toUpperCase();
 
     // Basic token validation: format `<uuid>.<base36Timestamp>`
     const parts = String(token).split('.');
@@ -33,6 +35,19 @@ export async function POST(req: Request) {
     }
     const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
+    // Validate staff exists to avoid FK errors
+    const { data: staffRow, error: staffLookupErr } = await supabase
+      .from('staff')
+      .select('staff_id')
+      .eq('staff_id', normalizedStaffId)
+      .maybeSingle();
+    if (staffLookupErr) {
+      return NextResponse.json({ error: staffLookupErr.message }, { status: 400 });
+    }
+    if (!staffRow) {
+      return NextResponse.json({ error: `Staff ID not found: ${normalizedStaffId}. Please complete onboarding or use the correct ID.` }, { status: 404 });
+    }
+
     // Prevent duplicate check-in for same staff/day
     const now = new Date();
     const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
@@ -40,7 +55,7 @@ export async function POST(req: Request) {
     const { data: existing, error: existingErr } = await supabase
       .from('staff_attendance')
       .select('id, date')
-      .eq('staff_id', staffId)
+      .eq('staff_id', normalizedStaffId)
       .gte('date', start.toISOString())
       .lt('date', end.toISOString())
       .limit(1);
@@ -52,7 +67,7 @@ export async function POST(req: Request) {
     }
 
     const insertPayload = {
-      staff_id: staffId,
+      staff_id: normalizedStaffId,
       date: new Date().toISOString(),
       status: 'Present',
     };

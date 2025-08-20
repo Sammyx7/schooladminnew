@@ -1,23 +1,36 @@
-import type { LucideIcon } from 'lucide-react';
+"use client";
+
 import { cn } from '@/lib/utils';
+import { useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface PageHeaderProps {
   title: string;
   description?: string;
-  icon?: LucideIcon; 
   actions?: React.ReactNode;
   className?: string;
 }
 
-export function PageHeader({ title, description, icon: Icon, actions, className }: PageHeaderProps) {
+export function PageHeader({ title, description, actions, className }: PageHeaderProps) {
+  const { userRole } = useAuth();
+  const hideOnMobile = userRole === 'staff';
+
+  // Notify TopHeader about current page title (used on mobile for staff)
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('page-title-change', { detail: { title } }));
+      }
+    } catch {}
+  }, [title]);
+
   return (
-    <div className={cn("mb-4 sm:mb-6 flex w-full min-w-0 flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4", className)}>
+    <div className={cn(
+      "mb-4 sm:mb-6 w-full min-w-0 flex-col items-start justify-between gap-3 sm:flex-row sm:items-center sm:gap-4",
+      hideOnMobile ? "hidden sm:flex" : "flex",
+      className
+    )}>
       <div className="flex flex-1 min-w-0 items-center gap-2 sm:gap-3">
-        {Icon && (
-          <div className="block">
-            <Icon className="h-6 w-6 sm:h-7 sm:w-7 text-primary" />
-          </div>
-        )}
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold leading-tight tracking-tight text-foreground truncate">{title}</h1>
           {description && (

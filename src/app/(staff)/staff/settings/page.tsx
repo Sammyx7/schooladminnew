@@ -3,7 +3,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Settings, Bell, ShieldCheck, Save, Loader2 } from 'lucide-react';
+import { Bell, ShieldCheck, Save, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -72,7 +72,6 @@ export default function StaffSettingsPage() {
     <div className="space-y-8">
       <PageHeader
         title="My Settings"
-        icon={Settings}
         description="Manage your account settings and notification preferences."
       />
 

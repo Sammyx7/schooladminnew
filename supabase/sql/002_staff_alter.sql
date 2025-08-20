@@ -50,3 +50,52 @@ create policy assignments_read_own on public.staff_class_assignments for select 
   exists (select 1 from public.staff s where s.staff_id = staff_class_assignments.staff_id and ((auth.jwt() ->> 'email') = s.email or split_part((auth.jwt() ->> 'email'), '@', 1) = s.staff_id))
 );
 -- Note: Service role bypasses RLS for assignments as well.
+
+-- Staff attendance table
+create table if not exists public.staff_attendance (
+  id bigserial primary key,
+  staff_id text not null references public.staff(staff_id) on delete cascade,
+  date timestamptz not null default now(),
+  status text not null check (status in ('Present','Absent','Late','Excused')),
+  inserted_at timestamptz not null default now()
+);
+
+-- Add day column for efficient per-day constraints/queries
+alter table if exists public.staff_attendance
+  add column if not exists day date not null default ((now() at time zone 'UTC')::date);
+
+-- Keep day in sync with date via trigger
+create or replace function public.set_staff_attendance_day()
+returns trigger as $$
+begin
+  new.day := (new.date at time zone 'UTC')::date;
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists staff_attendance_set_day on public.staff_attendance;
+create trigger staff_attendance_set_day
+before insert or update of date on public.staff_attendance
+for each row execute function public.set_staff_attendance_day();
+
+-- Unique per staff per calendar day
+create unique index if not exists uniq_staff_attendance_per_day
+on public.staff_attendance (staff_id, day);
+
+create index if not exists staff_attendance_staff_idx on public.staff_attendance(staff_id);
+create index if not exists staff_attendance_date_idx on public.staff_attendance(date);
+
+-- Enable RLS and policies
+alter table if exists public.staff_attendance enable row level security;
+
+drop policy if exists staff_attendance_read_all on public.staff_attendance;
+create policy staff_attendance_read_all
+on public.staff_attendance for select
+to authenticated
+using (true);
+
+-- Note: Inserts/updates/deletes are handled via service role API; no public write policies
+
+-- Realtime: ensure changes are captured and broadcast
+alter table if exists public.staff_attendance replica identity full;
+alter publication supabase_realtime add table public.staff_attendance;

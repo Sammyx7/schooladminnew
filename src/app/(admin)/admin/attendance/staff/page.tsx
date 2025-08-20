@@ -22,6 +22,7 @@ import { StaffAttendanceFilterSchema, attendanceStatuses } from '@/lib/types';
 import { getAdminStaffAttendanceRecords } from '@/lib/services/adminService';
 import { cn } from '@/lib/utils';
 import StaffQrDialog from '@/components/attendance/StaffQrDialog';
+import { getSupabase } from '@/lib/supabaseClient';
 
 export default function AdminStaffAttendancePage() {
   const [attendanceRecords, setAttendanceRecords] = useState<StaffAttendanceRecord[]>([]);
@@ -57,6 +58,27 @@ export default function AdminStaffAttendancePage() {
   useEffect(() => {
     fetchAttendanceRecords(form.getValues());
   }, []); // Fetch on initial load
+
+  // Realtime subscription: refresh list when attendance rows change
+  useEffect(() => {
+    const supabase = getSupabase();
+    if (!supabase) return;
+    const channel = supabase
+      .channel('realtime-staff-attendance')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'staff_attendance' },
+        () => {
+          // Refetch with current filters on any change
+          fetchAttendanceRecords(form.getValues());
+        }
+      )
+      .subscribe();
+    return () => {
+      try { supabase.removeChannel(channel); } catch { /* noop */ }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const onSubmitFilters = (values: StaffAttendanceFilterFormValues) => {
     fetchAttendanceRecords(values);

@@ -138,6 +138,36 @@ export default function AdminStaffPage() {
   const [optClasses, setOptClasses] = useState<string[]>([]);
   const [optSections, setOptSections] = useState<string[]>([]);
   const [optSubjects, setOptSubjects] = useState<string[]>([]);
+  // Subjects selection keyed by class|section
+  const [selectedByKey, setSelectedByKey] = useState<Record<string, Set<string>>>({});
+
+  const keyFor = (r: { className?: string | null; section?: string | null }) => `${(r.className || '').trim()}|${(r.section || '').trim()}`;
+  const isSelected = (idx: number, subject: string) => {
+    const key = keyFor(assignRows[idx] || {});
+    const set = selectedByKey[key];
+    return !!set && set.has(subject);
+  };
+  const toggleSubject = (idx: number, subject: string, checked: boolean) => {
+    const row = assignRows[idx];
+    const key = keyFor(row || {});
+    setSelectedByKey((prev) => {
+      const next = { ...prev };
+      const set = new Set(next[key] ?? []);
+      if (checked) set.add(subject); else set.delete(subject);
+      next[key] = set;
+      return next;
+    });
+  };
+  const selectAllForRow = (idx: number) => {
+    const row = assignRows[idx];
+    const key = keyFor(row || {});
+    setSelectedByKey((prev) => ({ ...prev, [key]: new Set(optSubjects) }));
+  };
+  const clearAllForRow = (idx: number) => {
+    const row = assignRows[idx];
+    const key = keyFor(row || {});
+    setSelectedByKey((prev) => ({ ...prev, [key]: new Set() }));
+  };
 
   const handleViewDetails = async (staff: AdminStaffListItem) => {
     try {
@@ -218,6 +248,20 @@ export default function AdminStaffPage() {
       setOptSections(options.sections || []);
       setOptSubjects(options.subjects || []);
       setAssignRows(rows);
+      // Build selected subjects map from existing rows (supports comma-separated subjects)
+      const nextSel: Record<string, Set<string>> = {};
+      for (const r of rows) {
+        const k = keyFor({ className: r.className, section: r.section });
+        if (!nextSel[k]) nextSel[k] = new Set();
+        if (r.subject) {
+          const parts = String(r.subject)
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+          for (const p of parts) nextSel[k].add(p);
+        }
+      }
+      setSelectedByKey(nextSel);
       setAssignOpen(true);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to load assignments';
@@ -241,15 +285,24 @@ export default function AdminStaffPage() {
     if (!activeStaff) return;
     try {
       setAssignSaving(true);
-      // basic validation
-      const rows = assignRows
-        .map(r => ({
-          className: (r.className || '').trim(),
-          section: (r.section || '').trim(),
-          subject: (r.subject || '').trim(),
-          isClassTeacher: !!r.isClassTeacher,
-        }))
-        .filter(r => r.className && r.section);
+      // Aggregate per class-section into ONE row; subject is a comma-separated list to satisfy unique(staff_id,class,section)
+      const agg: Record<string, { className: string; section: string; subjects: Set<string>; isClassTeacher: boolean }> = {};
+      for (const base of assignRows) {
+        const className = (base.className || '').trim();
+        const section = (base.section || '').trim();
+        if (!className || !section) continue;
+        const k = keyFor({ className, section });
+        if (!agg[k]) agg[k] = { className, section, subjects: new Set<string>(), isClassTeacher: false };
+        const selected = Array.from(selectedByKey[k] ?? []);
+        selected.forEach((s) => agg[k].subjects.add(s));
+        agg[k].isClassTeacher = agg[k].isClassTeacher || !!base.isClassTeacher;
+      }
+      const rows: StaffAssignment[] = Object.values(agg).map((v) => ({
+        className: v.className,
+        section: v.section,
+        subject: Array.from(v.subjects).join(', '),
+        isClassTeacher: v.isClassTeacher,
+      }));
       await setAssignmentsForStaff(activeStaff.staffId, rows);
       // reflect in list UI without full refetch
       setStaffList((prev) => prev.map((s) => s.staffId === activeStaff.staffId ? { ...s, assignments: rows } as any : s));
@@ -675,13 +728,55 @@ export default function AdminStaffPage() {
                     {assignRows.map((row, idx) => (
                       <TableRow key={idx}>
                         <TableCell>
-                          <Input placeholder="e.g., 7" value={row.className || ''} onChange={(e) => updateAssignRow(idx, 'className', e.target.value)} />
+                          <Select value={row.className || ''} onValueChange={(v) => updateAssignRow(idx, 'className', v)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select class" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {optClasses.map((c) => (
+                                <SelectItem key={c} value={c}>{c}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                         <TableCell>
-                          <Input placeholder="e.g., A" value={row.section || ''} onChange={(e) => updateAssignRow(idx, 'section', e.target.value)} />
+                          <Select value={row.section || ''} onValueChange={(v) => updateAssignRow(idx, 'section', v)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select section" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {optSections.map((s) => (
+                                <SelectItem key={s} value={s}>{s}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
-                          <Input placeholder="e.g., Maths" value={row.subject || ''} onChange={(e) => updateAssignRow(idx, 'subject', e.target.value)} />
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm" disabled={!row.className || !row.section}>
+                                {(() => {
+                                  const k = keyFor(row);
+                                  const count = (selectedByKey[k]?.size ?? 0);
+                                  return count > 0 ? `${count} selected` : 'Select subjects';
+                                })()}
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-56 p-2">
+                              <div className="flex items-center justify-between mb-2">
+                                <Button variant="secondary" size="xs" onClick={() => selectAllForRow(idx)}>Select All</Button>
+                                <Button variant="ghost" size="xs" onClick={() => clearAllForRow(idx)}>Clear</Button>
+                              </div>
+                              <div className="max-h-56 overflow-auto pr-1">
+                                {optSubjects.map((s) => (
+                                  <div key={s} className="flex items-center gap-2 py-1">
+                                    <Checkbox id={`subj-${idx}-${s}`} checked={isSelected(idx, s)} onCheckedChange={(v) => toggleSubject(idx, s, !!v)} />
+                                    <label htmlFor={`subj-${idx}-${s}`} className="text-sm leading-none cursor-pointer select-none">{s}</label>
+                                  </div>
+                                ))}
+                              </div>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">

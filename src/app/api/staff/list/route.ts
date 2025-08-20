@@ -14,13 +14,18 @@ export async function GET() {
     const { data, error } = await supabase
       .from('staff')
       .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
-      .order('name', { ascending: true });
+      .order('staff_id', { ascending: false });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    const staffRows = data ?? [];
+    // Ensure sorting by numeric portion of staff_id in DESC order (e.g., TCH083 > TCH002 > TCH001)
+    const getNum = (sid: any) => {
+      const m = String(sid || '').match(/(\d+)/);
+      return m ? parseInt(m[1], 10) : -Infinity;
+    };
+    const staffRows = (data ?? []).slice().sort((a: any, b: any) => getNum(b.staff_id) - getNum(a.staff_id));
 
     // If we have staff, load all assignments in one query and group by staff_id
     let assignmentsByStaffId: Record<string, any[]> = {};

@@ -22,9 +22,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const OnboardSchema = z.object({
-  staffId: z.string().min(2, "Staff ID is required"),
+  staffId: z.string().optional(),
   name: z.string().min(3, "Name is required"),
   role: z.string().min(2, "Role is required"),
   department: z.string().min(2, "Department is required"),
@@ -34,7 +35,7 @@ const OnboardSchema = z.object({
   qualificationsCsv: z.string().optional(),
   className: z.string().min(1, "Class is required"),
   section: z.string().min(1, "Section is required"),
-  subject: z.string().optional(),
+  subjects: z.array(z.string()).optional(),
 });
 
 type OnboardFormValues = z.infer<typeof OnboardSchema>;
@@ -61,7 +62,7 @@ export default function StaffOnboardingForm() {
       qualificationsCsv: "B.Ed, M.Sc",
       className: "",
       section: "",
-      subject: "",
+      subjects: [],
     },
   });
 
@@ -174,7 +175,7 @@ export default function StaffOnboardingForm() {
   const onSubmit = async (values: OnboardFormValues) => {
     try {
       const created = await createStaff({
-        staffId: values.staffId.trim(),
+        staffId: values.staffId?.trim() || undefined,
         name: values.name.trim(),
         role: values.role.trim(),
         department: values.department.trim(),
@@ -185,17 +186,19 @@ export default function StaffOnboardingForm() {
           .split(',')
           .map((s) => s.trim())
           .filter(Boolean),
-        assignments: [
-          {
-            className: values.className.trim(),
-            section: values.section.trim(),
-            subject: values.subject?.trim() || undefined,
-          },
-        ],
+        assignments: (() => {
+          const base = { className: values.className, section: values.section };
+          const subs = Array.isArray(values.subjects) && values.subjects.length > 0 ? values.subjects : ['General'];
+          if (subs.length === 0) {
+            // No specific subject chosen; create one assignment without subject
+            return [{ ...base }];
+          }
+          return subs.map((subject) => ({ ...base, subject }));
+        })(),
       });
       setStaff((prev) => [created, ...prev]);
       toast({ title: "Staff onboarded", description: `${created.name} (${created.staffId})` });
-      form.reset({ ...form.getValues(), staffId: "", name: "", role: "", email: "", className: "", section: "", subject: "" });
+      form.reset({ ...form.getValues(), staffId: "", name: "", role: "", email: "", className: "", section: "", subjects: [] });
     } catch (err: any) {
       const msg = err instanceof Error ? err.message : (typeof err === 'string' ? err : JSON.stringify(err));
       console.warn('Failed to onboard staff', err);
@@ -232,9 +235,9 @@ export default function StaffOnboardingForm() {
               </div>
             </div>
             <div>
-              <Label htmlFor="staffId">Staff ID <span className="text-destructive">*</span></Label>
-              <Input id="staffId" {...form.register("staffId")} placeholder="TCH105" />
-              <p className="text-xs text-muted-foreground mt-1">Unique identifier for the staff member.</p>
+              <Label htmlFor="staffId">Staff ID <span className="text-muted-foreground">(optional)</span></Label>
+              <Input id="staffId" {...form.register("staffId")} placeholder="Leave blank to auto-generate (e.g., TCH001)" />
+              <p className="text-xs text-muted-foreground mt-1">Leave blank to auto-generate sequentially (TCH001, TCH002, …).</p>
               {form.formState.errors.staffId && (
                 <p className="text-xs text-destructive mt-1">{form.formState.errors.staffId.message}</p>
               )}
@@ -336,8 +339,8 @@ export default function StaffOnboardingForm() {
                   form.setValue('className', val, { shouldDirty: true, shouldValidate: true });
                   // Reset section on class change
                   form.setValue('section', '', { shouldDirty: true, shouldValidate: true });
-                  // Reset subject on class change
-                  form.setValue('subject', '', { shouldDirty: true, shouldValidate: true });
+                  // Reset subjects on class change
+                  form.setValue('subjects', [], { shouldDirty: true, shouldValidate: true });
                 }}
               >
                 <SelectTrigger id="className">
@@ -375,29 +378,40 @@ export default function StaffOnboardingForm() {
             </div>
             <div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="subject">Subject (optional)</Label>
+                <Label>Subjects (choose one or more)</Label>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className="h-4 w-4 text-muted-foreground" />
                     </TooltipTrigger>
-                    <TooltipContent>Choose the primary subject taught by this teacher.</TooltipContent>
+                    <TooltipContent>Select multiple subjects if this teacher teaches more than one.</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              <Select
-                value={form.watch('subject') || ''}
-                onValueChange={(val) => form.setValue('subject', val, { shouldDirty: true, shouldValidate: true })}
-              >
-                <SelectTrigger id="subject">
-                  <SelectValue placeholder="Select subject" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subjectOptions.map((subj) => (
-                    <SelectItem key={subj} value={subj}>{subj}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {subjectOptions.map((subj) => {
+                  const selected = (form.watch('subjects') || []).includes(subj);
+                  return (
+                    <label key={subj} className="flex items-center gap-2 text-sm">
+                      <Checkbox
+                        checked={selected}
+                        onCheckedChange={(v) => {
+                          const curr = form.getValues('subjects') || [];
+                          const next = (v ? true : false)
+                            ? Array.from(new Set([...curr, subj]))
+                            : curr.filter((s) => s !== subj);
+                          form.setValue('subjects', next, { shouldDirty: true, shouldValidate: true });
+                        }}
+                      />
+                      <span>{subj}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <div className="mt-2 flex gap-2">
+                <Button type="button" variant="secondary" size="sm" onClick={() => form.setValue('subjects', subjectOptions.slice(), { shouldDirty: true, shouldValidate: true })}>Select all</Button>
+                <Button type="button" variant="secondary" size="sm" onClick={() => form.setValue('subjects', [], { shouldDirty: true, shouldValidate: true })}>Clear</Button>
+              </div>
             </div>
             <div className="md:col-span-2">
               <Label htmlFor="qualificationsCsv">Qualifications (comma-separated)</Label>

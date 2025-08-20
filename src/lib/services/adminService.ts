@@ -3,6 +3,7 @@
 
 import type { StudentProfile, Circular, CreateCircularFormValues, BulkFeeNoticeDefinition, BulkFeeNoticeFormValues, StudentApplication, StudentApplicationFormValues, ApplicationStatus, StudentAttendanceRecord, StudentAttendanceFilterFormValues, AttendanceStatus, ExpenseRecord, ExpenseFormValues, AdminStaffListItem, TimetableEntry, DayOfWeek, AdminTimetableFilterFormValues, StaffAttendanceRecord, StaffAttendanceFilterFormValues, AdminPaymentRecord, AdminPaymentFiltersFormValues, PaymentRecord } from '@/lib/types';
 import { format, parseISO, isEqual, startOfDay, isWithinInterval, endOfDay } from 'date-fns';
+import { getSupabase } from '@/lib/supabaseClient';
 
 // Keep a tiny delay to preserve loading UX without slowing the app
 const MOCK_DELAY = 30; // milliseconds
@@ -395,28 +396,47 @@ const MOCK_STAFF_ATTENDANCE_RECORDS: StaffAttendanceRecord[] = [
 ];
 
 export async function getAdminStaffAttendanceRecords(filters?: StaffAttendanceFilterFormValues): Promise<StaffAttendanceRecord[]> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      let filteredRecords = [...MOCK_STAFF_ATTENDANCE_RECORDS];
-      if (filters) {
-        if (filters.departmentFilter) {
-          filteredRecords = filteredRecords.filter(r => r.department.toLowerCase().includes(filters.departmentFilter!.toLowerCase()));
+  // Prefer secure server API (service role) so Admin can read regardless of client auth/RLS
+  try {
+    const res = await fetch('/api/attendance/staff/list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        departmentFilter: filters?.departmentFilter ?? '',
+        staffNameOrIdFilter: filters?.staffNameOrIdFilter ?? '',
+        dateFilter: filters?.dateFilter ? startOfDay(filters.dateFilter).toISOString() : null,
+      }),
+    });
+    const payload = await res.json();
+    if (!res.ok) throw new Error(payload?.error || 'Failed to load attendance');
+    const list: StaffAttendanceRecord[] = Array.isArray(payload) ? payload : [];
+    // Server already applied filters; still ensure sort desc by date
+    return list.sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
+  } catch (e) {
+    // Fallback to mocks when API is unavailable (e.g., during local dev without envs)
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        let filteredRecords = [...MOCK_STAFF_ATTENDANCE_RECORDS];
+        if (filters) {
+          if (filters.departmentFilter) {
+            filteredRecords = filteredRecords.filter(r => r.department.toLowerCase().includes(filters.departmentFilter!.toLowerCase()));
+          }
+          if (filters.staffNameOrIdFilter) {
+            const searchTerm = filters.staffNameOrIdFilter.toLowerCase();
+            filteredRecords = filteredRecords.filter(r =>
+              r.staffName.toLowerCase().includes(searchTerm) ||
+              r.staffId.toLowerCase().includes(searchTerm)
+            );
+          }
+          if (filters.dateFilter) {
+            const filterDate = startOfDay(filters.dateFilter);
+            filteredRecords = filteredRecords.filter(r => isEqual(startOfDay(parseISO(r.date)), filterDate));
+          }
         }
-        if (filters.staffNameOrIdFilter) {
-          const searchTerm = filters.staffNameOrIdFilter.toLowerCase();
-          filteredRecords = filteredRecords.filter(r => 
-            r.staffName.toLowerCase().includes(searchTerm) || 
-            r.staffId.toLowerCase().includes(searchTerm)
-          );
-        }
-        if (filters.dateFilter) {
-          const filterDate = startOfDay(filters.dateFilter);
-          filteredRecords = filteredRecords.filter(r => isEqual(startOfDay(parseISO(r.date)), filterDate));
-        }
-      }
-      resolve(filteredRecords.sort((a,b) => parseISO(b.date).getTime() - parseISO(a.date).getTime()));
-    }, MOCK_DELAY);
-  });
+        resolve(filteredRecords.sort((a,b) => parseISO(b.date).getTime() - parseISO(a.date).getTime()));
+      }, MOCK_DELAY);
+    });
+  }
 }
 
 

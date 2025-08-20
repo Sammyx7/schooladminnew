@@ -204,7 +204,7 @@ export default function StaffProfileView() {
     .toUpperCase();
 
   return (
-    <div className="space-y-3 sm:space-y-6">
+    <div className="w-full min-w-0 overflow-x-hidden space-y-3 sm:space-y-6">
       {/* Header card with gradient */}
       <Card className="border shadow-md relative overflow-hidden rounded-xl">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-24 sm:h-28 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent" />

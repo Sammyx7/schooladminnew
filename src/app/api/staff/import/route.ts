@@ -46,8 +46,8 @@ export async function POST(req: Request) {
     const headers = rows[0].map(normalizeHeader);
     const dataRows = rows.slice(1).filter(r => r.some(v => String(v).trim() !== ''));
 
-    // Expected headers (flexible): staff_id, name, role, department, email
-    // Optional: phone, joining_date (ISO or yyyy-mm-dd), qualifications (comma-separated), avatar_url
+    // Expected headers (flexible): name, role, department, email
+    // Optional: staff_id (if absent/blank, will be auto-generated), phone, joining_date (ISO or yyyy-mm-dd), qualifications (comma-separated), avatar_url
     const idx = (name: string, aliases: string[] = []) => {
       const all = [name, ...aliases].map(normalizeHeader);
       for (let a of all) { const j = headers.indexOf(a); if (j !== -1) return j; }
@@ -64,8 +64,8 @@ export async function POST(req: Request) {
     const iQual = idx('qualifications', ['qualification']);
     const iAvatar = idx('avatar_url', ['avatar', 'photo_url']);
 
-    if (iStaffId === -1 || iName === -1 || iRole === -1 || iDept === -1 || iEmail === -1) {
-      return NextResponse.json({ error: 'CSV must include: staff_id, name, role, department, email. Optional: phone, joining_date, qualifications, avatar_url.' }, { status: 400 });
+    if (iName === -1 || iRole === -1 || iDept === -1 || iEmail === -1) {
+      return NextResponse.json({ error: 'CSV must include: name, role, department, email. Optional: staff_id, phone, joining_date, qualifications, avatar_url.' }, { status: 400 });
     }
 
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -75,17 +75,37 @@ export async function POST(req: Request) {
     }
     const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
-    const payload = dataRows.map((r) => ({
-      staff_id: String(r[iStaffId] ?? '').trim(),
-      name: String(r[iName] ?? '').trim(),
-      role: String(r[iRole] ?? '').trim(),
-      department: String(r[iDept] ?? '').trim(),
-      email: String(r[iEmail] ?? '').trim(),
-      phone: iPhone !== -1 ? (String(r[iPhone] ?? '').trim() || null) : null,
-      joining_date: iJoining !== -1 ? (String(r[iJoining] ?? '').trim() || null) : null,
-      qualifications: iQual !== -1 ? (String(r[iQual] ?? '').split(',').map(s=>s.trim()).filter(Boolean)) : [],
-      avatar_url: iAvatar !== -1 ? (String(r[iAvatar] ?? '').trim() || null) : null,
-    })).filter(x => x.staff_id && x.name && x.role && x.department && x.email);
+    // Fetch last existing staff_id to start auto-generation sequence
+    const { data: last, error: lastErr } = await supabase
+      .from('staff')
+      .select('staff_id')
+      .order('id', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (lastErr) {
+      return NextResponse.json({ error: lastErr.message }, { status: 400 });
+    }
+    let seq = nextStaffId(last?.staff_id || '');
+
+    const payload = dataRows.map((r) => {
+      const providedId = iStaffId !== -1 ? String(r[iStaffId] ?? '').trim() : '';
+      const staff_id = providedId || seq;
+      if (!providedId) {
+        // Increment local sequence for next auto ID
+        seq = nextStaffId(staff_id);
+      }
+      return {
+        staff_id,
+        name: String(r[iName] ?? '').trim(),
+        role: String(r[iRole] ?? '').trim(),
+        department: String(r[iDept] ?? '').trim(),
+        email: String(r[iEmail] ?? '').trim(),
+        phone: iPhone !== -1 ? (String(r[iPhone] ?? '').trim() || null) : null,
+        joining_date: iJoining !== -1 ? (String(r[iJoining] ?? '').trim() || null) : null,
+        qualifications: iQual !== -1 ? (String(r[iQual] ?? '').split(',').map(s=>s.trim()).filter(Boolean)) : [],
+        avatar_url: iAvatar !== -1 ? (String(r[iAvatar] ?? '').trim() || null) : null,
+      };
+    }).filter(x => x.name && x.role && x.department && x.email);
 
     if (!payload.length) return NextResponse.json({ error: 'No valid rows found.' }, { status: 400 });
 
@@ -104,4 +124,15 @@ export async function POST(req: Request) {
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Unknown error' }, { status: 500 });
   }
+}
+
+function nextStaffId(prev: string | undefined | null): string {
+  const base = (prev || '').trim();
+  if (!base) return 'TCH001';
+  const m = base.match(/^([A-Za-z-]*?)(\d+)$/);
+  if (!m) return 'TCH001';
+  const prefix = m[1] || 'TCH';
+  const numStr = m[2];
+  const next = (parseInt(numStr, 10) + 1).toString().padStart(numStr.length || 3, '0');
+  return `${prefix}${next}`;
 }

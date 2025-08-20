@@ -18,6 +18,7 @@ import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 // import { useAuth } from '@/contexts/AuthContext'; // If needed for staffId
 import { useRouter } from 'next/navigation';
+import { getSupabase } from '@/lib/supabaseClient';
 
 export default function StaffAttendancePage() {
   const [attendanceHistory, setAttendanceHistory] = useState<StaffAttendanceRecord[]>([]);
@@ -26,16 +27,57 @@ export default function StaffAttendancePage() {
   const { toast } = useToast();
   const router = useRouter();
   // const { user } = useAuth(); // To get staffId if available
+  const [staffId, setStaffId] = useState<string | null>(null);
+  const [identityReady, setIdentityReady] = useState(false);
 
-  const MOCK_STAFF_ID = "TCH102"; // Using Mr. Vikram Singh's ID
+  // Resolve current staffId from Supabase session email (prefix) or localStorage fallback
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const supabase = getSupabase();
+        let resolved: string | null = null;
+        if (supabase) {
+          const { data } = await supabase.auth.getUser();
+          const email = data.user?.email || null;
+          if (email && email.includes("@")) {
+            resolved = email.split("@")[0];
+          }
+        }
+        if (!resolved) {
+          try {
+            const stored = localStorage.getItem("staffId");
+            if (stored) resolved = stored;
+          } catch {}
+        }
+        if (mounted) {
+          if (resolved) {
+            const normalized = String(resolved).trim().toUpperCase();
+            setStaffId(normalized);
+            try { localStorage.setItem("staffId", normalized); } catch {}
+          } else {
+            setStaffId(null);
+          }
+        }
+      } catch {
+        if (mounted) setStaffId(null);
+      } finally {
+        if (mounted) setIdentityReady(true);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
       setError(null);
       try {
-        // const staffIdToFetch = user?.staffId || MOCK_STAFF_ID;
-        const data = await getStaffOwnAttendanceHistoryDb(MOCK_STAFF_ID);
+        if (!staffId) {
+          setAttendanceHistory([]);
+          return;
+        }
+        const data = await getStaffOwnAttendanceHistoryDb(staffId);
         setAttendanceHistory(data);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
@@ -45,8 +87,8 @@ export default function StaffAttendancePage() {
         setIsLoading(false);
       }
     }
-    fetchData();
-  }, [toast]);
+    if (identityReady) fetchData();
+  }, [toast, staffId, identityReady]);
 
   const handleMarkAttendance = () => {
     // Navigate to the check-in page where a scanned QR will land, or allow manual token entry
@@ -75,19 +117,25 @@ export default function StaffAttendancePage() {
   const absent = attendanceHistory.filter(r => r.status === 'Absent').length;
 
   return (
-    <div className="space-y-3 sm:space-y-6">
+    <div className="w-full min-w-0 space-y-3 sm:space-y-6">
       <PageHeader
         title="My Attendance"
-        icon={UserCheck}
         description="View your attendance history and mark today's attendance."
         className="mb-3 sm:mb-6"
         actions={
           <Button onClick={handleMarkAttendance}>
             <QrCode className="mr-2 h-4 w-4" />
-            Mark Today's Attendance
+            Scan Now
           </Button>
         }
       />
+      {/* Mobile-only quick action */}
+      <div className="md:hidden">
+        <Button onClick={handleMarkAttendance} className="w-full" aria-label="Scan Now">
+          <QrCode className="mr-2 h-4 w-4" />
+          Scan Now
+        </Button>
+      </div>
       <SectionCard title="Overview" description="Your recent attendance summary">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard icon={<CheckCircle2 className="h-4 w-4" />} label="Present" value={present.toString()} />
@@ -140,8 +188,8 @@ export default function StaffAttendancePage() {
           {!isLoading && !error && attendanceHistory.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <Info className="h-16 w-16 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">No Attendance Records</p>
-              <p>Your attendance history will appear here.</p>
+              <p className="text-lg font-medium">{staffId ? 'No Attendance Records' : 'Sign in required'}</p>
+              <p>{staffId ? 'Your attendance history will appear here.' : 'We could not resolve your Staff ID. Please sign in and try again.'}</p>
             </div>
           )}
 

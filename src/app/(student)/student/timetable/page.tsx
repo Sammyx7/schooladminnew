@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { CalendarDays, Loader2, AlertCircle as AlertIcon, Info, ClipboardList } from 'lucide-react'; // Renamed AlertCircle
+import { Loader2, AlertCircle as AlertIcon, Info, ClipboardList } from 'lucide-react'; // Renamed AlertCircle
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -56,7 +56,7 @@ const DayTimetableSkeleton = () => (
 
 const TimetablePageSkeleton = () => (
   <div className="space-y-6">
-    <PageHeader title="My Timetable" icon={CalendarDays} description="Your weekly class schedule." />
+    <PageHeader title="My Timetable" description="Your weekly class schedule." />
     <Card className="border shadow-md">
       <CardContent className="pt-6">
         <div className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 mb-4">
@@ -109,7 +109,7 @@ export default function StudentTimetablePage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <PageHeader title="My Timetable" icon={CalendarDays} description="Your weekly class schedule." />
+        <PageHeader title="My Timetable" description="Your weekly class schedule." />
         <Alert variant="destructive" className="mt-4">
           <AlertIcon className="h-5 w-5" />
           <AlertMsgTitle>Error Fetching Timetable</AlertMsgTitle>
@@ -123,7 +123,6 @@ export default function StudentTimetablePage() {
     <div className="space-y-6">
       <PageHeader
         title="My Timetable"
-        icon={CalendarDays}
         description="Your weekly class schedule. Click on a day to view details."
       />
 

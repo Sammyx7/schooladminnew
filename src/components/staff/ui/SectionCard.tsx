@@ -13,7 +13,7 @@ interface SectionCardProps {
 
 export function SectionCard({ title, description, actions, children, className }: SectionCardProps) {
   return (
-    <Card className={cn("w-full border shadow-md rounded-xl", className)}>
+    <Card className={cn("w-full border shadow-md rounded-lg sm:rounded-xl", className)}>
       {(title || actions) && (
         <CardHeader className="flex flex-row items-start justify-between gap-2 p-4 sm:p-6 pb-0">
           <div>

@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { History, Loader2, AlertCircle as AlertIcon, FileText, Landmark } from 'lucide-react';
+import { Loader2, AlertCircle as AlertIcon, FileText, Landmark } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -52,7 +52,6 @@ export default function StudentPaymentsPage() {
     <div className="space-y-6">
       <PageHeader
         title="My Payment History"
-        icon={History}
         description="View records of all your past payments and transactions."
       />
 

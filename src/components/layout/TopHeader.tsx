@@ -26,6 +26,7 @@ export function TopHeader() {
   const userName = "Dr. Priya Nair"; 
   const userEmail = "dr.priya.nair@example.com";
   const [schoolName, setSchoolName] = useState<string>("Greenwood International School");
+  const [mobilePageTitle, setMobilePageTitle] = useState<string>("");
 
   useEffect(() => {
     let mounted = true;
@@ -46,6 +47,22 @@ export function TopHeader() {
     };
   }, []);
 
+  // Listen to page title changes for displaying on mobile (staff)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { title?: string } | undefined;
+      if (detail?.title) setMobilePageTitle(detail.title);
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('page-title-change', handler as EventListener);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('page-title-change', handler as EventListener);
+      }
+    };
+  }, []);
+
   return (
     <header className="bg-card/95 supports-[backdrop-filter]:bg-card/60 backdrop-blur text-card-foreground h-16 flex items-center justify-between px-3 md:px-6 border-b fixed top-0 left-0 right-0 z-40">
       <div className="flex items-center gap-2 min-w-0">
@@ -54,7 +71,19 @@ export function TopHeader() {
             <span className="font-bold text-sm">LOGO</span>
           </div>
           <div className="min-w-0">
-            <h1 className="text-base sm:text-lg font-semibold text-foreground leading-tight truncate">{schoolName}</h1>
+            {/* For staff on mobile: show current page title, else show school name */}
+            {userRole === 'staff' ? (
+              <>
+                <h1 className="text-base font-semibold text-foreground leading-tight truncate sm:hidden">
+                  {mobilePageTitle || schoolName}
+                </h1>
+                <h1 className="hidden sm:block text-lg font-semibold text-foreground leading-tight truncate">
+                  {schoolName}
+                </h1>
+              </>
+            ) : (
+              <h1 className="text-base sm:text-lg font-semibold text-foreground leading-tight truncate">{schoolName}</h1>
+            )}
             <p className="hidden sm:block text-xs text-muted-foreground leading-tight">School Management System</p>
           </div>
         </Link>

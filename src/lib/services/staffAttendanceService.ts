@@ -12,15 +12,17 @@ export async function getStaffOwnAttendanceHistoryDb(staffId: string): Promise<S
     return getStaffOwnAttendanceHistory(staffId);
   }
 
+  const normalizedStaffId = String(staffId).trim().toUpperCase();
+
   const { data, error } = await supabase
     .from("staff_attendance")
     .select("id, staff_id, date, status")
-    .eq("staff_id", staffId)
+    .eq("staff_id", normalizedStaffId)
     .order("date", { ascending: false });
   if (error) throw error;
 
   // Enrich with profile (name/department) for type completeness
-  const profile = await getStaffProfileByStaffId(staffId).catch(() => null);
+  const profile = await getStaffProfileByStaffId(normalizedStaffId).catch(() => null);
   const staffName = profile?.name ?? "";
   const department = profile?.department ?? "";
 
@@ -37,10 +39,11 @@ export async function getStaffOwnAttendanceHistoryDb(staffId: string): Promise<S
 // Call server API to mark attendance via a QR token
 export async function markAttendanceViaToken(staffId: string, token: string): Promise<{ ok: boolean; message: string }>{
   try {
+    const normalizedStaffId = String(staffId).trim().toUpperCase();
     const res = await fetch("/api/attendance/staff/check-in", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ staffId, token }),
+      body: JSON.stringify({ staffId: normalizedStaffId, token }),
     });
     const payload = await res.json().catch(() => ({}));
     if (!res.ok) {

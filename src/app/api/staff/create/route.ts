@@ -118,11 +118,13 @@ export async function POST(req: Request) {
 
 function nextStaffId(prev: string | undefined | null): string {
   const base = (prev || '').trim();
-  if (!base) return 'TCH100';
+  // Default start when no previous ID exists -> TCH001
+  if (!base) return 'TCH001';
   const m = base.match(/^([A-Za-z-]*?)(\d+)$/);
-  if (!m) return 'TCH100';
+  // If previous doesn't match pattern, fall back to default start
+  if (!m) return 'TCH001';
   const prefix = m[1] || 'TCH';
   const numStr = m[2];
-  const next = (parseInt(numStr, 10) + 1).toString().padStart(numStr.length, '0');
+  const next = (parseInt(numStr, 10) + 1).toString().padStart(numStr.length || 3, '0');
   return `${prefix}${next}`;
 }

@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { FileSearch, Download, Loader2, AlertCircle as AlertIcon, Info } from 'lucide-react'; // Renamed AlertCircle
+import { Download, Loader2, AlertCircle as AlertIcon, Info } from 'lucide-react'; // Renamed AlertCircle
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -102,8 +102,7 @@ export default function StudentReportCardPage() {
     <div className="space-y-6">
       <PageHeader
         title="My Report Cards"
-        icon={FileSearch}
-        description="View your academic performance for different terms and assessments."
+        description="View and download your report cards for each term."
       />
 
       {isLoading && (

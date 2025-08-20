@@ -3,7 +3,7 @@
 
 import { useState, useEffect, type FormEvent } from 'react';
 import { PageHeader } from '@/components/layout/PageHeader';
-import { Settings, UserCircle, Bell, ShieldCheck, Save, Loader2, AlertCircle as AlertIcon } from 'lucide-react'; // Renamed AlertCircle
+import { UserCircle, Bell, ShieldCheck, Save, Loader2, AlertCircle as AlertIcon } from 'lucide-react'; // Renamed AlertCircle
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -139,7 +139,6 @@ export default function StudentSettingsPage() {
     <div className="space-y-8">
       <PageHeader
         title="My Settings"
-        icon={Settings}
         description="Manage your account details, notification preferences, and security."
       />
 
@@ -275,8 +274,8 @@ export default function StudentSettingsPage() {
             </div>
           </CardContent>
           <CardFooter className="border-t pt-6">
-            <Button type="submit" className="ml-auto" disabled={isSaving && (currentPassword || newPassword)}>
-              {isSaving && (currentPassword || newPassword) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+            <Button type="submit" className="ml-auto" disabled={isSaving && (!!currentPassword || !!newPassword)}>
+              {isSaving && (!!currentPassword || !!newPassword) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
               Change Password
             </Button>
           </CardFooter>

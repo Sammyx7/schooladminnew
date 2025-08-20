@@ -19,9 +19,9 @@ function StaffLayoutContent({ children }: { children: ReactNode }) {
   
 
   return (
-    <div className="flex min-h-screen flex-col bg-background overflow-x-hidden">
+    <div className="flex w-full min-h-screen flex-col bg-background overflow-x-hidden">
       <TopHeader />
-      <div className="flex flex-1 pt-16 min-w-0 overflow-x-hidden">
+      <div className="flex w-full flex-1 pt-16 min-w-0 overflow-x-hidden">
         {userRole === 'staff' && (
           <AppSidebar 
             navItems={staffNavItems} 
@@ -31,12 +31,16 @@ function StaffLayoutContent({ children }: { children: ReactNode }) {
         )}
         <main 
           className={cn(
-            "flex flex-1 flex-col items-stretch bg-background overflow-y-auto overflow-x-hidden min-w-0 box-border px-3 sm:px-6 lg:px-8 pb-16 md:pb-4 pt-[5px]"
+            "flex w-full flex-1 flex-col items-stretch bg-background overflow-y-auto overflow-x-hidden min-w-0 box-border px-0 sm:px-6 lg:px-8 pb-16 md:pb-4 pt-[5px]"
           )}
           style={{
+            // Desktop: fill viewport minus the fixed sidebar (mirrors Admin layout for full-width parity)
             width: isMobile
-              ? '100%'
+              ? '100vw'
               : `calc(100vw - ${sidebarState === 'collapsed' ? 'var(--sidebar-width-icon)' : 'var(--sidebar-width)'})`,
+            // Mobile: increased horizontal padding (+3px) and safe-area aware bottom padding for the tab bar
+            paddingLeft: isMobile ? '8px' : undefined,
+            paddingRight: isMobile ? '8px' : undefined,
             paddingBottom: isMobile ? 'calc(3.5rem + env(safe-area-inset-bottom, 0px))' : undefined
           }}
         >
