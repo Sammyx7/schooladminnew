@@ -1,4 +1,17 @@
 {
     "IDX.aI.enableInlineCompletion": true,
-    "IDX.aI.enableCodebaseIndexing": true
+    "IDX.aI.enableCodebaseIndexing": true,
+
+    // Suppress false-positive CSS warnings for Tailwind directives
+    "css.lint.unknownAtRules": "ignore",
+
+    // Improve Tailwind IntelliSense in TSX/JSX
+    "tailwindCSS.includeLanguages": {
+        "typescriptreact": "html",
+        "javascriptreact": "html"
+    },
+    "tailwindCSS.emmetCompletions": true,
+    "editor.quickSuggestions": {
+        "strings": true
+    }
 }

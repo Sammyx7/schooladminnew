@@ -14,30 +14,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle as AlertIcon, Loader2, Search } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from "@/components/ui/alert";
 import { getStudentsByClassSection, getMarksForFilters, upsertMarksBatch } from "@/lib/services/marksService";
+import { getSchoolSettings, listClasses, sectionsForClass, subjectsForClass, type SchoolSettings } from "@/lib/services/settingsService";
 import { useToast } from "@/hooks/use-toast";
 
-// Mock options (replace with Supabase-backed data later)
-const MOCK_CLASSES = [
-  "Class 1",
-  "Class 2",
-  "Class 5",
-  "Class 9",
-  "Class 10",
-  "Class 11",
-  "Class 12",
-];
-
-const MOCK_SECTIONS = ["Section A", "Section B", "Section C", "Commerce", "Science", "Arts"];
-
-const MOCK_SUBJECTS_BY_CLASS: Record<string, string[]> = {
-  "Class 1": ["English", "Mathematics", "EVS"],
-  "Class 2": ["English", "Mathematics", "EVS"],
-  "Class 5": ["English", "Mathematics", "Science", "Social Studies"],
-  "Class 9": ["English", "Mathematics", "Science", "History"],
-  "Class 10": ["English", "Mathematics", "Physics", "Chemistry", "Biology", "History"],
-  "Class 11": ["Physics", "Chemistry", "Mathematics", "Biology", "Accountancy", "Economics", "History", "Political Science"],
-  "Class 12": ["Physics", "Chemistry", "Mathematics", "Biology", "Accountancy", "Economics", "Business Studies"],
-};
+// Options are sourced from Admin Settings
 
 const TERMS = ["Unit Test 1", "Mid-Term", "Term 1", "Unit Test 2", "Annual Exam"];
 
@@ -65,6 +45,8 @@ export default function MarksEntry() {
   const [rows, setRows] = useState<MarksRow[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSearched, setIsSearched] = useState(false);
+  const [settings, setSettings] = useState<SchoolSettings | null>(null);
+  const [classOptions, setClassOptions] = useState<string[]>([]);
 
   const form = useForm<MarksEntryFilters>({
     resolver: zodResolver(FiltersSchema),
@@ -78,18 +60,31 @@ export default function MarksEntry() {
   });
 
   const selectedClass = form.watch("class");
-  const subjectsForClass = useMemo(() => {
-    return MOCK_SUBJECTS_BY_CLASS[selectedClass] ?? ["English", "Mathematics", "Science"];
-  }, [selectedClass]);
+  const subjectOptions = useMemo(() => subjectsForClass(settings, selectedClass), [settings, selectedClass]);
+  const sectionOptions = useMemo(() => sectionsForClass(settings, selectedClass), [settings, selectedClass]);
+
+  useEffect(() => {
+    // Load Admin Settings once
+    getSchoolSettings()
+      .then((s) => {
+        setSettings(s);
+        setClassOptions(listClasses(s));
+      })
+      .catch((e) => {
+        console.warn("Failed to load school settings", e);
+        setSettings(null);
+        setClassOptions([]);
+      });
+  }, []);
 
   useEffect(() => {
     // Reset subject when class changes if subject not in list
     const currentSubject = form.getValues("subject");
-    if (currentSubject && !subjectsForClass.includes(currentSubject)) {
+    if (currentSubject && !subjectOptions.includes(currentSubject)) {
       form.setValue("subject", "");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subjectsForClass]);
+  }, [subjectOptions]);
 
   const handleFetchStudents = async (values: MarksEntryFilters) => {
     setIsLoadingStudents(true);
@@ -197,7 +192,7 @@ export default function MarksEntry() {
 
   return (
     <div className="w-full space-y-6">
-      <Card className="border shadow-md">
+      <Card className="rounded-2xl border shadow-lg">
         <CardHeader>
           <CardTitle>Filters</CardTitle>
           <CardDescription>Select Class, Section, Subject, Term and Max Marks, then fetch students.</CardDescription>
@@ -214,17 +209,13 @@ export default function MarksEntry() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Class</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select class" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {MOCK_CLASSES.map((c) => (
-                          <SelectItem key={c} value={c}>
-                            {c}
-                          </SelectItem>
+                    <Select onValueChange={(v) => form.setValue("class", v)} value={form.watch("class") || ""}>
+                      <SelectTrigger className="h-10 rounded-full px-4 border-2 bg-background ring-1 ring-inset ring-muted/30 shadow-md hover:shadow-lg transition focus-visible:ring-4 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:border-primary">
+                        <SelectValue placeholder="Select a class" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border shadow-lg">
+                        {classOptions.map((c) => (
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -239,17 +230,13 @@ export default function MarksEntry() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Section/Stream</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select section" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {MOCK_SECTIONS.map((s) => (
-                          <SelectItem key={s} value={s}>
-                            {s}
-                          </SelectItem>
+                    <Select onValueChange={(v) => form.setValue("section", v)} value={form.watch("section") || ""}>
+                      <SelectTrigger className="h-10 rounded-full px-4 border-2 bg-background ring-1 ring-inset ring-muted/30 shadow-md hover:shadow-lg transition focus-visible:ring-4 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:border-primary">
+                        <SelectValue placeholder="Select a section" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border shadow-lg">
+                        {sectionOptions.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -264,17 +251,13 @@ export default function MarksEntry() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Subject</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select subject" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {subjectsForClass.map((subj) => (
-                          <SelectItem key={subj} value={subj}>
-                            {subj}
-                          </SelectItem>
+                    <Select onValueChange={(v) => form.setValue("subject", v)} value={form.watch("subject") || ""}>
+                      <SelectTrigger className="h-10 rounded-full px-4 border-2 bg-background ring-1 ring-inset ring-muted/30 shadow-md hover:shadow-lg transition focus-visible:ring-4 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:border-primary">
+                        <SelectValue placeholder="Select a subject" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl border shadow-lg">
+                        {subjectOptions.map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -291,11 +274,11 @@ export default function MarksEntry() {
                     <FormLabel>Term/Assessment</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-10 rounded-full px-4 border-2 bg-background ring-1 ring-inset ring-muted/30 shadow-md hover:shadow-lg transition focus-visible:ring-4 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:border-primary">
                           <SelectValue placeholder="Select term" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="rounded-xl border shadow-lg">
                         {TERMS.map((t) => (
                           <SelectItem key={t} value={t}>
                             {t}
@@ -315,7 +298,7 @@ export default function MarksEntry() {
                   <FormItem>
                     <FormLabel>Max Marks</FormLabel>
                     <FormControl>
-                      <Input type="number" min={1} max={1000} {...field} />
+                      <Input type="number" min={1} max={1000} {...field} className="h-10 rounded-full px-4 border-2 ring-1 ring-inset ring-muted/30 shadow-md hover:shadow-lg transition focus-visible:ring-4 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:border-primary" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -323,7 +306,7 @@ export default function MarksEntry() {
               />
 
               <div className="md:col-span-5 flex gap-3">
-                <Button type="submit" disabled={isLoadingStudents}>
+                <Button type="submit" disabled={isLoadingStudents} className="shadow-lg hover:shadow-xl transition">
                   {isLoadingStudents ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Fetching
@@ -334,7 +317,7 @@ export default function MarksEntry() {
                     </>
                   )}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => form.reset()} disabled={isLoadingStudents}>
+                <Button type="button" variant="outline" onClick={() => form.reset()} disabled={isLoadingStudents} className="shadow-md hover:shadow-lg transition">
                   Reset Filters
                 </Button>
               </div>
@@ -343,7 +326,7 @@ export default function MarksEntry() {
         </CardContent>
       </Card>
 
-      <Card className="border shadow-md">
+      <Card className="rounded-2xl border shadow-lg">
         <CardHeader>
           <CardTitle>Marks Entry</CardTitle>
           <CardDescription>Enter marks for the loaded students. Save as draft or submit.</CardDescription>
@@ -415,8 +398,8 @@ export default function MarksEntry() {
                             const val = e.target.value;
                             updateRow(r.studentId, { marks: val === "" ? undefined : Number(val) });
                           }}
-                          className="w-24"
-                        />
+                          className="w-28 h-10 rounded-full px-3 border-2 ring-1 ring-inset ring-muted/30 shadow-md hover:shadow-lg transition focus-visible:ring-4 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:border-primary"
+                          />
                       </TableCell>
                       <TableCell>
                         <Input
@@ -424,6 +407,7 @@ export default function MarksEntry() {
                           placeholder="Optional remarks"
                           value={r.remarks ?? ""}
                           onChange={(e) => updateRow(r.studentId, { remarks: e.target.value })}
+                          className="h-10 rounded-full px-4 border-2 ring-1 ring-inset ring-muted/30 shadow-md hover:shadow-lg transition focus-visible:ring-4 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:border-primary"
                         />
                       </TableCell>
                     </TableRow>
@@ -432,10 +416,10 @@ export default function MarksEntry() {
               </Table>
 
               <div className="flex items-center gap-3">
-                <Button type="button" variant="outline" onClick={handleSaveDraft} disabled={isSubmitting}>
+                <Button type="button" variant="outline" onClick={handleSaveDraft} disabled={isSubmitting} className="shadow-sm">
                   Save Draft
                 </Button>
-                <Button type="button" onClick={handleSubmitMarks} disabled={isSubmitting}>
+                <Button type="button" onClick={handleSubmitMarks} disabled={isSubmitting} className="shadow">
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting

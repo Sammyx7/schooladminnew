@@ -18,11 +18,12 @@ export async function GET(req: Request) {
 
     let q = supabase
       .from('timetable_entries')
-      .select('id, day, period, start_time, end_time, subject, class_name, section, teacher_staff_id, teacher_name, room')
-      .order('day', { ascending: true })
+      // alias day_of_week as day so the rest of the app remains unchanged
+      .select('id, day:day_of_week, period, start_time, end_time, subject, class_name, section, teacher_staff_id, teacher_name, room')
+      .order('day_of_week', { ascending: true })
       .order('period', { ascending: true });
 
-    if (day) q = q.eq('day', day);
+    if (day) q = q.eq('day_of_week', day);
     if (className) q = q.eq('class_name', className);
     if (section) q = q.eq('section', section);
     if (teacherStaffId) q = q.eq('teacher_staff_id', teacherStaffId);

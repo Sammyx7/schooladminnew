@@ -16,16 +16,20 @@ export async function PATCH(req: Request) {
 
     // Only allow known fields
     const allowed: Record<string, any> = {};
-    const fields = ['day','period','start_time','end_time','subject','class_name','section','teacher_staff_id','teacher_name','room'];
+    const fields = ['day_of_week','period','start_time','end_time','subject','class_name','section','teacher_staff_id','teacher_name','room'];
     for (const k of fields) {
       if (rest[k] !== undefined) allowed[k] = rest[k];
+    }
+    // Map legacy 'day' to canonical 'day_of_week' if provided
+    if (rest['day'] !== undefined && allowed['day_of_week'] === undefined) {
+      allowed['day_of_week'] = rest['day'];
     }
 
     const { data, error } = await supabase
       .from('timetable_entries')
       .update(allowed)
       .eq('id', id)
-      .select('id, day, period, start_time, end_time, subject, class_name, section, teacher_staff_id, teacher_name, room')
+      .select('id, day:day_of_week, period, start_time, end_time, subject, class_name, section, teacher_staff_id, teacher_name, room')
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });

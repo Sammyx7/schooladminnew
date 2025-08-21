@@ -400,7 +400,9 @@ export async function getAdminStaffAttendanceRecords(filters?: StaffAttendanceFi
   try {
     const res = await fetch('/api/attendance/staff/list', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      // Avoid any caching so polling/realtime refetch always gets fresh data
+      cache: 'no-store',
+      headers: { 'Content-Type': 'application/json', 'x-no-cache': String(Date.now()) },
       body: JSON.stringify({
         departmentFilter: filters?.departmentFilter ?? '',
         staffNameOrIdFilter: filters?.staffNameOrIdFilter ?? '',

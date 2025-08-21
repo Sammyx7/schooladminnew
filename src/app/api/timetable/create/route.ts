@@ -4,7 +4,20 @@ import { createClient } from '@supabase/supabase-js';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { day, period, start_time, end_time, subject, class_name, section, teacher_staff_id, teacher_name, room } = body || {};
+    const {
+      day: bodyDay,
+      day_of_week: bodyDayOfWeek,
+      period,
+      start_time,
+      end_time,
+      subject,
+      class_name,
+      section,
+      teacher_staff_id,
+      teacher_name,
+      room,
+    } = body || {};
+    const day = bodyDay ?? bodyDayOfWeek;
 
     if (!day || !period || !start_time || !end_time || !subject || !class_name || !section || !teacher_staff_id) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -19,7 +32,7 @@ export async function POST(req: Request) {
     const supabase = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
     const payload: any = {
-      day,
+      day_of_week: day, // canonical column
       period,
       start_time,
       end_time,
@@ -34,7 +47,7 @@ export async function POST(req: Request) {
     const { data, error } = await supabase
       .from('timetable_entries')
       .insert(payload)
-      .select('id, day, period, start_time, end_time, subject, class_name, section, teacher_staff_id, teacher_name, room')
+      .select('id, day:day_of_week, period, start_time, end_time, subject, class_name, section, teacher_staff_id, teacher_name, room')
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });

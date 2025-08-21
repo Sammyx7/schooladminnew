@@ -10,8 +10,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { TimetableEntry, DayOfWeek } from '@/lib/types';
-import { getStaffTimetable } from '@/lib/services/staffService'; // Updated service
-import { useAuth } from '@/contexts/AuthContext'; // To get staffId if needed, or use a mock
+import { listTimetable } from '@/lib/services/timetableService';
+import { getStaffProfileByStaffId, getStaffProfileByEmail } from '@/lib/services/staffDbService';
+import { getSupabase } from '@/lib/supabaseClient';
 
 const daysOfWeek: DayOfWeek[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
@@ -72,28 +73,89 @@ export default function StaffTimetablePage() {
   const [timetableEntries, setTimetableEntries] = useState<TimetableEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // const { user } = useAuth(); // If you have user object with staffId
-
-  const MOCK_STAFF_ID = "TCH102"; // Using Mr. Vikram Singh's ID as per staffService mock
+  const [staffName, setStaffName] = useState<string | null>(null);
+  const [staffId, setStaffId] = useState<string | null>(null);
 
   useEffect(() => {
+    let mounted = true;
+    async function resolveIdentity() {
+      try {
+        // 1) Try Supabase user email prefix as staffId
+        let resolvedStaffId: string | null = null;
+        let resolvedName: string | null = null;
+
+        const supabase = getSupabase();
+        if (supabase) {
+          const { data } = await supabase.auth.getUser();
+          const email = data.user?.email || null;
+          if (email && email.includes('@')) {
+            resolvedStaffId = email.split('@')[0];
+          }
+        }
+
+        // 2) Fallback to localStorage
+        if (!resolvedStaffId) {
+          try {
+            const stored = localStorage.getItem('staffId');
+            if (stored) resolvedStaffId = stored;
+          } catch {}
+        }
+
+        // 3) Load profile by staffId or fallback by email (handled like in StaffProfileView)
+        let profile = null as any;
+        if (resolvedStaffId) {
+          profile = await getStaffProfileByStaffId(resolvedStaffId);
+        }
+        if (!profile && supabase) {
+          const { data } = await supabase.auth.getUser();
+          const email = data.user?.email || null;
+          if (email) profile = await getStaffProfileByEmail(email);
+        }
+
+        if (profile) {
+          resolvedStaffId = profile.staffId || resolvedStaffId;
+          resolvedName = profile.name || null;
+          try { localStorage.setItem('staffId', resolvedStaffId!); } catch {}
+        }
+
+        if (mounted) {
+          setStaffId(resolvedStaffId);
+          setStaffName(resolvedName);
+        }
+      } catch (e) {
+        console.error(e);
+        if (mounted) {
+          setStaffId(null);
+          setStaffName(null);
+        }
+      }
+    }
+
+    resolveIdentity();
+    return () => { mounted = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!staffId) { setIsLoading(false); return; }
+    let mounted = true;
     async function fetchData() {
       setIsLoading(true);
       setError(null);
       try {
-        // const staffIdToFetch = user?.staffId || MOCK_STAFF_ID; // Or however you get staffId
-        const data = await getStaffTimetable(MOCK_STAFF_ID);
-        setTimetableEntries(data);
+        const sid = staffId as string;
+        const data = await listTimetable({ teacherStaffId: sid });
+        if (mounted) setTimetableEntries(data);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Unknown error fetching timetable.";
-        setError(msg);
-        console.error("Failed to fetch staff timetable:", err);
+        const msg = err instanceof Error ? err.message : 'Unknown error fetching timetable.';
+        if (mounted) setError(msg);
+        console.error('Failed to fetch staff timetable:', err);
       } finally {
-        setIsLoading(false);
+        if (mounted) setIsLoading(false);
       }
     }
     fetchData();
-  }, []);
+    return () => { mounted = false; };
+  }, [staffId]);
 
   const groupedTimetable = useMemo(() => groupTimetableByDay(timetableEntries), [timetableEntries]);
   const firstDayWithEntries = useMemo(() => 
@@ -105,7 +167,7 @@ export default function StaffTimetablePage() {
     <div className="space-y-6">
       <PageHeader
         title="My Timetable"
-        description="Your weekly teaching schedule."
+        description={staffId ? `Schedule for ${staffName ?? '—'} (ID: ${staffId})` : 'Your weekly teaching schedule.'}
       />
 
       <Card className="border shadow-md">

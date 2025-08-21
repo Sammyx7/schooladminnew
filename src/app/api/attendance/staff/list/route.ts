@@ -53,8 +53,8 @@ export async function POST(req: Request) {
       mapped = mapped.filter(r => r.staffName.toLowerCase().includes(term) || r.staffId.toLowerCase().includes(term));
     }
 
-    return NextResponse.json(mapped);
+    return NextResponse.json(mapped, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e: any) {
-    return NextResponse.json({ error: e?.message || 'Unknown error' }, { status: 500 });
+    return NextResponse.json({ error: e?.message || 'Unknown error' }, { status: 500, headers: { 'Cache-Control': 'no-store' } });
   }
 }

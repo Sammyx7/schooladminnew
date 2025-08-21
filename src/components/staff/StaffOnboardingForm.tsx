@@ -15,7 +15,7 @@ import { listStaff, createStaff, deleteStaff } from "@/lib/services/staffDbServi
 import type { AdminStaffListItem } from "@/lib/types";
 import { Plus, Trash2, Search, Filter, CalendarDays, Mail, Phone, X, Info } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getSchoolSettings } from "@/lib/services/settingsService";
+import { getSchoolSettings, listClasses, sectionsForClass, listSubjects } from "@/lib/services/settingsService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -85,31 +85,15 @@ export default function StaffOnboardingForm() {
         try {
           const s = await getSchoolSettings();
           if (!s) return;
-          const fallbackSections = Array.isArray(s.sections) ? s.sections.filter(Boolean).map(x => x.trim()) : ['A','B','C'];
-          let classes: string[];
+          const classes = listClasses(s);
           const byClass: Record<string,string[]> = {};
-          if (Array.isArray(s.classes) && s.classes.length > 0) {
-            classes = s.classes.slice(); // preserve order
-            const map = s.classSections || {};
-            for (const c of classes) {
-              const secs = Array.isArray(map[c]) && map[c]!.length > 0 ? map[c]!.filter(Boolean).map(x=>x.trim()) : fallbackSections;
-              byClass[c] = secs;
-            }
-          } else {
-            // fallback ordering: common early years then numbered
-            const common = ['Nursery','LKG','UKG'];
-            const rangeMin = 1;
-            const rangeMax = 12;
-            const numbered = Array.from({length: Math.max(0, rangeMax - rangeMin + 1)}, (_,i)=>`Class ${i+rangeMin}`);
-            classes = [...common, ...numbered];
-            for (const c of classes) byClass[c] = fallbackSections;
+          for (const c of classes) {
+            byClass[c] = sectionsForClass(s, c);
           }
           if (!mounted) return;
           setClassOptions(classes);
           setSectionsByClass(byClass);
-          const globalSubjects = Array.isArray(s.subjects) && s.subjects.length > 0
-            ? s.subjects
-            : ['english','hindi','urdu','sanskrit','arabic','maths','science','social science','general knowledge'];
+          const globalSubjects = listSubjects(s);
           const classSubs = s.classSubjects || {};
           setClassSubjectsMap(classSubs);
           // derive current options based on selected class if any

@@ -3,8 +3,11 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: var(--font-inter), Arial, Helvetica, sans-serif; /* Changed from --font-geist-sans */
+/* Global typography improvements */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 @layer base {
@@ -173,8 +176,21 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    /* Use Tailwind font-sans set via --font-sans from next/font */
+    @apply bg-background text-foreground font-sans leading-relaxed;
   }
+
+  /* Headings use Inter (--font-sans) with a tight display rhythm */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+  h1 { @apply text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight; }
+  h2 { @apply text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight; }
+  h3 { @apply text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight; }
+  h4 { @apply text-lg sm:text-xl font-medium tracking-tight; }
+  h5 { @apply text-base sm:text-lg font-medium; }
+  h6 { @apply text-sm sm:text-base font-medium; }
 }
 
 /* For horizontal scrollbar styling in Quick Links */

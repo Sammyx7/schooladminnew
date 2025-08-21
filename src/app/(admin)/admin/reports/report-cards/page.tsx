@@ -1,7 +1,7 @@
-
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,9 +19,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Printer, Filter, Loader2, AlertCircle as AlertIcon, User, FileText, Download, Search } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
-// Mock data - in a real app, this would come from a service
-const MOCK_CLASSES = ['Class 1', 'Class 2', 'Class 5', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
-const MOCK_SECTIONS = ['Section A', 'Section B', 'Section C', 'Commerce', 'Science', 'Arts'];
+import { getSchoolSettings, listClasses, sectionsForClass, type SchoolSettings } from '@/lib/services/settingsService';
+
 const MOCK_STUDENTS_FOR_REPORT = [
   { id: 'S1001', name: 'Aarav Sharma', status: 'Generated' },
   { id: 'S1002', name: 'Priya Patel', status: 'Generated' },
@@ -48,11 +48,29 @@ export default function AdminReportCardsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSearched, setIsSearched] = useState(false);
   const { toast } = useToast();
+  const [settings, setSettings] = useState<SchoolSettings | null>(null);
+  const [classOptions, setClassOptions] = useState<string[]>([]);
 
   const form = useForm<ReportFiltersFormValues>({
     resolver: zodResolver(ReportFiltersSchema),
     defaultValues: { class: '', section: '', term: '' },
   });
+
+  const selectedClass = form.watch('class');
+  const sectionOptions = useMemo(() => sectionsForClass(settings, selectedClass), [settings, selectedClass]);
+
+  useEffect(() => {
+    // Load Admin Settings for classes/sections
+    getSchoolSettings()
+      .then((s) => {
+        setSettings(s);
+        setClassOptions(listClasses(s));
+      })
+      .catch(() => {
+        setSettings(null);
+        setClassOptions([]);
+      });
+  }, []);
 
   const handleGeneratePreview = async (values: ReportFiltersFormValues) => {
     setIsLoading(true);
@@ -114,7 +132,7 @@ export default function AdminReportCardsPage() {
                         <SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {MOCK_CLASSES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        {classOptions.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -132,7 +150,7 @@ export default function AdminReportCardsPage() {
                         <SelectTrigger><SelectValue placeholder="Select Section" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {MOCK_SECTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        {sectionOptions.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <FormMessage />

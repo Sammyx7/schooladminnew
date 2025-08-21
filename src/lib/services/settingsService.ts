@@ -45,6 +45,53 @@ export function subjectsForClass(settings: SchoolSettings | null | undefined, cl
   return global;
 }
 
+/**
+ * Return ordered classes list from settings.
+ */
+export function listClasses(settings: SchoolSettings | null | undefined): string[] {
+  if (!settings) return [];
+  return Array.isArray(settings.classes) && settings.classes.length > 0 ? settings.classes : [];
+}
+
+/**
+ * Return global sections list from settings (when class-specific is not required).
+ */
+export function listSections(settings: SchoolSettings | null | undefined): string[] {
+  if (!settings) return [];
+  if (Array.isArray(settings.sections) && settings.sections.length > 0) return settings.sections;
+  // If no global sections, try deriving from classSections union
+  const cs = settings.classSections || {};
+  const union = new Set<string>();
+  Object.values(cs).forEach(arr => (arr || []).forEach(s => union.add(s)));
+  return Array.from(union);
+}
+
+/**
+ * Return sections for a given class, falling back to global sections.
+ */
+export function sectionsForClass(settings: SchoolSettings | null | undefined, className?: string): string[] {
+  if (!settings) return [];
+  const per = settings.classSections || {};
+  if (className && Array.isArray(per[className]) && per[className]!.length > 0) return per[className]!;
+  return listSections(settings);
+}
+
+/**
+ * Return global subjects list from settings.
+ * Prefer explicit global subjects if present, otherwise derive from per-class union,
+ * finally falling back to the default inside subjectsForClass().
+ */
+export function listSubjects(settings: SchoolSettings | null | undefined): string[] {
+  if (!settings) return subjectsForClass(null);
+  if (Array.isArray(settings.subjects) && settings.subjects.length > 0) return settings.subjects;
+  const per = settings.classSubjects || {};
+  const union = new Set<string>();
+  Object.values(per).forEach(arr => (arr || []).forEach(s => union.add(s)));
+  const derived = Array.from(union);
+  if (derived.length > 0) return derived;
+  return subjectsForClass(settings);
+}
+
 export async function getSchoolSettings(): Promise<SchoolSettings | null> {
   const res = await fetch(`${getBaseUrl()}/api/settings/get`, { method: 'GET', cache: 'no-store' });
   const payload = await res.json().catch(() => ({}));

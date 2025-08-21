@@ -15,7 +15,7 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { UserCheck, Filter, Loader2, AlertCircle as AlertIcon, Download, RotateCcw, QrCode } from 'lucide-react';
+import { Filter, Loader2, AlertCircle as AlertIcon, Download, RotateCcw, QrCode } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import type { StaffAttendanceRecord, StaffAttendanceFilterFormValues, AttendanceStatus } from '@/lib/types';
 import { StaffAttendanceFilterSchema, attendanceStatuses } from '@/lib/types';
@@ -59,7 +59,44 @@ export default function AdminStaffAttendancePage() {
     fetchAttendanceRecords(form.getValues());
   }, []); // Fetch on initial load
 
-  // Realtime subscription: refresh list when attendance rows change
+  // Helper: append a new record smoothly if it matches current filters
+  const appendIfMatches = async (incoming: { id: string; staffId: string; date: string; status: AttendanceStatus; staffName?: string; department?: string; }) => {
+    const filters = form.getValues();
+    // Filter checks
+    if (filters.dateFilter) {
+      const d = new Date(incoming.date);
+      const f = filters.dateFilter;
+      const sameDay = d.getUTCFullYear() === f.getFullYear() && d.getUTCMonth() === f.getMonth() && d.getUTCDate() === f.getDate();
+      if (!sameDay) return; // outside current date filter
+    }
+    if (filters.departmentFilter && incoming.department) {
+      if (!incoming.department.toLowerCase().includes(filters.departmentFilter.toLowerCase())) return;
+    }
+    if (filters.staffNameOrIdFilter) {
+      const term = filters.staffNameOrIdFilter.toLowerCase();
+      const hit = (incoming.staffName ?? '').toLowerCase().includes(term) || incoming.staffId.toLowerCase().includes(term);
+      if (!hit) return;
+    }
+
+    // Avoid duplicates by id
+    setAttendanceRecords(prev => {
+      if (prev.some(r => r.id === incoming.id)) return prev;
+      const next: StaffAttendanceRecord = {
+        id: incoming.id,
+        staffId: incoming.staffId,
+        staffName: incoming.staffName ?? '',
+        department: incoming.department ?? '',
+        date: incoming.date,
+        status: incoming.status,
+      };
+      const updated = [next, ...prev];
+      // Ensure desc by date
+      updated.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      return updated;
+    });
+  };
+
+  // Realtime subscription: append smoothly when new rows arrive
   useEffect(() => {
     const supabase = getSupabase();
     if (!supabase) return;
@@ -67,15 +104,63 @@ export default function AdminStaffAttendancePage() {
       .channel('realtime-staff-attendance')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'staff_attendance' },
-        () => {
-          // Refetch with current filters on any change
-          fetchAttendanceRecords(form.getValues());
+        { event: 'INSERT', schema: 'public', table: 'staff_attendance' },
+        async (payload: any) => {
+          // payload.new has: { id, staff_id, date, status }
+          const row = payload?.new;
+          if (!row) return;
+          const base = { id: String(row.id), staffId: String(row.staff_id), date: String(row.date), status: String(row.status) as AttendanceStatus };
+          // Try to enrich with staff name/department using API
+          try {
+            const q = new URLSearchParams({ staffId: base.staffId }).toString();
+            const res = await fetch(`/api/staff/profile?${q}`, { cache: 'no-store' });
+            const prof = await res.json();
+            await appendIfMatches({ ...base, staffName: prof?.name ?? '', department: prof?.department ?? '' });
+          } catch {
+            await appendIfMatches({ ...base });
+          }
         }
       )
+      // Also listen to manual broadcast from server route as a fallback
+      .on('broadcast', { event: 'changed' }, async (msg: any) => {
+        const p = msg?.payload;
+        if (!p) return;
+        // expect payload: { id, staff_id, date, status, name?, department? }
+        const base = { id: String(p.id ?? ''), staffId: String(p.staff_id ?? ''), date: String(p.date ?? new Date().toISOString()), status: String(p.status ?? 'Present') as AttendanceStatus };
+        let name = p.name as string | undefined;
+        let dept = p.department as string | undefined;
+        if (!name || !dept) {
+          try {
+            const q = new URLSearchParams({ staffId: base.staffId }).toString();
+            const res = await fetch(`/api/staff/profile?${q}`, { cache: 'no-store' });
+            const prof = await res.json();
+            name = name ?? prof?.name;
+            dept = dept ?? prof?.department;
+          } catch { /* ignore */ }
+        }
+        await appendIfMatches({ ...base, staffName: name, department: dept });
+      })
       .subscribe();
     return () => {
       try { supabase.removeChannel(channel); } catch { /* noop */ }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Removed frequent polling to avoid visible refreshes
+
+  // Refetch when tab becomes active again
+  useEffect(() => {
+    const handler = () => {
+      if (document.visibilityState === 'visible') {
+        fetchAttendanceRecords(form.getValues());
+      }
+    };
+    document.addEventListener('visibilitychange', handler);
+    window.addEventListener('focus', handler);
+    return () => {
+      document.removeEventListener('visibilitychange', handler);
+      window.removeEventListener('focus', handler);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -159,7 +244,6 @@ export default function AdminStaffAttendancePage() {
     <div className="space-y-6">
       <PageHeader
         title="Staff Attendance Records"
-        icon={UserCheck}
         description="View, filter, and manage staff attendance."
         actions={
             <Button onClick={handleGenerateQrCode} variant="outline">

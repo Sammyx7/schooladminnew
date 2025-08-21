@@ -54,7 +54,7 @@ export async function createTimetableEntry(input: CreateTimetableInput): Promise
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      day: input.day,
+      day_of_week: input.day,            // canonical column
       period: input.period,
       start_time: ensureSeconds(input.startTime),
       end_time: ensureSeconds(input.endTime),
@@ -79,7 +79,7 @@ export async function updateTimetableEntry(patch: UpdateTimetablePatch): Promise
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       id: patch.id,
-      day: patch.day,
+      day_of_week: patch.day,            // canonical column
       period: patch.period,
       start_time: patch.startTime ? ensureSeconds(patch.startTime) : undefined,
       end_time: patch.endTime ? ensureSeconds(patch.endTime) : undefined,

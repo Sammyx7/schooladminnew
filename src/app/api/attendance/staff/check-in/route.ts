@@ -80,6 +80,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    // Fire a realtime broadcast as a fallback to DB changes
+    try {
+      const channel = supabase.channel('realtime-staff-attendance');
+      await channel.subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.send({ type: 'broadcast', event: 'changed', payload: { kind: 'insert', table: 'staff_attendance' } });
+          await channel.unsubscribe();
+        }
+      });
+    } catch (_) {
+      // ignore broadcast failures
+    }
+
     return NextResponse.json({ message: 'Attendance recorded' }, { status: 200 });
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || 'Unknown error' }, { status: 500 });

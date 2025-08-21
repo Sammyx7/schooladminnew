@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Alert, AlertDescription, AlertTitle as AlertMsgTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, PlusCircle, Loader2, AlertCircle as AlertIcon, Eye, Trash2 } from 'lucide-react';
+import { PlusCircle, Loader2, AlertCircle as AlertIcon, Eye, Trash2, Mail } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format, parseISO } from 'date-fns';
@@ -31,7 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { BulkFeeNoticeDefinition, BulkFeeNoticeFormValues } from '@/lib/types';
 import { BulkFeeNoticeFormSchema } from '@/lib/types';
 import { getAdminGeneratedFeeNotices, createAdminBulkFeeNotice, getBatchDistributionStats } from '@/lib/services/feeNoticesService';
-import { getSchoolSettings } from '@/lib/services/settingsService';
+import { getSchoolSettings, listClasses, sectionsForClass, type SchoolSettings } from '@/lib/services/settingsService';
 
 export default function AdminBulkFeeNoticesPage() {
   // Form + notifications
@@ -63,6 +63,7 @@ export default function AdminBulkFeeNoticesPage() {
   const [stats, setStats] = useState<{ total: number; pending: number; paid: number; overdue: number } | null>(null);
 
   // Class/Section dropdown state
+  const [settings, setSettings] = useState<SchoolSettings | null>(null);
   const [classOptions, setClassOptions] = useState<string[]>([]);
   const [sectionsByClass, setSectionsByClass] = useState<Record<string, string[]>>({});
   const [selectedClass, setSelectedClass] = useState<string>('');
@@ -76,26 +77,11 @@ export default function AdminBulkFeeNoticesPage() {
       try {
         const s = await getSchoolSettings();
         if (!s) return;
-        const fallbackSections = Array.isArray(s.sections) ? s.sections.filter(Boolean).map(x => x.trim()) : ['A','B','C'];
-        let classes: string[];
-        let byClass: Record<string, string[]> = {};
-        if (Array.isArray(s.classes) && s.classes.length > 0) {
-          classes = s.classes.slice(); // preserve user-defined order
-          const map = s.classSections || {};
-          for (const c of classes) {
-            const secs = Array.isArray(map[c]) && map[c]!.length > 0 ? map[c]!.filter(Boolean).map(x=>x.trim()) : fallbackSections;
-            byClass[c] = ['All Sections', ...secs];
-          }
-        } else {
-          // legacy fallback ordering: common-sense
-          const common = ['Nursery','LKG','UKG'];
-          const rangeMin = typeof s.classMin === 'number' ? s.classMin : 1;
-          const rangeMax = typeof s.classMax === 'number' ? s.classMax : 12;
-          const numbered = Array.from({length: Math.max(0, rangeMax - rangeMin + 1)}, (_,i)=>`Class ${i+rangeMin}`);
-          classes = [...common, ...numbered];
-          for (const c of classes) {
-            byClass[c] = ['All Sections', ...fallbackSections];
-          }
+        setSettings(s);
+        const classes = listClasses(s);
+        const byClass: Record<string, string[]> = {};
+        for (const c of classes) {
+          byClass[c] = ['All Sections', ...sectionsForClass(s, c)];
         }
         setClassOptions(classes);
         setSectionsByClass(byClass);
@@ -150,7 +136,6 @@ export default function AdminBulkFeeNoticesPage() {
     <div className="space-y-6">
       <PageHeader
         title="Bulk Fee Notices"
-        icon={Mail}
         description="Generate and manage fee notices for multiple classes or sections."
         actions={
           <Button onClick={() => { form.reset({ noticeTitle: '', description: '', amount: '' as any, dueDate: undefined, targetClasses: '', additionalNotes: '' }); setIsFormDialogOpen(true); }}>
