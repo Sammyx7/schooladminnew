@@ -11,6 +11,7 @@ import {
 export const adminNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { title: 'Students', href: '/admin/students', icon: Users },
+  { title: 'ID Cards', href: '/admin/students/id-cards', icon: Printer },
   { title: 'Staff', href: '/admin/staff', icon: Briefcase }, 
   { title: 'Complaints', href: '/admin/complaints', icon: MessageSquare },
   { title: 'Teacher Onboarding', href: '/admin/staff/onboard', icon: UserPlus },
