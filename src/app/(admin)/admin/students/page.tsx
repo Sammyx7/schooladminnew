@@ -35,8 +35,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { StudentProfile } from '@/lib/types';
-import { listStudents, getStudentByStudentId, updateStudent } from '@/lib/services/studentsDbService';
+import { listStudents, getStudentByStudentId, updateStudent, deleteStudents } from '@/lib/services/studentsDbService';
 import { useToast } from '@/hooks/use-toast';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function AdminStudentsPage() {
   const [students, setStudents] = useState<StudentProfile[]>([]);
@@ -49,6 +61,11 @@ export default function AdminStudentsPage() {
   // CSV import state
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const allVisibleIds = filteredStudents.map((s) => s.studentId);
+  const allVisibleSelected = allVisibleIds.length > 0 && allVisibleIds.every((id) => selectedIds.includes(id));
+  const someVisibleSelected = allVisibleIds.some((id) => selectedIds.includes(id));
 
   // Dialog state
   const [viewOpen, setViewOpen] = useState(false);
@@ -94,6 +111,12 @@ export default function AdminStudentsPage() {
     setFilteredStudents(filteredData);
   }, [searchTerm, classFilter, students]);
 
+  // Clear selection when filter/search changes list
+  useEffect(() => {
+    setSelectedIds((prev) => prev.filter((id) => allVisibleIds.includes(id)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredStudents.length]);
+
   async function handleImportCsv() {
     if (!csvFile) {
       toast({ title: 'No file selected', description: 'Choose a CSV file first.', variant: 'destructive' });
@@ -112,6 +135,8 @@ export default function AdminStudentsPage() {
       const data = await listStudents();
       setStudents(data);
       setFilteredStudents(data);
+      setIsLoading(false);
+      setSelectedIds([]);
     } catch (e: any) {
       toast({ title: 'Import Failed', description: e?.message || 'Unknown error', variant: 'destructive' });
     } finally {
@@ -130,6 +155,37 @@ export default function AdminStudentsPage() {
       toast({ title: 'Error', description: msg, variant: 'destructive' });
     } finally {
       setIsFetchingStudent(false);
+    }
+  };
+
+  const toggleSelectAllVisible = (checked: boolean) => {
+    if (checked) {
+      const merged = Array.from(new Set([...selectedIds, ...allVisibleIds]));
+      setSelectedIds(merged);
+    } else {
+      const remaining = selectedIds.filter((id) => !allVisibleIds.includes(id));
+      setSelectedIds(remaining);
+    }
+  };
+
+  const toggleSelectOne = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => (checked ? Array.from(new Set([...prev, id])) : prev.filter((x) => x !== id)));
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+    try {
+      setIsLoading(true);
+      await deleteStudents(selectedIds);
+      const data = await listStudents();
+      setStudents(data);
+      setFilteredStudents(data);
+      setSelectedIds([]);
+      toast({ title: 'Deleted', description: `Removed ${selectedIds.length} student(s).` });
+    } catch (e: any) {
+      toast({ title: 'Delete Failed', description: e?.message || 'Unknown error', variant: 'destructive' });
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -260,6 +316,29 @@ export default function AdminStudentsPage() {
         <CardContent>
           {/* CSV Import */}
           <div className="mb-6">
+            {/* Bulk actions */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-sm text-muted-foreground">
+                {selectedIds.length > 0 ? `${selectedIds.length} selected` : ''}
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" disabled={selectedIds.length === 0}>Delete Selected</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete selected students?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. It will permanently remove the selected students.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteSelected}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <label className="flex-1 cursor-pointer">
                 <div className="border border-dashed rounded-lg p-3 hover:bg-muted/40 transition-colors">
@@ -283,6 +362,16 @@ export default function AdminStudentsPage() {
               <Button onClick={handleImportCsv} disabled={isImporting || !csvFile} className="shrink-0">
                 {isImporting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Upload CSV
               </Button>
+              <Button variant="secondary" className="shrink-0" onClick={async () => {
+                try {
+                  setIsLoading(true);
+                  const data = await listStudents();
+                  setStudents(data);
+                  setFilteredStudents(data);
+                } finally {
+                  setIsLoading(false);
+                }
+              }}>Refresh</Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               CSV columns: student_id, name, (class_section or class_name + section), [roll_no], [avatar_url], [parent_name], [parent_contact], [admission_number], [address], [father_name], [mother_name], [emergency_contact]
@@ -322,15 +411,34 @@ export default function AdminStudentsPage() {
                 <Table>
                   <TableHeader className="sticky top-0 bg-background">
                     <TableRow>
+                      <TableHead className="w-[4ch]">
+                        <Checkbox
+                          aria-label="Select all visible"
+                          checked={allVisibleSelected}
+                          onCheckedChange={(v) => toggleSelectAllVisible(Boolean(v))}
+                          className={someVisibleSelected && !allVisibleSelected ? 'data-[state=indeterminate]:opacity-100' : ''}
+                        />
+                      </TableHead>
                       <TableHead className="w-[15ch] text-xs uppercase font-medium text-muted-foreground">Student ID</TableHead>
                       <TableHead className="min-w-[24ch] text-xs uppercase font-medium text-muted-foreground">Name</TableHead>
                       <TableHead className="min-w-[18ch] text-xs uppercase font-medium text-muted-foreground">Class & Section</TableHead>
+                      <TableHead className="min-w-[10ch] text-xs uppercase font-medium text-muted-foreground hidden md:table-cell">Roll No</TableHead>
+                      <TableHead className="min-w-[20ch] text-xs uppercase font-medium text-muted-foreground hidden lg:table-cell">Guardian's Name</TableHead>
+                      <TableHead className="min-w-[18ch] text-xs uppercase font-medium text-muted-foreground hidden xl:table-cell">Guardian's Contact</TableHead>
+                      <TableHead className="min-w-[18ch] text-xs uppercase font-medium text-muted-foreground hidden xl:table-cell">Admission No</TableHead>
                       <TableHead className="w-[10ch] text-right text-xs uppercase font-medium text-muted-foreground">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredStudents.map((student) => (
                       <TableRow key={student.studentId}>
+                        <TableCell className="align-middle">
+                          <Checkbox
+                            aria-label={`Select ${student.name}`}
+                            checked={selectedIds.includes(student.studentId)}
+                            onCheckedChange={(v) => toggleSelectOne(student.studentId, Boolean(v))}
+                          />
+                        </TableCell>
                         <TableCell className="font-mono text-sm">{student.studentId}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
@@ -342,6 +450,10 @@ export default function AdminStudentsPage() {
                           </div>
                         </TableCell>
                         <TableCell>{student.classSection}</TableCell>
+                        <TableCell className="hidden md:table-cell">{student.rollNo ?? '-'}</TableCell>
+                        <TableCell className="hidden lg:table-cell">{student.parentName ?? '-'}</TableCell>
+                        <TableCell className="hidden xl:table-cell">{student.parentContact ?? '-'}</TableCell>
+                        <TableCell className="hidden xl:table-cell">{student.admissionNumber ?? '-'}</TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -396,6 +508,18 @@ export default function AdminStudentsPage() {
                 <div>
                   <div className="text-xs text-muted-foreground">Class & Section</div>
                   <div>{activeStudent.classSection || '-'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Father's Name</div>
+                  <div>{activeStudent.fatherName ?? '-'}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Mother's Name</div>
+                  <div>{activeStudent.motherName ?? '-'}</div>
+                </div>
+                <div className="col-span-2">
+                  <div className="text-xs text-muted-foreground">Address</div>
+                  <div className="break-words">{activeStudent.address ?? '-'}</div>
                 </div>
                 {activeStudent.avatarUrl && (
                   <div>

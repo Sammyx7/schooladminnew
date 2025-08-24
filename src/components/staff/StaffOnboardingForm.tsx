@@ -32,6 +32,11 @@ const OnboardSchema = z.object({
   email: z.string().email("Valid email required"),
   phone: z.string().optional(),
   joiningDate: z.string().min(4, "Joining date is required"),
+  salary: z
+    .preprocess((v) => (v === '' || v === null || v === undefined ? undefined : v),
+      z.coerce.number().nonnegative({ message: "Salary must be a non-negative number." })
+    )
+    .optional(),
   qualificationsCsv: z.string().optional(),
   className: z.string().min(1, "Class is required"),
   section: z.string().min(1, "Section is required"),
@@ -166,6 +171,7 @@ export default function StaffOnboardingForm() {
         email: values.email.trim(),
         phone: values.phone?.trim() || undefined,
         joiningDate: new Date(values.joiningDate).toISOString(),
+        salary: typeof values.salary === 'number' ? values.salary : undefined,
         qualifications: (values.qualificationsCsv || '')
           .split(',')
           .map((s) => s.trim())
@@ -305,6 +311,14 @@ export default function StaffOnboardingForm() {
               </Popover>
               {form.formState.errors.joiningDate && (
                 <p className="text-xs text-destructive mt-1">{form.formState.errors.joiningDate.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="salary">Salary <span className="text-muted-foreground">(optional)</span></Label>
+              <Input id="salary" type="number" step="0.01" placeholder="e.g., 45000" {...form.register('salary')} />
+              {form.formState.errors.salary && (
+                <p className="text-xs text-destructive mt-1">{form.formState.errors.salary.message as string}</p>
               )}
             </div>
 
@@ -537,6 +551,7 @@ export default function StaffOnboardingForm() {
                       <TableHead className="min-w-[20ch]">Department</TableHead>
                       <TableHead className="min-w-[24ch]">Email</TableHead>
                       <TableHead className="min-w-[16ch]">Phone</TableHead>
+                      <TableHead className="min-w-[12ch]">Salary</TableHead>
                       <TableHead className="min-w-[24ch]">Assignments</TableHead>
                       <TableHead className="w-32">Actions</TableHead>
                     </TableRow>
@@ -558,6 +573,7 @@ export default function StaffOnboardingForm() {
                         <TableCell>{s.department}</TableCell>
                         <TableCell className="text-muted-foreground text-sm truncate max-w-[28ch]" title={s.email}>{s.email}</TableCell>
                         <TableCell className="text-sm">{s.phone || '-'}</TableCell>
+                        <TableCell className="text-sm">{typeof s.salary === 'number' ? s.salary.toLocaleString() : '-'}</TableCell>
                         <TableCell className="text-sm">
                           {(s.assignments && s.assignments.length > 0) ? (
                             <div className="flex flex-wrap gap-1 max-w-[36ch]">
@@ -599,6 +615,10 @@ export default function StaffOnboardingForm() {
                                         <span className="text-muted-foreground">-</span>
                                       )}
                                     </div>
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Salary:</span>{' '}
+                                    {typeof s.salary === 'number' ? s.salary.toLocaleString() : '-'}
                                   </div>
                                 </div>
                               </PopoverContent>

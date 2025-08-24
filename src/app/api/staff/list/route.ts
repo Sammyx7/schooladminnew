@@ -13,7 +13,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from('staff')
-      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
+      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url, salary')
       .order('staff_id', { ascending: false });
 
     if (error) {
@@ -54,6 +54,7 @@ export async function GET() {
       email: r.email,
       phone: r.phone ?? undefined,
       joiningDate: r.joining_date,
+      salary: r.salary === null || r.salary === undefined ? undefined : Number(r.salary),
       qualifications: Array.isArray(r.qualifications) ? r.qualifications : undefined,
       avatarUrl: r.avatar_url ?? undefined,
       assignments: (assignmentsByStaffId[r.staff_id] || []).map((a: any) => ({

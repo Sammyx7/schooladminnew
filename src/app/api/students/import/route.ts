@@ -91,10 +91,32 @@ export async function POST(req: Request) {
       const classSectionVal = iClassSection !== -1
         ? String(r[iClassSection] ?? '').trim()
         : `${String(r[iClassName] ?? '').trim()}${String(r[iSection] ?? '').trim() ? ' - ' + String(r[iSection] ?? '').trim() : ''}`.trim();
+
+      // Derive class_name and section to satisfy schemas that require them
+      let classNameVal = '';
+      let sectionVal = '';
+      if (iClassName !== -1 || iSection !== -1) {
+        classNameVal = iClassName !== -1 ? String(r[iClassName] ?? '').trim() : '';
+        sectionVal = iSection !== -1 ? String(r[iSection] ?? '').trim() : '';
+      }
+      if ((!classNameVal || !sectionVal) && classSectionVal) {
+        // Attempt to split formats like "Class 7 - A" or "Class 7-A"
+        const parts = classSectionVal.split(/\s*-\s*/);
+        if (parts.length >= 2) {
+          if (!classNameVal) classNameVal = parts[0].trim();
+          if (!sectionVal) sectionVal = parts.slice(1).join(' - ').trim();
+        } else {
+          // Fallback: put entire string as class_name if section not present
+          if (!classNameVal) classNameVal = classSectionVal;
+        }
+      }
+
       return {
         student_id: String(r[iStudentId] ?? '').trim(),
         name: String(r[iName] ?? '').trim(),
         class_section: classSectionVal,
+        class_name: classNameVal || null,
+        section: sectionVal || null,
         roll_no: iRollNo !== -1 ? (Number(String(r[iRollNo]).trim()) || null) : null,
         avatar_url: iAvatar !== -1 ? (String(r[iAvatar] ?? '').trim() || null) : null,
         parent_name: iParentName !== -1 ? (String(r[iParentName] ?? '').trim() || null) : null,

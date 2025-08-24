@@ -12,6 +12,7 @@ export async function POST(req: Request) {
       email,
       phone,
       joiningDate,
+      salary,
       qualifications,
       avatarUrl,
       assignments,
@@ -50,6 +51,7 @@ export async function POST(req: Request) {
       email,
       phone: phone ?? null,
       joining_date: joiningDate,
+      salary: salary === undefined || salary === null || salary === '' ? null : Number(salary),
       qualifications: qualifications ?? null,
       avatar_url: avatarUrl ?? null,
     };
@@ -57,7 +59,7 @@ export async function POST(req: Request) {
     const { data, error } = await supabase
       .from('staff')
       .insert(payload)
-      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
+      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url, salary')
       .single();
 
     if (error) {
@@ -91,6 +93,7 @@ export async function POST(req: Request) {
             email: data!.email,
             phone: data!.phone ?? undefined,
             joiningDate: data!.joining_date,
+            salary: data!.salary === null || data!.salary === undefined ? undefined : Number(data!.salary),
             qualifications: Array.isArray(data!.qualifications) ? data!.qualifications : [],
             avatarUrl: data!.avatar_url ?? undefined,
             _assignmentsWarning: aErr.message,
@@ -108,6 +111,7 @@ export async function POST(req: Request) {
       email: data!.email,
       phone: data!.phone ?? undefined,
       joiningDate: data!.joining_date,
+      salary: data!.salary === null || data!.salary === undefined ? undefined : Number(data!.salary),
       qualifications: Array.isArray(data!.qualifications) ? data!.qualifications : [],
       avatarUrl: data!.avatar_url ?? undefined,
     });

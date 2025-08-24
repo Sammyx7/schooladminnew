@@ -26,14 +26,14 @@ export async function GET(req: Request) {
     if (staffId) {
       const res = await supabase
         .from('staff')
-        .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
+        .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url, rating_score')
         .ilike('staff_id', staffId)
         .maybeSingle();
       data = res.data; error = res.error;
     } else if (email) {
       const res = await supabase
         .from('staff')
-        .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
+        .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url, rating_score')
         .ilike('email', email)
         .maybeSingle();
       data = res.data; error = res.error;
@@ -58,6 +58,7 @@ export async function GET(req: Request) {
       dateOfJoining: data.joining_date,
       qualifications: Array.isArray(data.qualifications) ? data.qualifications : [],
       avatarUrl: data.avatar_url ?? undefined,
+      ratingScore: typeof data.rating_score === 'number' ? data.rating_score : undefined,
     };
 
     return NextResponse.json(payload);

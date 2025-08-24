@@ -12,6 +12,7 @@ export const adminNavItems: NavItem[] = [
   { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { title: 'Students', href: '/admin/students', icon: Users },
   { title: 'Staff', href: '/admin/staff', icon: Briefcase }, 
+  { title: 'Complaints', href: '/admin/complaints', icon: MessageSquare },
   { title: 'Teacher Onboarding', href: '/admin/staff/onboard', icon: UserPlus },
   { title: 'Admissions', href: '/admin/admissions', icon: UserPlus },
   { title: 'Student Attendance', href: '/admin/attendance/student', icon: CalendarCheck },

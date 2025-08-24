@@ -305,6 +305,7 @@ export const AdminStaffListItemSchema = z.object({
   email: z.string(),
   phone: z.string().optional(),
   joiningDate: z.string(), // Stored as ISOString
+  salary: z.number().optional(),
   qualifications: z.array(z.string()).optional(),
   avatarUrl: z.string().optional(),
   assignments: z
@@ -341,8 +342,45 @@ export const StaffProfileSchema = z.object({
   dateOfJoining: z.string(), // Stored as ISOString
   qualifications: z.array(z.string()),
   avatarUrl: z.string().optional(),
+  // Aggregated rating score (0-100)
+  ratingScore: z.number().optional(),
 });
 export type StaffProfile = z.infer<typeof StaffProfileSchema>;
+
+// Complaints & Ratings
+export const complaintStatuses = ['open','in_progress','resolved','dismissed'] as const;
+export type ComplaintStatus = typeof complaintStatuses[number];
+export const complaintSeverities = ['low','medium','high','critical'] as const;
+export type ComplaintSeverity = typeof complaintSeverities[number];
+
+export const StaffComplaintSchema = z.object({
+  id: z.string(),
+  staffId: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  severity: z.enum(complaintSeverities),
+  status: z.enum(complaintStatuses),
+  attachments: z.array(z.string()).optional(),
+  createdBy: z.string().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  resolvedAt: z.string().nullable().optional(),
+  resolutionNotes: z.string().nullable().optional(),
+  resolvedBy: z.string().nullable().optional(),
+});
+export type StaffComplaint = z.infer<typeof StaffComplaintSchema>;
+
+export const StaffRatingEventSchema = z.object({
+  id: z.string(),
+  staffId: z.string(),
+  delta: z.number(),
+  reason: z.string(),
+  source: z.enum(['manual','complaint_deduction','complaint_resolution'] as const),
+  relatedComplaintId: z.string().nullable().optional(),
+  createdBy: z.string().optional(),
+  createdAt: z.string(),
+});
+export type StaffRatingEvent = z.infer<typeof StaffRatingEventSchema>;
 
 
 // Admin Reports Overview

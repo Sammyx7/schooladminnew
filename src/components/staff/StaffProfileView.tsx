@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Mail, Phone, Briefcase, CalendarDays, User, BookOpenCheck, GraduationCap, IdCard } from "lucide-react";
+import { Mail, Phone, Briefcase, CalendarDays, User, BookOpenCheck, GraduationCap, IdCard, Star, ArrowUpRight, ArrowDownRight, ExternalLink } from "lucide-react";
 import { getStaffProfileByStaffId, getStaffProfileByEmail } from "@/lib/services/staffDbService";
 import { getAssignmentsForStaff, type StaffAssignment } from "@/lib/services/staffAssignmentsService";
+import { listRatingEvents } from "@/lib/services/staffRatingsService";
+import type { StaffRatingEvent } from "@/lib/types";
 import { getSupabase } from "@/lib/supabaseClient";
 import type { StaffProfile } from "@/lib/types";
 import { Input } from "@/components/ui/input";
@@ -21,8 +23,10 @@ export default function StaffProfileView() {
   const [staffId, setStaffId] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [assignments, setAssignments] = useState<StaffAssignment[] | null>(null);
+  const [ratingEvents, setRatingEvents] = useState<StaffRatingEvent[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [assignmentsLoading, setAssignmentsLoading] = useState(true);
+  const [eventsLoading, setEventsLoading] = useState(false);
   const [linkingStaffId, setLinkingStaffId] = useState("");
   const [isLinking, setIsLinking] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
@@ -101,6 +105,16 @@ export default function StaffProfileView() {
           if (mounted) {
             setAssignments(a);
             setAssignmentsLoading(false);
+          }
+          // Load rating events (reputation panel)
+          try {
+            setEventsLoading(true);
+            const ev = await listRatingEvents(resolvedStaffId, 6);
+            if (mounted) setRatingEvents(ev);
+          } catch (e) {
+            if (mounted) setRatingEvents([]);
+          } finally {
+            if (mounted) setEventsLoading(false);
           }
         } else {
           if (mounted) setAssignmentsLoading(false);
@@ -204,13 +218,14 @@ export default function StaffProfileView() {
     .toUpperCase();
 
   return (
-    <div className="w-full min-w-0 overflow-x-hidden space-y-3 sm:space-y-6">
-      {/* Header card with gradient */}
-      <Card className="border shadow-md relative overflow-hidden rounded-xl">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 sm:h-28 bg-gradient-to-r from-primary/15 via-primary/10 to-transparent" />
-        <CardHeader className="p-4 sm:p-6">
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-primary/20">
+    <div className="w-full min-w-0 overflow-x-hidden space-y-3 sm:space-y-6 p-4 sm:p-6">
+      {/* Header card with enhanced gradient and depth */}
+      <Card className="relative overflow-hidden rounded-2xl border shadow-lg">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent" />
+        <div className="pointer-events-none absolute -top-12 -right-12 h-40 w-40 rounded-full bg-primary/10 blur-2xl" />
+        <CardHeader className="relative p-4 sm:p-6">
+          <div className="flex items-center gap-4 sm:gap-5 min-w-0">
+            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 ring-2 ring-primary/20 shadow-sm">
               <AvatarImage src={profile.avatarUrl} alt={profile.name} />
               <AvatarFallback>{initials || <User className="h-6 w-6" />}</AvatarFallback>
             </Avatar>
@@ -220,6 +235,29 @@ export default function StaffProfileView() {
                 <IdCard className="h-3.5 w-3.5" />
                 {profile.staffId}
               </CardDescription>
+              {typeof profile.ratingScore === 'number' && (
+                <div className="mt-2 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    {Array.from({ length: 5 }).map((_, i) => {
+                      const stars = Math.max(0, Math.min(5, Math.floor(((profile.ratingScore || 0) / 100) * 5 + 1e-6)));
+                      const filled = i < stars;
+                      return (
+                        <Star
+                          key={i}
+                          className={
+                            "h-5 w-5 sm:h-6 sm:w-6 drop-shadow-[0_1px_0_rgba(0,0,0,0.1)] " +
+                            (filled ? "fill-amber-400 stroke-amber-500" : "stroke-muted-foreground/40")
+                          }
+                        />
+                      );
+                    })}
+                    <span className="text-xs sm:text-sm font-medium text-foreground/80">
+                      {Math.max(0, Math.min(5, Math.floor(((profile.ratingScore || 0) / 100) * 5 + 1e-6)))}/5
+                    </span>
+                  </div>
+                  {/* Progress bar removed to avoid 0–100 visualization */}
+                </div>
+              )}
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {profile.role && <Badge variant="secondary" className="text-xs">{profile.role}</Badge>}
                 {profile.department && <Badge variant="outline" className="text-xs">{profile.department}</Badge>}
@@ -240,34 +278,49 @@ export default function StaffProfileView() {
         </div>
       </SectionCard>
 
-      {/* Metrics */}
-      <SectionCard title="Overview" description="Your current teaching stats">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-          <MetricCard icon={<Briefcase className="h-4 w-4" />} label="Total Assignments" value={assignmentsLoading || !assignments ? '—' : String(assignments.length)} />
-          <MetricCard icon={<BookOpenCheck className="h-4 w-4" />} label="Unique Classes" value={assignmentsLoading || !assignments ? '—' : String(new Set(assignments.map(a => `${a.className}-${a.section}`)).size)} />
-          <MetricCard icon={<Briefcase className="h-4 w-4" />} label="Class Teacher Of" value={assignmentsLoading || !assignments ? '—' : String(assignments.filter(a => a.isClassTeacher).length)} />
-        </div>
-      </SectionCard>
-
-      {/* Qualifications */}
-      <SectionCard title="Qualifications" description="Your professional qualifications">
-        {profile.qualifications && profile.qualifications.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {profile.qualifications.map((q, idx) => (
-              <span key={idx} className="rounded-full border px-3 py-1 text-xs bg-card">
-                {q}
-              </span>
-            ))}
+      {/* Overview & Reputation two-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+        <SectionCard title="Overview" description="Your current teaching stats" className="lg:col-span-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+            <MetricCard icon={<Briefcase className="h-4 w-4" />} label="Total Assignments" value={assignmentsLoading || !assignments ? '—' : String(assignments.length)} />
+            <MetricCard icon={<BookOpenCheck className="h-4 w-4" />} label="Unique Classes" value={assignmentsLoading || !assignments ? '—' : String(new Set(assignments.map(a => `${a.className}-${a.section}`)).size)} />
+            <MetricCard icon={<Briefcase className="h-4 w-4" />} label="Class Teacher Of" value={assignmentsLoading || !assignments ? '—' : String(assignments.filter(a => a.isClassTeacher).length)} />
           </div>
-        ) : (
-          <div className="text-sm text-muted-foreground">No qualifications listed.</div>
-        )}
-      </SectionCard>
+          <div className="mt-3">
+            <a href={`/admin/complaints?staffId=${encodeURIComponent(profile.staffId)}`} className="inline-flex items-center text-xs font-medium text-primary hover:underline">
+              View Complaints <ExternalLink className="ml-1 h-3.5 w-3.5" />
+            </a>
+          </div>
+        </SectionCard>
 
-      {/* Assignments */}
-      <SectionCard title="Assignments" description="Your current class and subject assignments">
-        <AssignmentsList assignments={assignments} loading={assignmentsLoading} />
-      </SectionCard>
+        <SectionCard title="Reputation" description="Recent rating changes and notes">
+          {eventsLoading ? (
+            <div className="text-sm text-muted-foreground">Loading events…</div>
+          ) : !ratingEvents || ratingEvents.length === 0 ? (
+            <div className="text-sm text-muted-foreground">No recent rating events.</div>
+          ) : (
+            <div className="space-y-2">
+              {ratingEvents.map((ev) => (
+                <div key={ev.id} className="flex items-start justify-between gap-3 rounded-md border p-2">
+                  <div className="min-w-0">
+                    <div className="text-xs text-muted-foreground">{new Date(ev.createdAt).toLocaleString()}</div>
+                    <div className="text-sm truncate" title={ev.reason}>{ev.reason}</div>
+                  </div>
+                  <div className={(ev.delta >= 0 ? 'text-green-600' : 'text-red-600') + ' shrink-0 inline-flex items-center gap-1 text-sm font-medium'}>
+                    {ev.delta >= 0 ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
+                    {ev.delta}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </SectionCard>
+
+        {/* Assignments */}
+        <SectionCard title="Assignments" description="Your current class and subject assignments" className="lg:col-span-3">
+          <AssignmentsList assignments={assignments} loading={assignmentsLoading} />
+        </SectionCard>
+      </div>
     </div>
   );
 }

@@ -20,6 +20,7 @@ export interface CreateStaffInput {
   email: string;
   phone?: string;
   joiningDate: string; // ISO string
+  salary?: number;
   qualifications?: string[];
   avatarUrl?: string;
   assignments?: {
@@ -61,7 +62,7 @@ export async function getStaffProfileByStaffId(staffId: string): Promise<StaffPr
   if (supabase) {
     const { data, error } = await supabase
       .from('staff')
-      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
+      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url, rating_score')
       .eq('staff_id', staffId)
       .maybeSingle();
     if (error) throw error;
@@ -77,6 +78,7 @@ export async function getStaffProfileByStaffId(staffId: string): Promise<StaffPr
         dateOfJoining: data.joining_date,
         qualifications: Array.isArray(data.qualifications) ? data.qualifications : [],
         avatarUrl: data.avatar_url ?? undefined,
+        ratingScore: typeof (data as any).rating_score === 'number' ? (data as any).rating_score : undefined,
       };
     }
   }
@@ -95,7 +97,7 @@ export async function getStaffProfileByEmail(email: string): Promise<StaffProfil
   if (supabase) {
     const { data, error } = await supabase
       .from('staff')
-      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
+      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url, rating_score')
       .eq('email', email)
       .maybeSingle();
     if (error) throw error;
@@ -111,6 +113,7 @@ export async function getStaffProfileByEmail(email: string): Promise<StaffProfil
         dateOfJoining: data.joining_date,
         qualifications: Array.isArray(data.qualifications) ? data.qualifications : [],
         avatarUrl: data.avatar_url ?? undefined,
+        ratingScore: typeof (data as any).rating_score === 'number' ? (data as any).rating_score : undefined,
       };
     }
   }
@@ -131,6 +134,7 @@ export interface UpdateStaffInput {
   email?: string;
   phone?: string | null;
   joiningDate?: string; // ISO
+  salary?: number | null;
   qualifications?: string[] | null;
   avatarUrl?: string | null;
 }

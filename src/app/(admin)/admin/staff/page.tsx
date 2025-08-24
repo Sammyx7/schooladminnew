@@ -130,6 +130,7 @@ export default function AdminStaffPage() {
   const [editDepartment, setEditDepartment] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
+  const [editSalary, setEditSalary] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
   // Assignments edit state
   const [assignRows, setAssignRows] = useState<StaffAssignment[]>([]);
@@ -214,6 +215,11 @@ export default function AdminStaffPage() {
       setEditDepartment(s.department);
       setEditEmail(s.email);
       setEditPhone(s.phone ?? '');
+      // Initialize salary from list item passed in
+      try {
+        const listItem = staff as unknown as AdminStaffListItem;
+        setEditSalary(typeof listItem.salary === 'number' ? String(listItem.salary) : '');
+      } catch {}
       setEditOpen(true);
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Failed to load staff for editing';
@@ -321,12 +327,14 @@ export default function AdminStaffPage() {
     if (!activeStaff) return;
     try {
       setIsSaving(true);
+      const salaryValue = editSalary.trim() === '' ? null : Number(editSalary);
       const updated = await updateStaff(activeStaff.staffId, {
         name: editName,
         role: editRole,
         department: editDepartment,
         email: editEmail,
         phone: editPhone || null,
+        salary: Number.isFinite(salaryValue as number) || salaryValue === null ? salaryValue : null,
       });
       setStaffList((prev) => prev.map((s) => (s.staffId === updated.staffId ? updated : s)));
       setFilteredStaff((prev) => prev.map((s) => (s.staffId === updated.staffId ? updated : s)));
@@ -460,7 +468,7 @@ export default function AdminStaffPage() {
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              CSV columns: staff_id, name, role, department, email, [phone], [joining_date], [qualifications], [avatar_url]
+              CSV columns: staff_id, name, role, department, email, [phone], [joining_date], [qualifications], [avatar_url], [salary]
             </p>
           </div>
           {isLoading && (
@@ -519,6 +527,7 @@ export default function AdminStaffPage() {
                       <TableHead className="min-w-[15ch] text-xs uppercase font-medium text-muted-foreground">Role</TableHead>
                       <TableHead className="min-w-[20ch] hidden md:table-cell text-xs uppercase font-medium text-muted-foreground">Department</TableHead>
                       <TableHead className="min-w-[25ch] hidden lg:table-cell text-xs uppercase font-medium text-muted-foreground">Email</TableHead>
+                      <TableHead className="min-w-[12ch] text-xs uppercase font-medium text-muted-foreground">Salary</TableHead>
                       <TableHead className="min-w-[26ch] text-xs uppercase font-medium text-muted-foreground">Assignments</TableHead>
                       <TableHead className="w-[10ch] text-right text-xs uppercase font-medium text-muted-foreground">Actions</TableHead>
                     </TableRow>
@@ -541,6 +550,7 @@ export default function AdminStaffPage() {
                         <TableCell className="hidden lg:table-cell text-sm text-muted-foreground">
                           <span className="block max-w-[28ch] truncate" title={staff.email}>{staff.email}</span>
                         </TableCell>
+                        <TableCell className="text-sm">{typeof staff.salary === 'number' ? staff.salary.toLocaleString() : '-'}</TableCell>
                         <TableCell>
                           {(staff.assignments && staff.assignments.length > 0) ? (
                             <div className="flex flex-wrap gap-1 max-w-[40ch]">
@@ -682,6 +692,11 @@ export default function AdminStaffPage() {
             <div className="grid gap-2">
               <Label htmlFor="phone">Phone</Label>
               <Input id="phone" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="salary">Salary (optional)</Label>
+              <Input id="salary" type="number" step="0.01" placeholder="e.g., 45000" value={editSalary} onChange={(e) => setEditSalary(e.target.value)} />
+              <p className="text-xs text-muted-foreground">Leave blank to clear salary.</p>
             </div>
           </div>
           <DialogFooter>

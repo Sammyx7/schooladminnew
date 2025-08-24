@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     if (updates.email !== undefined) payload.email = updates.email;
     if (updates.phone !== undefined) payload.phone = updates.phone;
     if (updates.joiningDate !== undefined) payload.joining_date = updates.joiningDate;
+    if (updates.salary !== undefined) payload.salary = updates.salary === '' ? null : Number(updates.salary);
     if (updates.qualifications !== undefined) payload.qualifications = updates.qualifications;
     if (updates.avatarUrl !== undefined) payload.avatar_url = updates.avatarUrl;
 
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
       .from('staff')
       .update(payload)
       .eq('staff_id', staffId)
-      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url')
+      .select('id, staff_id, name, role, department, email, phone, joining_date, qualifications, avatar_url, salary')
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
       email: data!.email,
       phone: data!.phone ?? undefined,
       joiningDate: data!.joining_date,
+      salary: data!.salary === null || data!.salary === undefined ? undefined : Number(data!.salary),
       qualifications: Array.isArray(data!.qualifications) ? data!.qualifications : [],
       avatarUrl: data!.avatar_url ?? undefined,
     });
